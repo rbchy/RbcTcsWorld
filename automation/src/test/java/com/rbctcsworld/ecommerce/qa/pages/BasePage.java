@@ -50,14 +50,19 @@ public abstract class BasePage {
         wait.until(ExpectedConditions.elementToBeClickable(testId(testId))).click();
     }
 
-    /** Cmd on macOS, Ctrl elsewhere. Sending both breaks Linux: Chrome types Meta+A as a literal "a". */
-    private static final Keys SELECT_ALL_MODIFIER =
-            System.getProperty("os.name", "").toLowerCase().contains("mac") ? Keys.COMMAND : Keys.CONTROL;
-
+    /**
+     * Replaces the field's text by typing like a user. No modifier keys (Cmd/Ctrl+A): Safari keeps Cmd
+     * pressed after such a chord, so every later key and click became Cmd+key (empty fields, links opening
+     * in a new tab - DEF-024). Backspace + Delete once per character clear the field wherever the caret is,
+     * and fire React's onChange like real typing (WebElement.clear() does not).
+     */
     protected void type(String testId, String text) {
         WebElement e = visible(testId);
-        e.sendKeys(Keys.chord(SELECT_ALL_MODIFIER, "a"), Keys.DELETE);
-        e.sendKeys(text);
+        String old = e.getDomProperty("value");
+        if (old != null && !old.isEmpty()) {
+            e.sendKeys(Keys.BACK_SPACE.toString().repeat(old.length()) + Keys.DELETE.toString().repeat(old.length()));
+        }
+        if (!text.isEmpty()) e.sendKeys(text);
         // guard: fail here with a clear message instead of later with a confusing one
         new WebDriverWait(driver, Duration.ofSeconds(3))
                 .ignoring(StaleElementReferenceException.class)

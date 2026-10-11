@@ -31,6 +31,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-021](#def-021) | Dependency scan silently missed 5 vulnerable libraries (one CVSS 9.1) when Maven Central rate-limited it | Test infrastructure | High | P1 | Runner canary (Ubuntu 26) | Closed |
 | [DEF-022](#def-022) | Jenkins QA Reports page said "all gates passed" for a build that failed in its first stage | Test infrastructure (reporting) | High | P1 | Reviewing build #30 | Closed |
 | [DEF-023](#def-023) | Admin product search box promised "name, SKU or category" but searched names only | Product (UI) | Low | P3 | UI test checked against the API | Closed |
+| [DEF-024](#def-024) | Safari: no UI test could type into a field (11 of 32 UI tests failed) | Test code (cross-browser) | High | P1 | First Safari runs on Jenkins (#38-#40) | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -51,6 +52,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | Runner canary (next CI image) | DEF-021 |
 | Checking a report against the build log | DEF-022 |
 | UI test that re-checks every step through the API | DEF-023 |
+| A fourth browser (Safari on the Jenkins Mac) | DEF-024 |
 
 ---
 
@@ -555,6 +557,33 @@ API and checks both agree.
 
 **Lesson:** a UI label is a promise about the API behind it; the UI test that verifies through the API found
 the gap on the first CI run.
+
+---
+
+## DEF-024
+**Safari: no UI test could type into a field (11 of 32 UI tests failed)**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | High / P1 - Safari results were meaningless; every form test failed |
+| Component | `automation/.../pages/BasePage.type()` |
+| Environment | Jenkins on macOS, Safari 26.6.2, builds #38-#40 (Chrome, Firefox, Edge green) |
+
+**Symptoms:** `field 'email-input' should contain '...'` in every test that types; the failure screenshots
+show completely empty fields. `UiShellTest#helpCenter`, which types nothing, failed too: the click on Help
+did not open the help page.
+
+**Root cause:** `type()` cleared a field with Cmd+A, Delete before typing. Safari kept Cmd pressed after
+that chord, so the following text arrived as Cmd+letter shortcuts (nothing typed), and a click with Cmd
+held opens a link in a new tab (Help stayed on the catalog). The other drivers release the modifier.
+
+**Fix:** no modifier keys at all. The field is cleared with one Backspace and one Delete per existing
+character (works wherever the caret is, fires React's onChange like a user), then the text is typed.
+
+**Regression test:** every UI test that types, run with `BROWSER=safari` on Jenkins.
+
+**Lesson:** a screenshot answered in a minute what the stack trace could not - the field was empty, not
+wrong. Keyboard shortcuts in a test helper are platform behaviour, not test logic.
 
 ---
 

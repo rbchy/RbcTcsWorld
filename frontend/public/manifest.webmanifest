@@ -1,0 +1,21 @@
+{
+  "name": "RbcTcsWorld E-Commerce",
+  "short_name": "RbcTcsWorld",
+  "description": "Everyday goods, delivered to your door. Storefront and store admin.",
+  "start_url": "/#/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#eef2f3",
+  "theme_color": "#12313f",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Cart", "url": "/#/cart" },
+    { "name": "Orders", "url": "/#/orders" },
+    { "name": "Store admin", "url": "/#/admin" },
+    { "name": "Help", "url": "/#/help" }
+  ]
+}

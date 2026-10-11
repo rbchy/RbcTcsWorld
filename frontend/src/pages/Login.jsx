@@ -1,35 +1,100 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api, { errorText } from '../api';
 import { go, saveSession } from '../session';
+import { useI18n } from '../i18n';
 
-export default function Login({ redirect = '/' }) {
-  const [mode, setMode] = useState('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Same rules as the backend (AuthController: @Email, password 8-72): the server stays the final judge. */
+export function validateAuth({ email, password, confirm }, mode) {
+  const e = {};
+  if (!email.trim()) e.email = 'vEmailRequired';
+  else if (!EMAIL.test(email.trim())) e.email = 'vEmailInvalid';
+  if (password.length < 8) e.password = 'vPwShort';
+  else if (password.length > 72) e.password = 'vPwLong';
+  if (mode === 'register' && confirm !== password) e.confirm = 'vPwMatch';
+  return e;
+}
+
+export default function Login({ redirect = '/', initialMode = 'login' }) {
+  const { t } = useI18n();
+  const [mode, setMode] = useState(initialMode);
+  const [form, setForm] = useState({ email: '', password: '', confirm: '' });
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => { setMode(initialMode); setErrors({}); setError(''); }, [initialMode]);
+
+  const set = field => e => {
+    const next = { ...form, [field]: e.target.value };
+    setForm(next);
+    // once a field was flagged, re-check it on every keystroke so the message disappears as soon as it is fixed
+    if (errors[field]) setErrors(validateAuth(next, mode));
+  };
 
   const submit = async e => {
     e.preventDefault();
+    const found = validateAuth(form, mode);
+    setErrors(found);
+    if (Object.keys(found).length) { setError(''); return; }
+    setBusy(true);
     try {
-      const r = await api.post(mode === 'login' ? '/auth/login' : '/auth/register', { email, password });
+      const r = await api.post(mode === 'login' ? '/auth/login' : '/auth/register',
+        { email: form.email.trim(), password: form.password });
       saveSession(r.data);
-      go(redirect === '/login' ? '/' : redirect);
+      go(['/login', '/register'].includes(redirect) ? '/' : redirect);
     } catch (err) {
       setError(errorText(err));
+    } finally {
+      setBusy(false);
     }
   };
 
+  const toggle = () => { setMode(mode === 'login' ? 'register' : 'login'); setErrors({}); setError(''); };
+  const fieldError = name => errors[name] && (
+    <span className="field-error" id={`${name}-error`} data-testid={`${name}-error`}>{t(errors[name])}</span>
+  );
+
   return (
-    <section className="card narrow">
-      <h1 data-testid="auth-title">{mode === 'login' ? 'Log in' : 'Create account'}</h1>
-      <form onSubmit={submit}>
-        <label>Email<input data-testid="email-input" type="email" value={email} onChange={e => setEmail(e.target.value)} /></label>
-        <label>Password<input data-testid="password-input" type="password" value={password} onChange={e => setPassword(e.target.value)} /></label>
-        {error && <p data-testid="auth-error" className="error">{error}</p>}
-        <button data-testid="auth-submit" type="submit">{mode === 'login' ? 'Log in' : 'Register'}</button>
+    <section className="card narrow auth" data-mode={mode} data-testid="auth-card">
+      <h1 data-testid="auth-title">{mode === 'login' ? t('loginTitle') : t('registerTitle')}</h1>
+      <p className="muted">{mode === 'login' ? t('loginLead') : t('registerLead')}</p>
+      <form onSubmit={submit} noValidate>
+        <div className="field">
+          <label htmlFor="auth-email">{t('email')}</label>
+          <input id="auth-email" data-testid="email-input" type="email" autoComplete="email" value={form.email} onChange={set('email')}
+                 aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
+          {fieldError('email')}
+        </div>
+        <div className="field">
+          <label htmlFor="auth-password">{t('password')}</label>
+          <input id="auth-password" data-testid="password-input" type={show ? 'text' : 'password'} value={form.password}
+                 onChange={set('password')} autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                 aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : 'password-hint'} />
+          {fieldError('password') || <span className="hint" id="password-hint">{t('pwHint')}</span>}
+        </div>
+        {mode === 'register' && (
+          <div className="field">
+            <label htmlFor="auth-confirm">{t('confirmPassword')}</label>
+            <input id="auth-confirm" data-testid="confirm-input" type={show ? 'text' : 'password'} value={form.confirm}
+                   onChange={set('confirm')} autoComplete="new-password" aria-invalid={!!errors.confirm}
+                   aria-describedby={errors.confirm ? 'confirm-error' : undefined} />
+            {fieldError('confirm')}
+          </div>
+        )}
+        <label className="check">
+          <input type="checkbox" checked={show} onChange={e => setShow(e.target.checked)} data-testid="show-password" />
+          {t('showPassword')}
+        </label>
+        {error && <p data-testid="auth-error" className="error" role="alert">{error}</p>}
+        <button data-testid="auth-submit" type="submit" disabled={busy} className="block">
+          {mode === 'login' ? t('loginBtn') : t('registerBtn')}
+        </button>
       </form>
-      <button className="link" data-testid="auth-toggle" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}>
-        {mode === 'login' ? 'New customer? Create an account' : 'Already registered? Log in'}
+      <button className="link" data-testid="auth-toggle" onClick={toggle}>
+        {mode === 'login' ? t('toRegister') : t('toLogin')}
       </button>
     </section>
   );

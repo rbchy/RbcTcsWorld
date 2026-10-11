@@ -30,6 +30,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-020](#def-020) | Edge and Firefox UI tests cannot get a driver on the Jenkins Mac (Selenium Manager) | Test infrastructure | Medium | P2 | Jenkins run with the BROWSER parameter | Closed |
 | [DEF-021](#def-021) | Dependency scan silently missed 5 vulnerable libraries (one CVSS 9.1) when Maven Central rate-limited it | Test infrastructure | High | P1 | Runner canary (Ubuntu 26) | Closed |
 | [DEF-022](#def-022) | Jenkins QA Reports page said "all gates passed" for a build that failed in its first stage | Test infrastructure (reporting) | High | P1 | Reviewing build #30 | Closed |
+| [DEF-023](#def-023) | Admin product search box promised "name, SKU or category" but searched names only | Product (UI) | Low | P3 | UI test checked against the API | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -49,6 +50,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | Cross-browser CI (Firefox, Edge) | DEF-019, DEF-020 |
 | Runner canary (next CI image) | DEF-021 |
 | Checking a report against the build log | DEF-022 |
+| UI test that re-checks every step through the API | DEF-023 |
 
 ---
 
@@ -523,6 +525,36 @@ showed 284/284, 287/287, coverage, PIT, k6, ZAP and OSV, all green, under "overa
 
 **Lesson:** a report is a test result too - it needs a defined state for "nothing ran", and it must never be
 greener than the build it belongs to.
+
+---
+
+## DEF-023
+**Admin product search box promised "name, SKU or category" but searched names only**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Low / P3 - an admin typing a SKU sees "no products" and may think the product is missing |
+| Component | `frontend/src/pages/admin/AdminProducts.jsx` (label), `GET /api/products?q=` |
+| Environment | PR #15 (storefront UI), CI, all three browsers |
+
+**Steps to reproduce**
+1. Log in as admin, open Store admin > Products.
+2. Add a product named "Desk fan" with SKU `QA-1234`.
+3. Type `QA-1234` in the search box.
+
+**Expected:** what the label says - the product is found by its SKU. **Actual:** "No rows". The API's `q`
+matches product names only (`findByNameContainingIgnoreCaseAndActiveTrue`).
+
+**Root cause:** the label was written from the intended feature, not from the API contract it calls.
+
+**Fix:** the label now says what the search does ("Search by product name") in all six languages.
+Searching by SKU is a backend change, kept as a separate backlog item.
+
+**Regression test:** `UiAdminProductsTest#productLifecycle` searches with the same `q` in the UI and the
+API and checks both agree.
+
+**Lesson:** a UI label is a promise about the API behind it; the UI test that verifies through the API found
+the gap on the first CI run.
 
 ---
 

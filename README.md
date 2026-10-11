@@ -3,7 +3,7 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-571-brightgreen)
+![Tests](https://img.shields.io/badge/automated%20tests-583-brightgreen)
 [![Coverage](https://img.shields.io/badge/line%20coverage-97.5%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
 [![Mutation](https://img.shields.io/badge/mutation%20score-84.9%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
@@ -23,7 +23,7 @@ Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://githu
 2. **Live reports:** [Allure](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/) ·
    [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
-3. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 22 entries, each with
+3. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 23 entries, each with
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](docs/qa/TEST_STRATEGY.md) ·
    [Risk Register](docs/qa/RISK_REGISTER.md) · [Test Summary Report (GO / NO-GO)](docs/qa/TEST_SUMMARY_REPORT.md)
@@ -49,7 +49,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 4 | Mutation score | >= 84 % | 84.9 % (test strength 97.5 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
-| 7 | Accessibility | 0 serious / critical | 0 on 8 pages | axe-core, WCAG 2.1 A + AA |
+| 7 | Accessibility | 0 serious / critical | 0 on 13 pages | axe-core, WCAG 2.1 A + AA |
 | 8 | Cross-browser | 100 % pass | 20 / 20 in Firefox and Edge | Selenium, CI matrix |
 | 9 | Performance | SLO thresholds (p95, error rate, no overselling) | p95 16-72 ms, 0 % errors | k6 |
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
@@ -79,8 +79,8 @@ flowchart TB
     S["Security<br/>JWT, RBAC/IDOR matrix, injection"]
   end
   subgraph ui["Browser (fewest tests)"]
-    W["12 Selenium journeys<br/>Chrome, Firefox, Edge"]
-    X["Accessibility<br/>axe-core, 8 pages"]
+    W["19 Selenium journeys<br/>Chrome, Firefox, Edge"]
+    X["Accessibility<br/>axe-core, 13 pages"]
   end
   subgraph nonfunc["Non-functional"]
     K["k6: smoke, flash sale, catalog"]
@@ -194,6 +194,9 @@ docker compose --profile app up -d --build        # storefront http://localhost:
 docker compose --profile app down                 # add -v to delete the database
 ```
 
+Or double-click the launcher in `desktop/` (Mac `.command`, Windows `.bat`, Linux `.sh`); it starts Docker if needed
+and opens the store. In Chrome or Edge, **Install app** in the top bar adds it as a desktop app.
+
 **Development** (backend from Eclipse or Maven, live-reloading UI):
 
 ```bash
@@ -234,7 +237,8 @@ k6 scripts and how to run them: [performance](docs/modules/PERFORMANCE_K6_BN.md)
 
 ```text
 backend/        Spring Boot API, unit + integration tests, PIT profile
-frontend/       React storefront (data-testid on every element a test touches)
+frontend/       React storefront + store-admin panel, 6 languages, installable PWA (data-testid everywhere)
+desktop/        One-click launchers for Mac, Windows and Linux
 automation/     API clients, Page Objects, Cucumber features, contract schemas, test data fixtures
 performance/    k6 scripts with SLO thresholds
 security/       ZAP rules, SBOM + OSV scan with self-test, version check
@@ -246,8 +250,8 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 ## Documentation
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (63 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
-[Defects (22)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (67 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Defects (23)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Module guides (Bangla):**
 
@@ -255,6 +259,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 |---|---|
 | Foundation, cart, orders + inventory, checkout + payment, fulfilment + returns, reviews + wishlist | [Module 0](docs/modules/MODULE_00_FOUNDATION_BN.md) · [1](docs/modules/MODULE_01_CART_BN.md) · [2](docs/modules/MODULE_02_ORDERS_INVENTORY_BN.md) · [3](docs/modules/MODULE_03_CHECKOUT_PAYMENT_BN.md) · [4](docs/modules/MODULE_04_FULFILLMENT_RETURNS_BN.md) · [5](docs/modules/MODULE_05_REVIEWS_WISHLIST_BN.md) |
 | Storefront and UI tests, cross-browser | [FRONTEND_UI_TESTS_BN](docs/modules/FRONTEND_UI_TESTS_BN.md) |
+| Menu, store-admin panel, six languages, help, desktop | [STOREFRONT_UI_BN](docs/modules/STOREFRONT_UI_BN.md) |
 | API contract and accessibility | [API_CONTRACT_A11Y_BN](docs/modules/API_CONTRACT_A11Y_BN.md) |
 | Performance (k6) | [PERFORMANCE_K6_BN](docs/modules/PERFORMANCE_K6_BN.md) |
 | Security | [SECURITY_BN](docs/modules/SECURITY_BN.md) |

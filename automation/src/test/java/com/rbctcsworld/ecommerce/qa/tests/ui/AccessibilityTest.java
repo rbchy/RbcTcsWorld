@@ -80,17 +80,23 @@ class AccessibilityTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({
-            "Login,           /login,           false, auth-submit",
-            "Catalog,         /,                true,  product-card",
-            "Product detail,  /products/{p},    true,  detail-name",
-            "Wishlist,        /wishlist,        true,  wishlist-table",
-            "Cart,            /cart,            true,  cart-table",
-            "Checkout,        /checkout,        true,  place-order",
-            "Order history,   /orders,          true,  orders-table",
-            "Order and pay,   /orders/{o},      true,  order-status"})
+            "Login,           /login,           none,     auth-submit",
+            "Registration,    /register,        none,     confirm-input",
+            "Help center,     /help,            none,     help-topic",
+            "Catalog,         /,                customer, product-card",
+            "Product detail,  /products/{p},    customer, detail-name",
+            "Wishlist,        /wishlist,        customer, wishlist-table",
+            "Cart,            /cart,            customer, cart-table",
+            "Checkout,        /checkout,        customer, place-order",
+            "Order history,   /orders,          customer, orders-table",
+            "Order and pay,   /orders/{o},      customer, order-status",
+            "Admin dashboard, /admin,           admin,    stat-orders",
+            "Admin products,  /admin/products,  admin,    admin-product-table",
+            "Admin orders,    /admin/orders,    admin,    admin-order-table"})
     @DisplayName("Page meets WCAG 2.1 AA (no serious or critical axe violations)")
-    void wcag21aa(String page, String route, boolean loggedIn, String readyTestId) {
-        if (loggedIn) BasePage.loginWithToken(driver, me.token(), me.email());
+    void wcag21aa(String page, String route, String session, String readyTestId) {
+        if ("customer".equals(session)) BasePage.loginWithToken(driver, me.token(), me.email());
+        if ("admin".equals(session)) BasePage.loginWithToken(driver, Fixtures.adminToken(), TestConfig.adminEmail(), "ADMIN");
         driver.get(TestConfig.uiUrl() + "/#" + route.replace("{p}", String.valueOf(product.id()))
                 .replace("{o}", String.valueOf(unpaidOrder)));
         driver.navigate().refresh();   // re-read the session from localStorage

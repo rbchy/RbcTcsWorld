@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
-import { clearSession, go, useRoute, useSession } from './session';
+import { useRoute, useSession } from './session';
+import { Sidebar, Topbar } from './Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
@@ -10,16 +11,39 @@ import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import ProductDetail from './pages/ProductDetail';
 import Wishlist from './pages/Wishlist';
+import Help from './pages/Help';
+import { AdminOnly } from './pages/admin/common';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminReturns from './pages/admin/AdminReturns';
+import AdminReviews from './pages/admin/AdminReviews';
+
+const ADMIN = {
+  '/admin': AdminDashboard, '/admin/products': AdminProducts, '/admin/coupons': AdminCoupons,
+  '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
+};
 
 // data-testid attributes are the stable hooks used by Selenium (automation/.../pages/*.java).
 function App() {
   const route = useRoute();
   const session = useSession();
-  const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist'].some(p => route.startsWith(p));
+  const [menuOpen, setMenuOpen] = useState(false);
+  const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist', '/admin'].some(p => route.startsWith(p));
+
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   let page;
   if (needsLogin && !session) page = <Login redirect={route} />;
   else if (route === '/login') page = <Login redirect="/" />;
+  else if (route === '/register') page = <Login redirect="/" initialMode="register" />;
+  else if (route === '/help' || route.startsWith('/help/')) page = <Help />;
+  else if (ADMIN[route]) { const P = ADMIN[route]; page = <AdminOnly session={session}><P /></AdminOnly>; }
   else if (route === '/cart') page = <Cart />;
   else if (route === '/checkout') page = <Checkout />;
   else if (route === '/orders') page = <Orders />;
@@ -29,26 +53,22 @@ function App() {
   else page = <Home />;
 
   return (
-    <>
-      <nav className="topbar">
-        <a href="#/" className="brand" data-testid="nav-home">RbcTcsWorld</a>
-        <div className="links">
-          <a href="#/wishlist" data-testid="nav-wishlist">Wishlist</a>
-          <a href="#/cart" data-testid="nav-cart">Cart</a>
-          <a href="#/orders" data-testid="nav-orders">Orders</a>
-          {session ? (
-            <>
-              <span className="who" data-testid="nav-user">{session.email}</span>
-              <button className="link" data-testid="nav-logout" onClick={() => { clearSession(); go('/'); }}>Log out</button>
-            </>
-          ) : (
-            <a href="#/login" data-testid="nav-login">Log in</a>
-          )}
-        </div>
-      </nav>
-      <main>{page}</main>
-    </>
+    <div className="shell">
+      <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
+      <Topbar session={session} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
+      <div className="frame">
+        <Sidebar route={route} session={session} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
+        {menuOpen && <div className="scrim" aria-hidden="true" onClick={() => setMenuOpen(false)} />}
+        <main id="main" tabIndex={-1}>{page}</main>
+      </div>
+    </div>
   );
 }
 
 createRoot(document.getElementById('root')).render(<App />);
+
+// Desktop version: the service worker makes the storefront installable and shows an offline page when the
+// server is not running. Production build only, so development (vite dev) never serves a stale bundle.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { getSession, go } from '../session';
 import Stars from './Stars';
+import { useI18n } from '../i18n';
 
 const PAGE_SIZE = 20;
 
 export default function Home() {
+  const { t } = useI18n();
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -62,22 +64,24 @@ export default function Home() {
     <>
       <header className="page-head">
         <h1>RbcTcsWorld E-Commerce</h1>
-        <input data-testid="search-input" type="search" aria-label="Search products" placeholder="Search products" value={q} onChange={e => setQ(e.target.value)} />
+        <input data-testid="search-input" type="search" aria-label={t('searchProducts')} placeholder={t('searchProducts')} value={q} onChange={e => setQ(e.target.value)} />
       </header>
+      {!q && <Banner t={t} />}
       {error && <p data-testid="error-banner" className="error">{error}</p>}
       {flash && <p data-testid="flash" className="ok">{flash}</p>}
-      <p className="muted small" data-testid="catalog-total">Showing {products.length} of {total} products</p>
+      <p className="muted small" id="catalog" data-testid="catalog-total">{t('showing', { n: products.length, total })}</p>
+      {!error && total === 0 && q && <p className="card muted" data-testid="no-results">{t('noProducts')}</p>}
       <section className="grid" data-testid="product-grid">
-        {products.map(p => <ProductCard key={p.id} p={p} onAdd={add} onWish={wish} />)}
+        {products.map(p => <ProductCard key={p.id} p={p} onAdd={add} onWish={wish} t={t} />)}
       </section>
       {products.length < total && (
-        <p className="center"><button className="ghost" data-testid="load-more" onClick={() => load(page + 1, true)}>Load more</button></p>
+        <p className="center"><button className="ghost" data-testid="load-more" onClick={() => load(page + 1, true)}>{t('loadMore')}</button></p>
       )}
     </>
   );
 }
 
-function ProductCard({ p, onAdd, onWish }) {
+function ProductCard({ p, onAdd, onWish, t }) {
   const [qty, setQty] = useState(1);
   return (
     <article data-testid="product-card" data-sku={p.sku}>
@@ -85,15 +89,32 @@ function ProductCard({ p, onAdd, onWish }) {
       <p className="muted">{p.category}</p>
       <Stars average={p.ratingAverage} count={p.ratingCount} />
       <p><strong data-testid="product-price">{money(p.price)}</strong></p>
-      <p className="muted" data-testid="product-stock">Stock: {p.stock}</p>
+      <p className="muted" data-testid="product-stock">{t('stock')}: {p.stock}</p>
       <div className="row">
         <input type="number" min="1" max="10" value={qty} data-testid="qty-input" aria-label={`Quantity of ${p.name}`}
                onChange={e => setQty(e.target.value)} className="qty" />
         <button data-testid="add-to-cart" disabled={p.stock < 1} onClick={() => onAdd(p.id, qty)}>
-          {p.stock < 1 ? 'Out of stock' : 'Add to cart'}
+          {p.stock < 1 ? t('outOfStock') : t('addToCart')}
         </button>
-        <button className="ghost" data-testid="add-to-wishlist" title="Save to wishlist" onClick={() => onWish(p.id)}>♡</button>
+        <button className="ghost" data-testid="add-to-wishlist" title={t('saveWishlist')} aria-label={`${t('saveWishlist')}: ${p.name}`} onClick={() => onWish(p.id)}>♡</button>
       </div>
     </article>
+  );
+}
+
+/** The one bold element of the storefront: a parcel label carrying the welcome offer. */
+function Banner({ t }) {
+  return (
+    <section className="banner" aria-labelledby="banner-title" data-testid="banner">
+      <div className="label-card">
+        <div className="barcode" aria-hidden="true" />
+        <div className="label-body">
+          <h2 id="banner-title">{t('bannerTitle')}</h2>
+          <p>{t('bannerText')}</p>
+          <p className="coupon"><span>{t('bannerCode')}</span> <strong data-testid="banner-code">WELCOME10</strong></p>
+        </div>
+      </div>
+      <a className="banner-link" href="#/" onClick={e => { e.preventDefault(); document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }); }}>{t('bannerShop')}</a>
+    </section>
   );
 }

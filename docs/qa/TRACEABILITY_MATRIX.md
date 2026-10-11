@@ -97,6 +97,10 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-UI-02 | Protected pages ask for login and return to the page afterwards | `UiAuthTest#protectedRouteRedirect` | UI | Pass |
 | REQ-UI-03 | Delivered order shows tracking and accepts a return | `UiOrderAfterSalesTest#trackingAndReturn` | UI | Pass |
 | REQ-UI-04 | Storefront loads with products, search and Load more | `HomePageUiTest#homeLoads`, `HomePageUiTest#searchFilters`, `HomePageUiTest#loadMore` | UI | Pass |
+| REQ-UI-05 | Store admin in the browser: add, edit, update and delete products with the same validation as the API; customers never get the admin area | `UiAdminProductsTest#productLifecycle`, `UiAdminProductsTest#duplicateSku`, `UiAdminProductsTest#customerHasNoAdminArea` | UI | Pass |
+| REQ-UI-06 | Registration and login forms validate e-mail format, password length (8-72) and the repeated password before calling the API | `UiShellTest#registrationValidation`, `UiAuthTest#wrongPassword` | UI | Pass |
+| REQ-UI-07 | Interface and help center in six languages (EN, BN, ES, FR, AR, ZH); Arabic is right-to-left; the choice is remembered | `UiShellTest#languages`, `UiShellTest#helpCenter` | UI | Pass |
+| REQ-UI-08 | Sidebar menu, top bar and login flow: a protected page asks for login and returns to it | `UiShellTest#sidebarNavigation`, `UiAuthTest#protectedRouteRedirect` | UI | Pass |
 
 ## Non-functional
 
@@ -113,8 +117,8 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | NFR-DATA-01 | Database invariants: no negative stock, timeline matches status, rating summary matches reviews, no card data | `OrderDatabaseTest#noNegativeStock`, `LifecycleDatabaseTest#timelineMatchesStatus`, `ReviewDatabaseTest#ratingSummaryMatchesReviewsForAllProducts`, `PaymentDatabaseTest#noCardDataColumns` | D | Pass |
 | NFR-API-01 | API responses keep their contract: required fields, types, formats and enums; no undeclared field (privacy: public tracking without customer data, masked reviewers, last 4 card digits only) | `ApiContractTest#authContract`, `ApiContractTest#catalogContract`, `ApiContractTest#purchaseContract`, `ApiContractTest#reviewsContract`, `ApiContractTest#wishlistContract`, `ApiContractTest#errorContract` | A | Pass |
 | NFR-API-02 | No breaking API change without an approved baseline (removed endpoint/field, new required input, changed type) | OpenAPI breaking-change gate (`.github/scripts/openapi-breaking-changes.sh`, with self-test) | CI | Pass (34 paths unchanged) |
-| NFR-A11Y-01 | Every storefront page meets WCAG 2.1 level A and AA (no serious or critical axe-core violation) | `AccessibilityTest#wcag21aa` (8 pages) | UI | Pass |
-| NFR-UI-02 | The storefront works the same in Chrome, Firefox and Edge | `UiShoppingJourneyTest#endToEndPurchase`, `UiOrderAfterSalesTest#trackingAndReturn`, `AccessibilityTest#wcag21aa` (all UI tests in each browser; CI job "UI tests in firefox / edge") | UI | Pass (20/20 per browser) |
+| NFR-A11Y-01 | Every storefront page meets WCAG 2.1 level A and AA (no serious or critical axe-core violation) | `AccessibilityTest#wcag21aa` (13 pages incl. registration, help and store admin) | UI | Pass |
+| NFR-UI-02 | The storefront works the same in Chrome, Firefox and Edge | `UiShoppingJourneyTest#endToEndPurchase`, `UiOrderAfterSalesTest#trackingAndReturn`, `AccessibilityTest#wcag21aa` (all UI tests in each browser; CI job "UI tests in firefox / edge") | UI | Pass (all UI tests per browser) |
 
 ## Coverage summary
 
@@ -127,6 +131,6 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | Pricing, coupons, payments | 9 | 9 | - |
 | Fulfilment and returns | 6 | 6 | - |
 | Reviews and wishlist | 11 | 11 | - |
-| Storefront UI | 4 | 4 | - |
+| Storefront UI | 8 | 8 | - |
 | Non-functional | 13 | 13 | - |
-| **Total** | **63** | **63 (100 %)** | **0** |
+| **Total** | **67** | **67 (100 %)** | **0** |

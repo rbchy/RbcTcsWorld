@@ -18,7 +18,7 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 
 | # | Criterion | Target | Result | |
 |---|---|---|---|---|
-| 1 | Automated tests on CI | 100 % pass | **571 / 571** passed, 0 skipped (+44 smoke against Docker) | ✅ |
+| 1 | Automated tests on CI | 100 % pass | **583 / 583** passed, 0 skipped (+44 smoke against Docker) | ✅ |
 | 2 | Requirement coverage | >= 95 % | **63 / 63 = 100 %** | ✅ |
 | 3 | Open Critical / High defects | 0 | **0** | ✅ |
 | 4 | k6 smoke + load SLOs | all pass | all pass | ✅ |
@@ -28,20 +28,20 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 | 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **97.5 % lines, 88.3 % branches** | ✅ |
 | 9 | Mutation score (PIT, business logic) | >= 84 % | **84.9 %** (was 65.5 %); test strength 97.5 % | ✅ |
 | 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, OpenAPI unchanged (34 paths)** | ✅ |
-| 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **8/8 pages clean** (all 8 failed before DEF-018) | ✅ |
-| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **20/20 Firefox 157, 20/20 Edge 154** (Chrome in criterion 1) | ✅ |
+| 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **13/13 pages clean** (the first 8 all failed before DEF-018) | ✅ |
+| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **32/32 Firefox 157, 32/32 Edge 154** (Chrome in criterion 1) | ✅ |
 
 ## 3. Test execution
 
 | Suite | Tests | Passed | Failed | Skipped | Runs against |
 |---|---|---|---|---|---|
 | Backend unit + integration | 284 | 284 | 0 | 0 | H2 (PostgreSQL mode) + Flyway |
-| Automation: API, DB, security, BDD, UI | 287 | 287 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
-| **Total** | **571** | **571** | **0** | **0** | |
-| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 40 | 40 | 0 | 0 | headless Firefox 157 / Edge 154 |
+| Automation: API, DB, security, BDD, UI | 299 | 299 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
+| **Total** | **583** | **583** | **0** | **0** | |
+| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 64 | 64 | 0 | 0 | headless Firefox 157 / Edge 154 |
 | Smoke against the Docker images | 44 | 44 | 0 | 0 | `docker compose --profile app` (postgres + backend + nginx storefront) |
 
-The automation total contains 43 Cucumber scenarios, 12 Selenium UI journeys, 8 accessibility page checks and 6 API contract tests; the rest are API,
+The automation total contains 43 Cucumber scenarios, 19 Selenium UI journeys, 13 accessibility page checks and 6 API contract tests; the rest are API,
 database and security tests. Figures come from the CI "Test totals" annotations (surefire XML).
 
 ## 4. Performance

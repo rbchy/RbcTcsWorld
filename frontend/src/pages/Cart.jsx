@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { go } from '../session';
+import { useI18n } from '../i18n';
 
 export default function Cart() {
+  const { t } = useI18n();
   const [cart, setCart] = useState(null);
   const [error, setError] = useState('');
 
@@ -21,7 +23,7 @@ export default function Cart() {
   if (!cart) return <p>Loading cart...</p>;
   return (
     <section className="card">
-      <h1>Your cart</h1>
+      <h1>{t('cartTitle')}</h1>
       {error && <p data-testid="cart-error" className="error">{error}</p>}
       {cart.items.length === 0 ? (
         <p data-testid="cart-empty">Your cart is empty. <a href="#/">Continue shopping</a></p>

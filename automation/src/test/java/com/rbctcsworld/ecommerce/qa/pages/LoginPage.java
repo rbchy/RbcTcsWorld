@@ -22,16 +22,38 @@ public class LoginPage extends BasePage {
         return this;
     }
 
+    /** data-mode (login | register) instead of the heading text: the page works in six languages. */
+    public String mode() {
+        return wait.until(d -> d.findElement(testId("auth-card")).getDomAttribute("data-mode"));
+    }
+
     public LoginPage switchToRegister() {
-        if (text("auth-title").startsWith("Log in")) click("auth-toggle");
-        wait.until(d -> text("auth-title").startsWith("Create"));
+        if ("login".equals(mode())) click("auth-toggle");
+        wait.until(d -> "register".equals(mode()));
         return this;
     }
 
+    public LoginPage openRegister() {
+        openRoute("/register");
+        wait.until(d -> "register".equals(mode()));
+        return this;
+    }
+
+    /** Fills the form; in register mode the repeated password gets the same value. */
     public void submit(String email, String password) {
+        submit(email, password, password);
+    }
+
+    public void submit(String email, String password, String repeated) {
         type("email-input", email);
         type("password-input", password);
+        if ("register".equals(mode())) type("confirm-input", repeated);
         click("auth-submit");
+    }
+
+    /** Client-side validation message under a field ("email", "password", "confirm"), or "" if none. */
+    public String fieldError(String field) {
+        return textOrEmpty(field + "-error");
     }
 
     /** Registers and waits until the header shows the new user. */

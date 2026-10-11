@@ -29,6 +29,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-019](#def-019) | Edge does not start in CI ("Chrome instance exited"), Firefox fine | Test infrastructure | Medium | P2 | New cross-browser CI job | Closed |
 | [DEF-020](#def-020) | Edge and Firefox UI tests cannot get a driver on the Jenkins Mac (Selenium Manager) | Test infrastructure | Medium | P2 | Jenkins run with the BROWSER parameter | Closed |
 | [DEF-021](#def-021) | Dependency scan silently missed 5 vulnerable libraries (one CVSS 9.1) when Maven Central rate-limited it | Test infrastructure | High | P1 | Runner canary (Ubuntu 26) | Closed |
+| [DEF-022](#def-022) | Jenkins QA Reports page said "all gates passed" for a build that failed in its first stage | Test infrastructure (reporting) | High | P1 | Reviewing build #30 | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -47,6 +48,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | Accessibility tests (axe-core, WCAG 2.1 AA) | DEF-018 |
 | Cross-browser CI (Firefox, Edge) | DEF-019, DEF-020 |
 | Runner canary (next CI image) | DEF-021 |
+| Checking a report against the build log | DEF-022 |
 
 ---
 
@@ -496,6 +498,31 @@ scans only the direct dependencies and still ends normally. The gate trusted a p
 **Result:** 0 vulnerable packages from complete inputs (backend 144, automation 116 components); contract,
 accessibility and all other tests green on both runner images.
 **Lesson:** a security gate needs the same checks as a test: complete input, and proof that it can fail.
+
+---
+
+## DEF-022
+**Jenkins QA Reports page said "all gates passed" for a build that failed in its first stage**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | High / P1 - a quality report contradicted the build result; anyone reading only the report would release |
+| Environment | Jenkins on macOS, build #30 (JDK installation misconfigured, pipeline stopped in "Tools on the agent") |
+
+**Evidence:** build #30: `Finished: FAILURE`, every stage after "Tools on the agent" skipped - yet the QA Reports page
+showed 284/284, 287/287, coverage, PIT, k6, ZAP and OSV, all green, under "overall: all gates passed".
+**Root cause:**
+- The dashboard reads report files from the Jenkins workspace. Nothing removed the files of the previous
+  successful run, so a build that ran no test at all presented the old results as its own.
+- The headline only looked at the cards, never at the pipeline result; with no cards at all it also said "passed".
+
+**Fix:**
+- "Tools on the agent" first deletes old outputs (`qa-reports`, `*/target`, k6, ZAP and OSV results).
+- `PIPELINE_RESULT` (Jenkins `currentBuild.currentResult`) goes into the dashboard: a non-successful pipeline
+  is red with "pipeline failure - see Console Output", and a page without any passed gate says "no gate ran".
+
+**Lesson:** a report is a test result too - it needs a defined state for "nothing ran", and it must never be
+greener than the build it belongs to.
 
 ---
 

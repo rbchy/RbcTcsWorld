@@ -149,6 +149,13 @@ GitHub ঘোষণা দিয়েছিল, ১৯ অক্টোবর �
   - পুরো build-এর সীমা এখন ১২০ মিনিট, শুধু শেষ নিরাপত্তা জাল হিসেবে। এতে soak বাছলেও ভালো build "aborted" হয় না।
 - **হাতে কী করবেন:** Docker Desktop → Quit → আবার খুলুন → Terminal-এ `docker version` দিয়ে দেখে নিন, তারপর build চালান।
 
+### QA Reports পাতা ব্যর্থ build-কে "পাস" দেখিয়েছিল (DEF-022)
+- **কী হয়েছিল:** build #30 প্রথম stage-এই থেমে যায় (JDK ভুল সেট করা ছিল), কোনো টেস্টই চলেনি। তবু QA Reports পাতায় লেখা ছিল "all gates passed"। পাতাটা আগের সফল build-এর পড়ে থাকা ফাইল পড়ছিল।
+- **সমাধান:**
+  - প্রতিটা build শুরুতে আগের রিপোর্ট ফাইল মুছে দেয়।
+  - Jenkins-এর আসল ফল (`currentBuild.currentResult`) এখন dashboard-এ যায়। Build ব্যর্থ হলে পাতা লাল দেখায়, লেখা থাকে "pipeline failure - see Console Output"। কোনো gate না চললে লেখা থাকে "no gate ran"।
+- **শিক্ষা:** রিপোর্টও একটা টেস্টের ফল। এটা কখনো build-এর চেয়ে বেশি সবুজ হতে পারবে না।
+
 ### Jenkins-এ JDK 21 স্থির করা
 - **সমস্যা:** Jenkins `PATH`-এ প্রথমে যে `java` পেত সেটাই ব্যবহার করত। একটা build-এ Java 26, পরেরটায় Java 23। GitHub Actions চলে Temurin 21-এ, তাই দুই CI একই Java-তে চলছিল না।
 - **এখন:** Jenkinsfile-এ `tools { jdk 'jdk-21' }`। এটা `JAVA_HOME` ঠিক করে দেয়, আর Maven সেটাই ব্যবহার করে (PATH-এর প্রথম `java` নয়)। "Tools on the agent" stage `$JAVA_HOME/bin/java` আর `mvn -v` দিয়ে দেখে নেয় version সত্যিই 21 কি না। না হলে build থামে, setup-এর নির্দেশনাসহ।

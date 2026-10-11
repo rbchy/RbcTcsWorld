@@ -176,7 +176,17 @@ if o is not None:
     card("Security: dependencies (OSV)", True if o["packages"] == 0 else None, f"{o['packages']}",
          ["vulnerable packages (accepted risks excluded)", f"{o['advisories']} advisories"], [("OSV results (JSON)", links["osv"])])
 
-overall = "bad" if any(c[1] == "bad" for c in cards) else "ok"
+# The headline must agree with the pipeline (build #30: a build that stopped in the first stage showed
+# "all gates passed" from report files of an earlier run). PIPELINE_RESULT = currentBuild.currentResult.
+PIPELINE = os.environ.get("PIPELINE_RESULT", "")
+if any(c[1] == "bad" for c in cards):
+    overall, verdict = "bad", "a gate failed"
+elif PIPELINE and PIPELINE != "SUCCESS":
+    overall, verdict = "bad", f"pipeline {PIPELINE.lower()} - see Console Output"
+elif not any(c[1] == "ok" for c in cards):
+    overall, verdict = "bad", "no gate ran"
+else:
+    overall, verdict = "ok", "all gates passed"
 total_tests = sum(t["tests"] for t in (be, au) if t)
 parts = []
 for title, status, big, lines, refs in cards:
@@ -189,7 +199,7 @@ page = f"""<!doctype html>
 <title>QA Reports - build {esc(BUILD)}</title><link rel="stylesheet" href="style.css"></head>
 <body><header class="{overall}"><h1>RbcTcsWorld E-Commerce - QA Reports</h1>
 <p>Build {esc(BUILD)}{(' | commit ' + esc(COMMIT)) if COMMIT else ''} | {esc(time.strftime('%Y-%m-%d %H:%M'))} |
-{total_tests} automated tests | overall: <strong>{'all gates passed' if overall == 'ok' else 'a gate failed'}</strong></p></header>
+{total_tests} automated tests | overall: <strong>{esc(verdict)}</strong></p></header>
 <main>{''.join(parts)}</main>
 <footer>Grey card = stage not run in this build. Allure and Cucumber need JavaScript: see docs/modules/CICD_BN.md.</footer>
 </body></html>"""
@@ -208,4 +218,4 @@ h2{margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.03em;c
 .links{margin-top:10px!important}.links a{display:inline-block;margin:4px 10px 0 0;color:#0969da;font-weight:600;text-decoration:none}
 .links a:hover{text-decoration:underline}footer{padding:0 24px 24px;color:var(--muted);font-size:13px}
 """)
-print(f"QA dashboard: {OUT}/index.html ({len(cards)} gates, overall {overall})")
+print(f"QA dashboard: {OUT}/index.html ({len(cards)} gates, overall: {verdict})")

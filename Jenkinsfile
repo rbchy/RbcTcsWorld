@@ -45,6 +45,8 @@ pipeline {
             options { timeout(time: 3, unit: 'MINUTES') }
             steps {
                 // fail in seconds with a clear message instead of in the middle of the pipeline
+                // reports of an earlier build must never show up as this build's result (build #30)
+                sh 'rm -rf qa-reports backend/target automation/target performance/reports osv-results.json security/zap/zap-report.*'
                 sh '''
                     for t in java mvn docker python3 jq curl; do
                       command -v "$t" >/dev/null || { echo "MISSING TOOL: $t (PATH=$PATH)"; exit 1; }
@@ -236,7 +238,7 @@ pipeline {
         always {
             // ONE page with every report of this build: numbers of all gates + links to Allure, Cucumber, JaCoCo,
             // PIT, k6 and ZAP. Shown as "QA Reports" on the build page (HTML Publisher plugin).
-            sh 'python3 ci/qa_dashboard.py qa-reports || true'
+            sh "PIPELINE_RESULT=${currentBuild.currentResult} python3 ci/qa_dashboard.py qa-reports || true"
             archiveArtifacts allowEmptyArchive: true, artifacts: 'qa-reports/**'
             script {
                 try {

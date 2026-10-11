@@ -111,10 +111,15 @@ public abstract class BasePage {
      * localStorage exactly like the app does after a real login. Saves ~2s and removes a dependency per test.
      */
     public static void loginWithToken(WebDriver driver, String token, String email) {
+        loginWithToken(driver, token, email, "CUSTOMER");
+    }
+
+    /** Same, with the role the backend returned at login (ADMIN shows the store-admin menu). */
+    public static void loginWithToken(WebDriver driver, String token, String email, String role) {
         driver.get(TestConfig.uiUrl() + "/#/");
         ((JavascriptExecutor) driver).executeScript(
                 "localStorage.setItem('token', arguments[0]); localStorage.setItem('email', arguments[1]);"
-                        + "localStorage.setItem('role', 'CUSTOMER');", token, email);
+                        + "localStorage.setItem('role', arguments[2]);", token, email, role);
     }
 
     public String title() {

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import Stars from './Stars';
+import { useI18n } from '../i18n';
 
 export default function Wishlist() {
+  const { t } = useI18n();
   const [list, setList] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -19,7 +21,7 @@ export default function Wishlist() {
   if (!list) return error ? <p data-testid="wishlist-error" className="error">{error}</p> : <p>Loading wishlist...</p>;
   return (
     <section className="card">
-      <h1>Your wishlist <span className="muted" data-testid="wishlist-count">{list.count}</span></h1>
+      <h1>{t('wishlistTitle')} <span className="muted" data-testid="wishlist-count">{list.count}</span></h1>
       {notice && <p data-testid="wishlist-notice" className="ok">{notice}</p>}
       {error && <p data-testid="wishlist-error" className="error">{error}</p>}
       {list.count === 0 ? <p data-testid="wishlist-empty">Your wishlist is empty. <a href="#/">Browse products</a></p> : (

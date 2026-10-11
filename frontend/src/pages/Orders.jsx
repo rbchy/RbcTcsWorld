@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
+import { useI18n } from '../i18n';
 
 export default function Orders() {
+  const { t } = useI18n();
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
   useEffect(() => { api.get('/orders').then(r => setOrders(r.data)).catch(e => setError(errorText(e))); }, []);
@@ -10,7 +12,7 @@ export default function Orders() {
   if (!orders) return <p>Loading orders...</p>;
   return (
     <section className="card">
-      <h1>Your orders</h1>
+      <h1>{t('ordersTitle')}</h1>
       {orders.length === 0 ? <p data-testid="orders-empty">No orders yet.</p> : (
         <table data-testid="orders-table">
           <thead><tr><th>Order</th><th>Status</th><th>Items</th><th>Total</th></tr></thead>

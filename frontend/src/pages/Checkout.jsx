@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { go } from '../session';
+import { useI18n } from '../i18n';
 
 /** Review prices (quote), optionally apply a coupon, then place the order. Payment happens on the order page. */
 export default function Checkout() {
+  const { t } = useI18n();
   const [quote, setQuote] = useState(null);
   const [coupon, setCoupon] = useState('');
   const [applied, setApplied] = useState('');
@@ -31,7 +33,7 @@ export default function Checkout() {
 
   return (
     <section className="card narrow">
-      <h1>Checkout</h1>
+      <h1>{t('checkoutTitle')}</h1>
       {error && <p data-testid="checkout-error" className="error">{error}</p>}
       {quote && (
         <>

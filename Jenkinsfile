@@ -74,8 +74,9 @@ pipeline {
                     cat docker-version.txt
                     docker compose version
                 '''
-                // the chosen browser must be able to start - otherwise every UI test waits ~40 s for it (build #21:
-                // BROWSER=safari without "Allow remote automation" = 20 errors after 12 minutes)
+                // Safari must allow remote automation - otherwise every UI test waits ~40 s for it (build #21:
+                // 20 errors after 12 minutes). Chrome/Firefox/Edge need no installed app: Selenium Manager downloads
+                // a browser when none is found (build #22 ran Firefox that way), so a missing app is only a note.
                 sh '''
                     [ "${RUN_UI:-true}" = "true" ] || exit 0
                     case "${BROWSER:-chrome}" in
@@ -85,8 +86,7 @@ pipeline {
                       safari)  app="Safari";         cask="" ;;
                     esac
                     if [ "$(uname)" = "Darwin" ] && [ ! -d "/Applications/$app.app" ] && [ ! -d "$HOME/Applications/$app.app" ]; then
-                      echo "BROWSER NOT INSTALLED: $app.app is not in /Applications or ~/Applications - install it (brew install --cask $cask) or choose another BROWSER"
-                      exit 1
+                      echo "NOTE: $app.app is not in /Applications or ~/Applications - Selenium Manager will download a browser into ~/.cache/selenium (or install it: brew install --cask $cask)"
                     fi
                     if [ "${BROWSER:-chrome}" = "safari" ]; then
                       safaridriver -p 4445 > safaridriver.log 2>&1 &

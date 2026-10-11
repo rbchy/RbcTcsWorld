@@ -168,7 +168,7 @@ GitHub ঘোষণা দিয়েছিল, ১৯ অক্টোবর �
 ### Browser আগেই যাচাই (build #21)
 - **কী হয়েছিল:** `BROWSER=safari` দিয়ে build চলেছিল, কিন্তু Safari-তে "Allow remote automation" চালু ছিল না। ২০টা UI টেস্ট প্রতিটা ~৪০ সেকেন্ড অপেক্ষা করে error দিয়েছিল, প্রায় ১২ মিনিট নষ্ট।
 - **এখন "Tools on the agent" stage আগেই যাচাই করে:**
-  - বাছাই করা browser Mac-এ install আছে কি না (`/Applications/...app`)।
+  - বাছাই করা browser Mac-এ install না থাকলে শুধু একটা NOTE দেখায়, build থামায় না। Chrome, Firefox আর Edge না থাকলে Selenium Manager নিজেই browser নামিয়ে নেয় (`~/.cache/selenium`)। Build #22 Firefox install ছাড়াই পাস করেছিল, অথচ প্রথম সংস্করণের পরীক্ষা build #32-কে ভুল করে থামিয়ে দিয়েছিল।
   - Safari হলে: আসল একটা WebDriver session খুলে বন্ধ করে দেখে। না পারলে কয়েক সেকেন্ডে build থামে, ঠিক কী চালু করতে হবে সেই বার্তাসহ।
 
 ## এখন CI-র gate-গুলো (প্রতিটা push-এ)

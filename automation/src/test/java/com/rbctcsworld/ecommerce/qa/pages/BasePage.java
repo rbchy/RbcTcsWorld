@@ -120,6 +120,9 @@ public abstract class BasePage {
         ((JavascriptExecutor) driver).executeScript(
                 "localStorage.setItem('token', arguments[0]); localStorage.setItem('email', arguments[1]);"
                         + "localStorage.setItem('role', arguments[2]);", token, email, role);
+        // The app reads the session once at start-up, and a later driver.get() that only changes the
+        // #route does not reload the page, so reload here: every caller then starts logged in.
+        driver.navigate().refresh();
     }
 
     public String title() {

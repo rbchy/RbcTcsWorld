@@ -112,7 +112,7 @@ const T = {
   category: ['Category', 'ক্যাটাগরি', 'Categoría', 'Catégorie', 'الفئة', '类别'],
   price: ['Price ($)', 'দাম ($)', 'Precio ($)', 'Prix ($)', 'السعر ($)', '价格 ($)'],
   actions: ['Actions', 'কাজ', 'Acciones', 'Actions', 'إجراءات', '操作'],
-  filter: ['Filter by name, SKU or category', 'নাম, SKU বা ক্যাটাগরি দিয়ে খুঁজুন', 'Filtrar por nombre, SKU o categoría', 'Filtrer par nom, SKU ou catégorie', 'تصفية بالاسم أو الرمز أو الفئة', '按名称、SKU 或类别筛选'],
+  filter: ['Search by product name', 'পণ্যের নাম দিয়ে খুঁজুন', 'Buscar por nombre del producto', 'Rechercher par nom de produit', 'البحث باسم المنتج', '按商品名称搜索'],
   noRows: ['Nothing here yet.', 'এখনো কিছু নেই।', 'Todavía no hay nada.', 'Rien pour l’instant.', 'لا يوجد شيء بعد.', '暂无内容。'],
   stockHistory: ['Stock history', 'স্টকের ইতিহাস', 'Historial de stock', 'Historique du stock', 'سجل المخزون', '库存记录'],
   couponsTitle: ['Coupons', 'কুপন', 'Cupones', 'Coupons', 'القسائم', '优惠券'],

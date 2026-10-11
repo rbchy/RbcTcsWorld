@@ -61,6 +61,7 @@ class UiAdminProductsTest {
     @DisplayName("Admin adds, updates and deletes a product; the API confirms every step")
     void productLifecycle() {
         String sku = TestData.uniqueSku();
+        String name = "QA desk fan " + sku;   // the search (UI and API) matches product names, so make it unique
         AdminProductsPage page = asAdmin();
 
         // add, with validation first: an empty form is stopped in the browser, nothing reaches the API
@@ -70,9 +71,9 @@ class UiAdminProductsTest {
                 () -> assertFalse(page.fieldError("sku").isBlank(), "sku required"),
                 () -> assertFalse(page.fieldError("price").isBlank(), "price required"),
                 () -> assertTrue(page.formOpen(), "form stays open"));
-        page.fill("QA desk fan", sku, "home", "-3", "7").save();
+        page.fill(name, sku, "home", "-3", "7").save();
         assertFalse(page.fieldError("price").isBlank(), "negative price rejected");
-        page.fill("QA desk fan", sku, "home", "24.50", "7").save();
+        page.fill(name, sku, "home", "24.50", "7").save();
         assertEquals("Product saved", page.notice());
 
         page.search(sku).waitForRow(sku);

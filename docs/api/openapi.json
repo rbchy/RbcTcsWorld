@@ -56,6 +56,13 @@
           "email": {
             "type": "string"
           },
+          "expiresIn": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
           "role": {
             "type": "string"
           },
@@ -251,6 +258,16 @@
           "productId",
           "rating"
         ],
+        "type": "object"
+      },
+      "LogoutRequest": {
+        "properties": {
+          "refreshToken": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "OrderLine": {
@@ -545,6 +562,19 @@
             "type": "integer"
           }
         },
+        "type": "object"
+      },
+      "RefreshRequest": {
+        "properties": {
+          "refreshToken": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ],
         "type": "object"
       },
       "ResolveReturnRequest": {
@@ -1214,6 +1244,59 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResult"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "auth-controller"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "auth-controller"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
               }
             }
           },

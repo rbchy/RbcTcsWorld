@@ -12,13 +12,16 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwt;
     private final LoginAttemptService attempts;
+    private final RefreshTokenService refreshTokens;
     private volatile String dummyHash;
 
-    public AuthService(UserRepository repo, PasswordEncoder encoder, JwtService jwt, LoginAttemptService attempts) {
+    public AuthService(UserRepository repo, PasswordEncoder encoder, JwtService jwt, LoginAttemptService attempts,
+                       RefreshTokenService refreshTokens) {
         this.repo = repo;
         this.encoder = encoder;
         this.jwt = jwt;
         this.attempts = attempts;
+        this.refreshTokens = refreshTokens;
     }
 
     /** New accounts are always CUSTOMER; admins are only created by DataSeeder. */
@@ -28,7 +31,7 @@ public class AuthService {
             throw new ConflictException("Email already registered");
         }
         AppUser user = repo.save(new AppUser(email, encoder.encode(password)));
-        return new AuthResult(jwt.generate(email), email, user.getRole());
+        return result(user, refreshTokens.issue(user));
     }
 
     /**
@@ -54,7 +57,23 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
         attempts.loginSucceeded(email);
-        return new AuthResult(jwt.generate(email), email, user.getRole());
+        return result(user, refreshTokens.issue(user));
+    }
+
+    /** New access token + the next refresh token (the used one is spent). 401 for anything not valid. */
+    public AuthResult refresh(String refreshToken) {
+        RefreshTokenService.Rotated rotated = refreshTokens.rotate(refreshToken);
+        return result(rotated.user(), rotated.refreshToken());
+    }
+
+    /** Ends the session on the server: the refresh token (and its whole family) stops working. */
+    public void logout(String refreshToken) {
+        refreshTokens.revoke(refreshToken);
+    }
+
+    private AuthResult result(AppUser user, String refreshToken) {
+        return new AuthResult(jwt.generate(user.getEmail()), user.getEmail(), user.getRole(), refreshToken,
+                jwt.expiresInSeconds());
     }
 
     private String dummyHash() {
@@ -68,6 +87,7 @@ public class AuthService {
         return email == null ? null : email.trim().toLowerCase();
     }
 
-    public record AuthResult(String token, String email, String role) {
+    /** token = access token (JWT, short); refreshToken = opaque, long; expiresIn = access token lifetime in seconds. */
+    public record AuthResult(String token, String email, String role, String refreshToken, long expiresIn) {
     }
 }

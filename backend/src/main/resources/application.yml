@@ -30,7 +30,8 @@ management:
 app:
   jwt:
     secret: ${JWT_SECRET:change-this-development-secret-key-which-must-be-long-enough-123456789}
-    expiration-ms: 3600000
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}   # access token: 15 minutes, renewed with the refresh token
+    refresh-days: ${REFRESH_DAYS:14}              # refresh token: 14 days, rotated on every use
   seed:
     # DEV ONLY - override with environment variables in any shared environment
     admin-email: ${ADMIN_EMAIL:admin@rbctcsworld.com}
@@ -46,6 +47,8 @@ app:
       max-failures: 5        # failed logins per e-mail ...
       window-minutes: 15     # ... within this time ...
       lock-minutes: 15       # ... lock that e-mail for this long (HTTP 429 + Retry-After)
+      store: ${LOGIN_STORE:memory}               # memory (one backend) | redis (shared by all backends)
+      redis-url: ${REDIS_URL:redis://localhost:6379}
 
 # OpenAPI JSON for tools (OWASP ZAP). Switch off in production with API_DOCS_ENABLED=false.
 springdoc:

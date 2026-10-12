@@ -68,4 +68,11 @@ class InMemoryLoginAttemptStoreTest {
         store.recordFailure("new@test.com");                       // 10,000 is not MORE than the limit
         assertThat(store.tracked()).isEqualTo(10_001);
     }
+
+    @Test
+    void longAfterTheLockNothingNegativeIsReported() {
+        for (int i = 0; i < 5; i++) store.recordFailure("a@test.com");
+        clock.advance(Duration.ofHours(2));
+        assertThat(store.lockRemainingMillis("a@test.com")).isZero();
+    }
 }

@@ -109,6 +109,7 @@ class RefreshTokenServiceTest {
 
         assertThatThrownBy(() -> service.rotate("used")).isInstanceOf(InvalidRefreshTokenException.class);
         verify(repo).revokeFamily("fam-2", NOW);
+        verify(repo).findByTokenHash(anyString());                   // already known as spent: no second lookup
         verify(repo, never()).revokeIfActive(any(), any());
         verify(repo, never()).save(any());
     }

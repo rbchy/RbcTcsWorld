@@ -253,6 +253,8 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 [Risks](docs/qa/RISK_REGISTER.md) · [Traceability (67 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (25)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
+**Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.
+
 **Module guides (Bangla):**
 
 | Area | Guide |

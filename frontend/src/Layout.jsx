@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { clearSession, go } from './session';
+import { go } from './session';
+import { logout } from './api';
 import { LANGUAGES, useI18n } from './i18n';
 
 /** Install button for the desktop version (PWA): Chrome/Edge fire beforeinstallprompt when the app can be installed. */
@@ -44,7 +45,7 @@ export function Topbar({ session, onMenu, menuOpen }) {
             <span className="sr-only">{t('signedInAs')}</span>
             <span className="who" data-testid="nav-user">{session.email}</span>
             {session.role === 'ADMIN' && <span className="role-badge" data-testid="nav-role">{t('adminBadge')}</span>}
-            <button className="link on-dark" data-testid="nav-logout" onClick={() => { clearSession(); go('/'); }}>{t('navLogout')}</button>
+            <button className="link on-dark" data-testid="nav-logout" onClick={() => { logout(); go('/'); }}>{t('navLogout')}</button>
           </div>
         ) : (
           <>

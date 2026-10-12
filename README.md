@@ -3,9 +3,9 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-583-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-97.5%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-84.9%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
+![Tests](https://img.shields.io/badge/automated%20tests-662-brightgreen)
+[![Coverage](https://img.shields.io/badge/line%20coverage-98.0%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-89.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
 
 An Amazon-inspired online store (catalog, cart, checkout, payment, shipping, returns, reviews, wishlist)
@@ -43,14 +43,14 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 284 / 284 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 287 / 287 | REST Assured, JDBC, Cucumber 7, Selenium 4 |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.5 % / 88.3 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 84.9 % (test strength 97.5 %) | PIT |
+| 1 | Backend unit + integration | 100 % pass | 352 / 352 | JUnit 5, Mockito, H2 + Flyway |
+| 2 | API, database, BDD, UI | 100 % pass | 310 / 310 | REST Assured, JDBC, Cucumber 7, Selenium 4 |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.0 % / 91.9 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 89.2 % (test strength 99.0 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 13 pages | axe-core, WCAG 2.1 A + AA |
-| 8 | Cross-browser | 100 % pass | 20 / 20 in Firefox and Edge | Selenium, CI matrix |
+| 8 | Cross-browser | 100 % pass | 34 / 34 in Firefox and Edge | Selenium, CI matrix |
 | 9 | Performance | SLO thresholds (p95, error rate, no overselling) | p95 16-72 ms, 0 % errors | k6 |
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
@@ -68,8 +68,8 @@ tests that exist only to move a number.
 ```mermaid
 flowchart TB
   subgraph fast["Fast, every push (seconds)"]
-    U["Unit + integration<br/>284 tests"]
-    M["Mutation testing<br/>371 mutants"]
+    U["Unit + integration<br/>352 tests"]
+    M["Mutation testing<br/>424 mutants"]
   end
   subgraph service["Against the running app (PostgreSQL)"]
     A["API tests<br/>REST Assured clients"]
@@ -79,7 +79,7 @@ flowchart TB
     S["Security<br/>JWT, RBAC/IDOR matrix, injection"]
   end
   subgraph ui["Browser (fewest tests)"]
-    W["19 Selenium journeys<br/>Chrome, Firefox, Edge"]
+    W["21 Selenium journeys<br/>Chrome, Firefox, Edge"]
     X["Accessibility<br/>axe-core, 13 pages"]
   end
   subgraph nonfunc["Non-functional"]
@@ -161,9 +161,10 @@ three regressions before the merge (a new Tomcat CVE, DEF-016, DEF-017).
 Stating these is part of the test report, not a footnote.
 
 - **Payments are mocked.** A deterministic gateway with test card numbers; no provider sandbox yet.
-- **Login lockout is held in memory.** Correct for one instance; several instances would need a shared
-  store (e.g. Redis).
-- **No refresh tokens.** Access tokens expire and the user logs in again.
+- **Tokens live in the browser's localStorage.** An XSS bug could read them; the strict CSP and React's
+  escaping reduce that risk. HttpOnly cookies would remove it but bring CSRF handling with them.
+- **A logged-out access token stays valid until it expires** (at most 15 minutes). The refresh token is
+  revoked at once; a denylist for access tokens was judged not worth a database call on every request.
 - **Automated accessibility rules find part of the problems.** Keyboard-only, screen-reader and zoom
   checks are manual items on the release checklist.
 - **Safari runs only on a Mac** (Jenkins `BROWSER=safari`, no headless mode); no mobile devices.
@@ -187,7 +188,7 @@ Stating these is part of the test report, not a footnote.
 
 ## Run it
 
-**Whole application, one command** (PostgreSQL + backend + storefront):
+**Whole application, one command** (PostgreSQL + Redis + backend + storefront):
 
 ```bash
 docker compose --profile app up -d --build        # storefront http://localhost:5173, API http://localhost:8081
@@ -250,7 +251,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 ## Documentation
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (67 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (71 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (25)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.
@@ -262,6 +263,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 | Foundation, cart, orders + inventory, checkout + payment, fulfilment + returns, reviews + wishlist | [Module 0](docs/modules/MODULE_00_FOUNDATION_BN.md) · [1](docs/modules/MODULE_01_CART_BN.md) · [2](docs/modules/MODULE_02_ORDERS_INVENTORY_BN.md) · [3](docs/modules/MODULE_03_CHECKOUT_PAYMENT_BN.md) · [4](docs/modules/MODULE_04_FULFILLMENT_RETURNS_BN.md) · [5](docs/modules/MODULE_05_REVIEWS_WISHLIST_BN.md) |
 | Storefront and UI tests, cross-browser | [FRONTEND_UI_TESTS_BN](docs/modules/FRONTEND_UI_TESTS_BN.md) |
 | Menu, store-admin panel, six languages, help, desktop | [STOREFRONT_UI_BN](docs/modules/STOREFRONT_UI_BN.md) |
+| Login sessions: refresh tokens, Redis login lockout | [AUTH_SESSIONS_BN](docs/modules/AUTH_SESSIONS_BN.md) |
 | API contract and accessibility | [API_CONTRACT_A11Y_BN](docs/modules/API_CONTRACT_A11Y_BN.md) |
 | Performance (k6) | [PERFORMANCE_K6_BN](docs/modules/PERFORMANCE_K6_BN.md) |
 | Security | [SECURITY_BN](docs/modules/SECURITY_BN.md) |

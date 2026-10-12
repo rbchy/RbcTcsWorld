@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearSession, saveSession } from './session';
 
 /** All calls go to /api (proxied to the backend). The JWT from login is sent automatically. */
 const api = axios.create({ baseURL: '/api' });
@@ -8,6 +9,55 @@ api.interceptors.request.use(config => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+/*
+ * Silent refresh. The access token lives 15 minutes; when a call answers 401 the refresh token buys a new
+ * pair and the call is repeated once, so the customer never notices. Rules:
+ *  - one refresh at a time: parallel 401s wait for the same request (a second refresh with the same token
+ *    would look like token theft and end the session - see RefreshTokenService);
+ *  - if another tab already refreshed, its new token is simply used;
+ *  - when the refresh fails too, the session is over: it is cleared and protected pages show the login.
+ */
+let refreshing = null;
+
+function refreshSession() {
+  if (!refreshing) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    refreshing = (refreshToken
+      ? axios.post('/api/auth/refresh', { refreshToken }).then(r => { saveSession(r.data); return r.data.token; })
+      : Promise.reject(new Error('No refresh token')))
+      .finally(() => { refreshing = null; });
+  }
+  return refreshing;
+}
+
+api.interceptors.response.use(response => response, async error => {
+  const original = error.config;
+  if (error.response?.status !== 401 || !original || original._retried || original.url?.startsWith('/auth/')) {
+    throw error;
+  }
+  original._retried = true;
+  const sent = original.headers?.Authorization;
+  const current = localStorage.getItem('token');
+  let token;
+  try {
+    token = current && sent !== `Bearer ${current}` ? current : await refreshSession();
+  } catch (refreshError) {
+    // refused (expired, logged out, reused) or nothing to refresh with: the session is over.
+    // A network error keeps the session - the next call may work again.
+    if (refreshError.response || !localStorage.getItem('refreshToken')) clearSession();
+    throw error;
+  }
+  original.headers.Authorization = `Bearer ${token}`;
+  return api(original);
+});
+
+/** Ends the session here AND on the server (the refresh token stops working). Never fails for the user. */
+export async function logout() {
+  const refreshToken = localStorage.getItem('refreshToken');
+  clearSession();
+  if (refreshToken) await axios.post('/api/auth/logout', { refreshToken }).catch(() => {});
+}
 
 /** Turns the backend's JSON error ({message, fieldErrors}) into one readable sentence. */
 export function errorText(err) {

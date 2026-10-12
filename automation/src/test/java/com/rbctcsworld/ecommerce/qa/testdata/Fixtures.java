@@ -17,6 +17,8 @@ public final class Fixtures {
     private static final OrderClient ORDERS = new OrderClient();
     private static final AdminClient ADMIN = new AdminClient();
     private static String adminToken;
+    private static long adminTokenAt;
+    private static final long ADMIN_TOKEN_MAX_AGE_NANOS = java.util.concurrent.TimeUnit.MINUTES.toNanos(10);
 
     private Fixtures() {
     }
@@ -24,9 +26,14 @@ public final class Fixtures {
     public record Customer(String email, String token) {
     }
 
+    /**
+     * Cached for speed, renewed after 10 minutes: access tokens live 15 minutes and a full run (Safari,
+     * mutation, k6) takes longer than that.
+     */
     public static synchronized String adminToken() {
-        if (adminToken == null) {
+        if (adminToken == null || System.nanoTime() - adminTokenAt > ADMIN_TOKEN_MAX_AGE_NANOS) {
             adminToken = AUTH.adminToken();
+            adminTokenAt = System.nanoTime();
         }
         return adminToken;
     }

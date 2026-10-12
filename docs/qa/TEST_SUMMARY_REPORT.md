@@ -18,30 +18,30 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 
 | # | Criterion | Target | Result | |
 |---|---|---|---|---|
-| 1 | Automated tests on CI | 100 % pass | **583 / 583** passed, 0 skipped (+44 smoke against Docker) | ✅ |
+| 1 | Automated tests on CI | 100 % pass | **662 / 662** passed, 0 skipped (+44 smoke against Docker) | ✅ |
 | 2 | Requirement coverage | >= 95 % | **63 / 63 = 100 %** | ✅ |
 | 3 | Open Critical / High defects | 0 | **0** | ✅ |
 | 4 | k6 smoke + load SLOs | all pass | all pass | ✅ |
 | 5 | k6 flash sale | orders = stock, stock 0 | 15 / 15 (CI), 50 / 50 (local, 300 buyers) | ✅ |
 | 6 | OWASP ZAP | 0 Medium / High | **0** (Low only, informational) | ✅ |
 | 7 | OSV-Scanner | 0 unaccepted CVSS >= 9 | **0 open, 0 accepted** (was 21; both Spring CVEs fixed by the Boot 4 upgrade) | ✅ |
-| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **97.5 % lines, 88.3 % branches** | ✅ |
-| 9 | Mutation score (PIT, business logic) | >= 84 % | **84.9 %** (was 65.5 %); test strength 97.5 % | ✅ |
+| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.0 % lines, 91.9 % branches** | ✅ |
+| 9 | Mutation score (PIT, business logic) | >= 84 % | **89.2 %** (was 65.5 %); test strength 99.0 % | ✅ |
 | 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, OpenAPI unchanged (34 paths)** | ✅ |
 | 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **13/13 pages clean** (the first 8 all failed before DEF-018) | ✅ |
-| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **32/32 Firefox 157, 32/32 Edge 154** (Chrome in criterion 1) | ✅ |
+| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **34/34 Firefox 157, 34/34 Edge 154** (Chrome in criterion 1) | ✅ |
 
 ## 3. Test execution
 
 | Suite | Tests | Passed | Failed | Skipped | Runs against |
 |---|---|---|---|---|---|
-| Backend unit + integration | 284 | 284 | 0 | 0 | H2 (PostgreSQL mode) + Flyway |
-| Automation: API, DB, security, BDD, UI | 299 | 299 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
-| **Total** | **583** | **583** | **0** | **0** | |
-| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 64 | 64 | 0 | 0 | headless Firefox 157 / Edge 154 |
-| Smoke against the Docker images | 44 | 44 | 0 | 0 | `docker compose --profile app` (postgres + backend + nginx storefront) |
+| Backend unit + integration | 352 | 352 | 0 | 0 | H2 (PostgreSQL mode) + Flyway |
+| Automation: API, DB, security, BDD, UI | 310 | 310 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
+| **Total** | **662** | **662** | **0** | **0** | |
+| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 68 | 68 | 0 | 0 | headless Firefox 157 / Edge 154 |
+| Smoke against the Docker images | 44 | 44 | 0 | 0 | `docker compose --profile app` (postgres + redis + backend + nginx storefront) |
 
-The automation total contains 43 Cucumber scenarios, 19 Selenium UI journeys, 13 accessibility page checks and 6 API contract tests; the rest are API,
+The automation total contains 43 Cucumber scenarios, 21 Selenium UI journeys, 13 accessibility page checks and 6 API contract tests; the rest are API,
 database and security tests. Figures come from the CI "Test totals" annotations (surefire XML).
 
 ## 4. Performance
@@ -88,8 +88,8 @@ Details: [Defect Reports](DEFECT_REPORTS.md).
 
 | Risk | Why accepted | Follow-up |
 |---|---|---|
-| Login lock is per instance (memory) | One backend instance | Redis when scaling out |
-| Logged-out token valid until expiry (1 h) | Short expiry | Refresh tokens / denylist |
+| Login lock falls back to per-instance memory while Redis is down | Logins keep working; each instance still locks after 5 failures | Alert on the outage counter |
+| Logged-out access token valid until expiry (max 15 min) | Refresh token is revoked at once; a denylist costs a lookup per request | Denylist if a shorter window is required |
 | Tomcat 11.0.26 / Jackson 3.1.7 pinned above Boot 4.1.1 | Fix advisories in the managed versions | Remove the pins when Boot ships them |
 | 8 surviving mutants (PIT) | 5 are equivalent (cannot change behaviour, e.g. Luhn `d > 9` vs `d >= 9`), 3 are defensive or housekeeping code | Reviewed one by one in docs/modules/MUTATION_BN.md |
 | Mock payment gateway | No real money in this release | Provider sandbox contract tests |

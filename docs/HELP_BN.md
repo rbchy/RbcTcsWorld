@@ -26,11 +26,13 @@
 | দোকান (storefront) | http://localhost:5173 |
 | Backend API | http://localhost:8081 (OpenAPI: `/v3/api-docs`) |
 | PostgreSQL | localhost:5432, database / user / password সব `ecommerce` |
+| Redis | localhost:6379 (login lockout-এর হিসাব) |
 | Jenkins | http://localhost:8080 |
 | অ্যাডমিন লগইন (শুধু development) | `admin@rbctcsworld.com` / `Admin@12345` |
 | কুপন | `WELCOME10` (চালু), `SAVE5` (চালু), `EXPIRED20` (মেয়াদ শেষ), `FUTURE15` (এখনো শুরু হয়নি), `DISABLED` (বন্ধ) |
 | টেস্ট কার্ড | `4242424242424242` পাস · `4000000000000002` declined · `4000000000009995` টাকা নেই |
 | ব্যবসার নিয়ম | $50 থেকে ফ্রি শিপিং (নইলে $5.99), কর ৬%, ৫ বার ভুল পাসওয়ার্ডে ১৫ মিনিট লক, ৩০ দিনের মধ্যে রিটার্ন |
+| Session | access token ১৫ মিনিট, refresh token ১৪ দিন (প্রতিবার ব্যবহারে বদলায়) |
 
 > Port 8080 ইচ্ছা করেই Jenkins-এর জন্য খালি রাখা হয়েছে, তাই API চলে 8081-এ।
 
@@ -45,13 +47,15 @@ flowchart LR
   U["ব্যবহারকারী<br/>browser / installed app / phone"] -->|":5173"| N["Storefront<br/>React + Vite<br/>(Docker-এ nginx)"]
   N -->|"/api/* proxy"| B["Backend<br/>Spring Boot 4.1, Java 21<br/>:8081"]
   B -->|"JDBC + Flyway"| D[("PostgreSQL 16<br/>:5432")]
+  B -->|"login lockout<br/>(Lettuce)"| R[("Redis 7<br/>:6379")]
   B -.->|"JWT login"| U
   SW["Service worker<br/>(offline পাতা)"] -.-> N
 ```
 
 - Storefront কখনো সরাসরি database-এ যায় না। সব কাজ `/api` দিয়ে backend-এ যায়।
 - Docker-এ nginx `/api`-কে backend-এ পাঠায়। Development-এ (`npm run dev`) একই কাজ করে Vite-এর proxy।
-- লগইনের পর backend একটা JWT token দেয়। Browser সেটা `localStorage`-এ রাখে আর প্রতিটা request-এ পাঠায়।
+- লগইনের পর backend দুটো token দেয়: ১৫ মিনিটের access token (JWT) আর ১৪ দিনের refresh token। Browser দুটোই `localStorage`-এ রাখে। Access token-এর মেয়াদ শেষ হলে storefront নিজেই refresh করে নেয়, ব্যবহারকারী টেরও পান না।
+- ভুল পাসওয়ার্ডের হিসাব থাকে Redis-এ, তাই একাধিক backend থাকলেও সবাই একই হিসাব দেখে। Redis বন্ধ হলেও login চলে।
 - Database-এর টেবিল আর demo ডেটা Flyway তৈরি করে (`backend/src/main/resources/db/migration`, V1 থেকে V7)।
 
 ### ২.২ টেস্ট সিস্টেম
@@ -234,8 +238,10 @@ flowchart TD
 | Repeat password | Password-এর সাথে হুবহু মিলতে হবে (শুধু রেজিস্ট্রেশনে) |
 
 - **Show password** টিক দিলে পাসওয়ার্ড দেখা যায়।
-- পরপর ৫ বার ভুল পাসওয়ার্ড দিলে ঐ ইমেইল ১৫ মিনিট লক থাকে (HTTP 429)। লক থাকলে অপেক্ষা করুন, অথবা development-এ backend restart দিন।
-- Log out: Topbar-এর **Log out**।
+- পরপর ৫ বার ভুল পাসওয়ার্ড দিলে ঐ ইমেইল ১৫ মিনিট লক থাকে (HTTP 429)। লক Redis-এ থাকে, তাই backend restart দিলেও খোলে না। Development-এ তাড়াতাড়ি খুলতে: `docker compose exec redis redis-cli FLUSHALL`।
+- লগইন থাকে ১৪ দিন পর্যন্ত (প্রতিবার ব্যবহারে নতুন করে শুরু হয়)। এর মধ্যে মাঝে মাঝে আবার লগইন করতে হয় না।
+- Log out: Topbar-এর **Log out**। এতে server-এও session বন্ধ হয়, অন্য কেউ token কপি করে রাখলেও আর কাজে লাগবে না।
+- "Session expired. Please log in again." দেখালে: refresh token-এর মেয়াদ শেষ, logout হয়েছে, অথবা একই token দুবার ব্যবহার হয়েছে (চুরির সন্দেহ)। আবার লগইন করুন।
 
 ### ৪.৩ কেনাকাটার পুরো পথ
 
@@ -489,7 +495,10 @@ flowchart TD
 | QA Reports সবুজ, কিন্তু build ফেল | পুরোনো রিপোর্ট পড়ছিল (DEF-022) | ঠিক করা হয়েছে, build-এর শুরুতে পুরোনো রিপোর্ট মোছে |
 | k6 "not run" অথচ চলেছে | রিপোর্টের ফোল্ডার মুছে যেত (DEF-025) | ঠিক করা হয়েছে, `git pull` |
 | UI টেস্ট লগইন পাতায় আটকে | token বসানোর পর পাতা reload হতো না | ঠিক করা হয়েছে (`loginWithToken` reload করে) |
-| লগইন হয় না, 429 | ৫ বার ভুল পাসওয়ার্ডে ১৫ মিনিট লক | অপেক্ষা করুন বা `docker compose --profile app restart backend` |
+| লগইন হয় না, 429 | ৫ বার ভুল পাসওয়ার্ডে ১৫ মিনিট লক (Redis-এ, restart-এ খোলে না) | অপেক্ষা করুন; development-এ `docker compose exec redis redis-cli FLUSHALL` |
+| `port 6379 is already allocated` | Mac-এ নিজের Redis চলছে | `brew services stop redis`, অথবা compose-এ port বদলান |
+| হঠাৎ লগইন পাতা, "Session expired" | refresh token বাতিল (১৪ দিনের মেয়াদ, logout, বা পুরোনো token আবার ব্যবহার) | আবার লগইন করুন |
+| Backend log-এ "Redis is not reachable" | Redis বন্ধ | `docker compose up -d redis`; ততক্ষণ login চলে, প্রতিটা backend নিজে গোনে |
 | কুপন কাজ করে না | `EXPIRED20`, `FUTURE15`, `DISABLED` ইচ্ছা করেই অচল (টেস্টের জন্য) | `WELCOME10` বা `SAVE5` |
 | Mac: "unidentified developer" | Gatekeeper | right-click → Open |
 | নতুন কোড দেওয়ার পরও পুরোনো পাতা | browser/service worker cache | Cmd+Shift+R; না হলে DevTools → Application → Service workers → Unregister |
@@ -517,7 +526,10 @@ flowchart TD
 | ফোন থেকে খোলে না | Firewall বা ভিন্ন Wi-Fi | একই নেটওয়ার্ক, firewall-এ Docker-কে অনুমতি |
 | PIT বা UI টেস্ট বেশি সময় নেয় | টেস্ট বাড়ছে | Jenkins-এ `RUN_MUTATION` বন্ধ রেখে দ্রুত build, রাতে পুরো build |
 | Real server-এ deploy | dev পাসওয়ার্ড আর JWT secret সবাই জানে | `ADMIN_EMAIL`, `ADMIN_PASSWORD` আর `JWT_SECRET` environment variable দিয়ে বদলান; HTTPS ব্যবহার করুন |
-| একাধিক backend চালালে login lock কাজ করে না | Lock-এর হিসাব এক backend-এর memory-তে থাকে | পরের ধাপের কাজ: Redis-এ lockout আর refresh token |
+| ৩০ সেকেন্ড পরেও পুরোনো refresh token ফেরত আসে (খুব ধীর নেটওয়ার্ক) | Grace period শেষ, তাই চুরি ধরা হয় | ব্যবহারকারী আবার লগইন করেন; দরকারে `REFRESH_GRACE_SECONDS` বাড়ান |
+| Redis-এর memory ভরে যায় | খুব বেশি আলাদা ইমেইলে আক্রমণ | `maxmemory 64mb` + `volatile-ttl`: সবচেয়ে আগে মেয়াদ শেষ হবে এমন key আগে যায় |
+| Redis-এ password বা TLS লাগবে (cloud) | Production Redis খোলা থাকে না | `REDIS_URL=rediss://:password@host:6380` (Lettuce নিজেই বোঝে) |
+| Token চুরির ঝুঁকি (XSS) | token `localStorage`-এ | কড়া CSP আছে; পরের ধাপ: refresh token HttpOnly cookie-তে |
 
 ---
 
@@ -549,10 +561,14 @@ brew services restart jenkins-lts
 git pull
 git checkout -b feature/x && git push -u origin feature/x
 
+# Redis (login lockout)
+docker compose exec redis redis-cli --scan --pattern 'rbc:login:*'   # কোন কোন lock/counter আছে
+docker compose exec redis redis-cli FLUSHALL                         # development-এ সব lock খোলা
+
 # খুঁজে দেখা
 lsof -i :8081            # কে port ব্যবহার করছে
 docker system df         # Docker কত জায়গা নিচ্ছে
 ipconfig getifaddr en0   # Mac-এর IP (ফোন থেকে খুলতে)
 ```
 
-**আরও বিস্তারিত:** [Storefront UI](modules/STOREFRONT_UI_BN.md) · [CI/CD + Jenkins](modules/CICD_BN.md) · [Performance](modules/PERFORMANCE_K6_BN.md) · [Security](modules/SECURITY_BN.md) · [Allure](modules/ALLURE_REPORT_BN.md) · [Defect Reports](qa/DEFECT_REPORTS.md)
+**আরও বিস্তারিত:** [Login, session, Redis](modules/AUTH_SESSIONS_BN.md) · [Storefront UI](modules/STOREFRONT_UI_BN.md) · [CI/CD + Jenkins](modules/CICD_BN.md) · [Performance](modules/PERFORMANCE_K6_BN.md) · [Security](modules/SECURITY_BN.md) · [Allure](modules/ALLURE_REPORT_BN.md) · [Defect Reports](qa/DEFECT_REPORTS.md)

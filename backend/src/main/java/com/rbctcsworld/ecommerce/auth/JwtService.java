@@ -64,6 +64,11 @@ public class JwtService {
                 .compact();
     }
 
+    /** Lifetime of a new access token, sent to the client as expiresIn. */
+    public long expiresInSeconds() {
+        return expirationMs / 1000;
+    }
+
     /** Returns the e-mail of a valid token; throws for anything else (JwtFilter then treats the caller as anonymous). */
     public String email(String token) {
         return Jwts.parser()

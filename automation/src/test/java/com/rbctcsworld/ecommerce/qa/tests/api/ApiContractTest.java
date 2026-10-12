@@ -61,11 +61,13 @@ class ApiContractTest {
     }
 
     @Test
-    @DisplayName("Auth: register and login return token, e-mail and role")
+    @DisplayName("Auth: register, login and refresh return both tokens, e-mail, role and expiresIn")
     void authContract() {
         String email = TestData.uniqueEmail();
         matches(auth.register(email, TestData.PASSWORD), 201, "auth");
-        matches(auth.login(email, TestData.PASSWORD), 200, "auth");
+        Response login = auth.login(email, TestData.PASSWORD);
+        matches(login, 200, "auth");
+        matches(auth.refresh(login.path("refreshToken")), 200, "auth");
     }
 
     @Test

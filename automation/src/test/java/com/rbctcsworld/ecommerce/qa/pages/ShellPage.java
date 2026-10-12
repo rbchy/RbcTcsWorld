@@ -39,6 +39,15 @@ public class ShellPage extends BasePage {
         return wait.until(d -> isShown("nav-user") && email.equals(textOrEmpty("nav-user")));
     }
 
+    public void logout() {
+        click("nav-logout");
+    }
+
+    /** Waits until the top bar offers "Log in" again. */
+    public boolean waitLoggedOut() {
+        return wait.until(d -> isShown("nav-login") && !isShown("nav-user"));
+    }
+
     public boolean adminMenuShown() {
         return isShown("admin-menu");
     }

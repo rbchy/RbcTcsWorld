@@ -121,13 +121,25 @@ public abstract class BasePage {
 
     /** Same, with the role the backend returned at login (ADMIN shows the store-admin menu). */
     public static void loginWithToken(WebDriver driver, String token, String email, String role) {
+        loginWithTokens(driver, token, null, email, role);
+    }
+
+    /** Access token + refresh token, as the storefront keeps them after a real login. */
+    public static void loginWithTokens(WebDriver driver, String token, String refreshToken, String email, String role) {
         driver.get(TestConfig.uiUrl() + "/#/");
         ((JavascriptExecutor) driver).executeScript(
                 "localStorage.setItem('token', arguments[0]); localStorage.setItem('email', arguments[1]);"
-                        + "localStorage.setItem('role', arguments[2]);", token, email, role);
+                        + "localStorage.setItem('role', arguments[2]);"
+                        + "if (arguments[3]) localStorage.setItem('refreshToken', arguments[3]);",
+                token, email, role, refreshToken);
         // The app reads the session once at start-up, and a later driver.get() that only changes the
         // #route does not reload the page, so reload here: every caller then starts logged in.
         driver.navigate().refresh();
+    }
+
+    /** A value the storefront keeps in localStorage (token, refreshToken, email, role). */
+    public String stored(String key) {
+        return (String) ((JavascriptExecutor) driver).executeScript("return localStorage.getItem(arguments[0]);", key);
     }
 
     public String title() {

@@ -1,12 +1,12 @@
 # Two ways to use this file:
 #
-#   docker compose up -d                          -> PostgreSQL only (daily development: run the backend
+#   docker compose up -d                          -> PostgreSQL + Redis only (daily development: run the backend
 #                                                    from Eclipse / "mvn spring-boot:run" and "npm run dev")
 #   docker compose --profile app up -d --build    -> the WHOLE application in containers:
-#                                                    PostgreSQL + backend (8081) + storefront (http://localhost:5173)
+#                                                    PostgreSQL + Redis + backend (8081) + storefront (http://localhost:5173)
 #   docker compose --profile app down             -> stop it (add -v to also delete the database volume)
 #
-# The backend waits until PostgreSQL is healthy, the storefront until the backend is healthy.
+# The backend waits until PostgreSQL and Redis are healthy, the storefront until the backend is healthy.
 name: rbctcsworld
 
 services:
@@ -24,6 +24,19 @@ services:
       timeout: 5s
       retries: 20
 
+  # Login lockout counters, shared by every backend instance (LOGIN_STORE=redis). Short-lived keys that
+  # expire by themselves, so no persistence: a Redis restart only forgets locks of at most 15 minutes.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-ttl"]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+
   backend:
     profiles: ["app"]
     build: ./backend
@@ -34,9 +47,13 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-this-development-secret-key-which-must-be-long-enough-123456789}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@rbctcsworld.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
+      LOGIN_STORE: ${LOGIN_STORE:-redis}
+      REDIS_URL: redis://redis:6379
     ports: ["8081:8081"]
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     mem_limit: 768m
 

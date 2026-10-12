@@ -1,8 +1,12 @@
 package com.rbctcsworld.ecommerce.qa.tests.ui;
 
+import com.rbctcsworld.ecommerce.qa.api.AuthClient;
+import com.rbctcsworld.ecommerce.qa.database.DatabaseUtils;
 import com.rbctcsworld.ecommerce.qa.drivers.DriverFactory;
+import com.rbctcsworld.ecommerce.qa.pages.BasePage;
 import com.rbctcsworld.ecommerce.qa.pages.LoginPage;
 import com.rbctcsworld.ecommerce.qa.pages.OrdersPage;
+import com.rbctcsworld.ecommerce.qa.pages.ShellPage;
 import com.rbctcsworld.ecommerce.qa.reporting.ScreenshotOnFailure;
 import com.rbctcsworld.ecommerce.qa.testdata.Fixtures;
 import com.rbctcsworld.ecommerce.qa.testdata.TestData;
@@ -16,8 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openqa.selenium.WebDriver;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tag("ui")
 @Epic("Storefront UI")
@@ -59,5 +67,54 @@ class UiAuthTest {
         login.submit(c.email(), TestData.PASSWORD);
         OrdersPage orders = new OrdersPage(driver).waitLoaded();
         assertTrue(orders.isEmpty(), "back on My orders, which is empty for a new customer");
+    }
+
+    @Test
+    @DisplayName("Expired access token: the storefront refreshes the session silently and the page still loads")
+    void silentRefresh() {
+        String email = TestData.uniqueEmail();
+        String refresh = new AuthClient().register(email, TestData.PASSWORD).then().statusCode(201)
+                .extract().path("refreshToken");
+        // the access token is no longer valid (expired after 15 minutes, simulated with a dead token)
+        BasePage.loginWithTokens(driver, "expired.access.token", refresh, email, "CUSTOMER");
+
+        OrdersPage orders = new OrdersPage(driver).open().waitLoaded();
+
+        assertAll(
+                () -> assertTrue(orders.isEmpty(), "My orders loaded instead of the login form"),
+                () -> assertTrue(orders.stored("token").startsWith("eyJ"), "a real JWT replaced the dead token"),
+                () -> assertNotEquals(refresh, orders.stored("refreshToken"), "refresh token rotated"));
+    }
+
+    @Test
+    @DisplayName("Log out ends the session on the server: the refresh token is revoked in the database")
+    void logoutRevokesOnTheServer() {
+        assumeTrue(DatabaseUtils.isAvailable(), "database not reachable from the tests");
+        String email = TestData.uniqueEmail();
+        var session = new AuthClient().register(email, TestData.PASSWORD).then().statusCode(201).extract();
+        String refresh = session.path("refreshToken");
+        BasePage.loginWithTokens(driver, session.path("token"), refresh, email, "CUSTOMER");
+        ShellPage shell = new ShellPage(driver).open("/");
+        assertTrue(shell.waitLoggedInAs(email));
+
+        shell.logout();
+
+        assertAll(
+                () -> assertTrue(shell.waitLoggedOut(), "top bar offers Log in again"),
+                () -> assertNull(shell.stored("refreshToken"), "browser forgot the refresh token"),
+                () -> assertTrue(revokedInDatabase(refresh), "server revoked it (checked in the database, not by using it)"));
+    }
+
+    /** The logout call runs in the background; poll the row instead of sleeping a fixed time. */
+    private static boolean revokedInDatabase(String refresh) throws Exception {
+        String hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(refresh.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        for (int i = 0; i < 20; i++) {
+            Object n = DatabaseUtils.scalar(
+                    "select count(*) from refresh_tokens where token_hash = ? and revoked_at is not null", hash);
+            if (((Number) n).intValue() == 1) return true;
+            Thread.sleep(250);
+        }
+        return false;
     }
 }

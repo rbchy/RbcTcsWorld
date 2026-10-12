@@ -32,6 +32,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-022](#def-022) | Jenkins QA Reports page said "all gates passed" for a build that failed in its first stage | Test infrastructure (reporting) | High | P1 | Reviewing build #30 | Closed |
 | [DEF-023](#def-023) | Admin product search box promised "name, SKU or category" but searched names only | Product (UI) | Low | P3 | UI test checked against the API | Closed |
 | [DEF-024](#def-024) | Safari: no UI test could type into a field (11 of 32 UI tests failed) | Test code (cross-browser) | High | P1 | First Safari runs on Jenkins (#38-#40) | Closed |
+| [DEF-025](#def-025) | Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed | Test infrastructure (reporting) | Medium | P2 | Reviewing build #41 | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -50,7 +51,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | Accessibility tests (axe-core, WCAG 2.1 AA) | DEF-018 |
 | Cross-browser CI (Firefox, Edge) | DEF-019, DEF-020 |
 | Runner canary (next CI image) | DEF-021 |
-| Checking a report against the build log | DEF-022 |
+| Checking a report against the build log | DEF-022, DEF-025 |
 | UI test that re-checks every step through the API | DEF-023 |
 | A fourth browser (Safari on the Jenkins Mac) | DEF-024 |
 
@@ -584,6 +585,35 @@ character (works wherever the caret is, fires React's onChange like a user), the
 
 **Lesson:** a screenshot answered in a minute what the stack trace could not - the field was empty, not
 wrong. Keyboard shortcuts in a test helper are platform behaviour, not test logic.
+
+---
+
+## DEF-025
+**Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Medium / P2 - a passed performance gate looked skipped; the report hid real evidence |
+| Component | `Jenkinsfile` (cleanup step), `performance/k6run.sh` |
+| Environment | Jenkins on macOS, build #41 (Safari, all other gates green) |
+
+**Symptoms:** the QA Reports page said "Performance (k6): not run". The build log showed the smoke, flash-sale
+and catalog tests passing, followed by `could not open 'performance/reports/smoke-summary.json': no such
+file or directory`.
+
+**Root cause:** the DEF-022 fix cleans old reports at the start of every build with
+`rm -rf performance/reports`, which removed the folder itself (and its `.gitkeep`). k6 writes its summary
+there but does not create the folder, and it only logs that error - the gate still passes. GitHub Actions
+never saw it because every job starts from a fresh checkout that contains the folder.
+
+**Fix:** the cleanup removes `performance/reports/*` and keeps the folder; `k6run.sh` creates the folder
+before every run; the Jenkins stage fails if a k6 summary file is missing, so "ran but unreported" can no
+longer look like "not run".
+
+**Regression test:** the summary-file check in the Jenkins `Performance gates (k6)` stage.
+
+**Lesson:** a fix for one report defect (DEF-022) introduced the next one. Every report value needs a source
+that is checked, including "this stage ran".
 
 ---
 

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Failed logins counted in Redis, shared by every backend instance and kept across restarts.
@@ -28,6 +29,8 @@ class RedisLoginAttemptStore implements LoginAttemptStore {
     private final long windowMillis;
     private final long lockMillis;
     private volatile Instant lastWarning = Instant.MIN;
+    private final AtomicLong outages = new AtomicLong();
+    private final AtomicLong warnings = new AtomicLong();
 
     RedisLoginAttemptStore(RedisOps redis, LoginAttemptStore fallback, Clock clock,
                            int maxFailures, Duration window, Duration lock) {
@@ -50,8 +53,8 @@ class RedisLoginAttemptStore implements LoginAttemptStore {
     @Override
     public long lockRemainingMillis(String email) {
         try {
-            long ttl = redis.ttlMillis(lockKey(email));
-            return ttl > 0 ? ttl : 0;
+            return Math.max(0, redis.ttlMillis(lockKey(email)));      // -2 = no lock key
+
         } catch (RuntimeException e) {
             unavailable(e);
             return fallback.lockRemainingMillis(email);
@@ -93,10 +96,22 @@ class RedisLoginAttemptStore implements LoginAttemptStore {
         redis.close();
     }
 
+    /** Calls answered by the in-memory fallback because Redis failed. */
+    long outages() {
+        return outages.get();
+    }
+
+    /** Warnings written to the log (at most one per minute). */
+    long warnings() {
+        return warnings.get();
+    }
+
     private void unavailable(RuntimeException e) {
+        outages.incrementAndGet();
         Instant now = clock.instant();
         if (now.isAfter(lastWarning.plusSeconds(60))) {
             lastWarning = now;
+            warnings.incrementAndGet();
             log.warn("Redis is not reachable, login lockout uses the in-memory fallback: {}", e.toString());
         }
     }

@@ -54,4 +54,18 @@ class InMemoryLoginAttemptStoreTest {
         assertThat(longLock.lockRemainingMillis("locked@test.com")).isEqualTo(14 * 60_000L);
         assertThat(longLock.tracked()).isEqualTo(2);
     }
+
+    @Test
+    void unknownEmailIsNeitherLockedNorCounted() {
+        assertThat(store.lockRemainingMillis("nobody@test.com")).isZero();
+        assertThat(store.failures("nobody@test.com")).isZero();
+    }
+
+    @Test
+    void exactlyTenThousandTrackedIsStillBelowTheCleanupLimit() {
+        for (int i = 0; i < 10_000; i++) store.recordFailure("user" + i + "@test.com");
+        clock.advance(Duration.ofMinutes(16));
+        store.recordFailure("new@test.com");                       // 10,000 is not MORE than the limit
+        assertThat(store.tracked()).isEqualTo(10_001);
+    }
 }

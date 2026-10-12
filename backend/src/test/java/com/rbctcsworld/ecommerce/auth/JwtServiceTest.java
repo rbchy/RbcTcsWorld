@@ -96,4 +96,11 @@ class JwtServiceTest {
                 .as("missing secret: a clear start-up error, not a NullPointerException")
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("32 bytes");
     }
+
+    @Test
+    void expiresInIsTheLifetimeInSeconds() {
+        org.assertj.core.api.Assertions.assertThat(jwt.expiresInSeconds()).isEqualTo(60L);
+        org.assertj.core.api.Assertions.assertThat(new JwtService(SECRET, 900_000, new MockEnvironment()).expiresInSeconds())
+                .isEqualTo(900L);
+    }
 }

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 
-/** Tiny global session store: token + email + role in localStorage, change events for the header. */
+/**
+ * Tiny global session store in localStorage, change events for the header:
+ * token (access, 15 min) + refreshToken (14 days, rotated) + email + role.
+ */
 const listeners = new Set();
 
 export function getSession() {
@@ -8,15 +11,16 @@ export function getSession() {
   return token ? { token, email: localStorage.getItem('email'), role: localStorage.getItem('role') } : null;
 }
 
-export function saveSession({ token, email, role }) {
+export function saveSession({ token, email, role, refreshToken }) {
   localStorage.setItem('token', token);
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
   localStorage.setItem('email', email);
   localStorage.setItem('role', role);
   listeners.forEach(l => l());
 }
 
 export function clearSession() {
-  ['token', 'email', 'role'].forEach(k => localStorage.removeItem(k));
+  ['token', 'refreshToken', 'email', 'role'].forEach(k => localStorage.removeItem(k));
   listeners.forEach(l => l());
 }
 

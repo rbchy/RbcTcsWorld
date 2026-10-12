@@ -139,4 +139,11 @@ class AuthServiceTest {
         verify(repo, never()).findByEmail(any());
         verify(encoder, never()).matches(any(), eq("hash"));
     }
+
+    @Test
+    void missingEmailIsAnInvalidLoginNotACrash() {
+        when(repo.findByEmail(null)).thenReturn(Optional.empty());
+        when(encoder.encode(anyString())).thenReturn("dummy-hash");
+        assertThatThrownBy(() -> service.login(null, "whatever")).isInstanceOf(InvalidCredentialsException.class);
+    }
 }

@@ -6,10 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -31,10 +28,11 @@ class RedisLoginAttemptStoreTest {
     @Mock RedisOps redis;
     @Mock LoginAttemptStore fallback;
     private RedisLoginAttemptStore store;
+    private LoginAttemptServiceTest.TestClock clock;
 
     @BeforeEach
     void setUp() {
-        Clock clock = Clock.fixed(Instant.parse("2026-10-01T12:00:00Z"), ZoneOffset.UTC);
+        clock = new LoginAttemptServiceTest.TestClock();
         store = new RedisLoginAttemptStore(redis, fallback, clock, 5, Duration.ofMinutes(15), Duration.ofMinutes(10));
     }
 
@@ -100,6 +98,7 @@ class RedisLoginAttemptStoreTest {
         when(redis.ttlMillis(anyString())).thenThrow(down());
         when(fallback.lockRemainingMillis(EMAIL)).thenReturn(1234L);
         assertThat(store.lockRemainingMillis(EMAIL)).isEqualTo(1234L);
+        assertThat(store.outages()).isEqualTo(1);
     }
 
     @Test
@@ -107,6 +106,7 @@ class RedisLoginAttemptStoreTest {
         when(redis.recordFailure(anyString(), anyString(), anyLong(), anyInt(), anyLong())).thenThrow(down());
         store.recordFailure(EMAIL);
         verify(fallback).recordFailure(EMAIL);
+        assertThat(store.outages()).isEqualTo(1);
     }
 
     @Test
@@ -114,6 +114,7 @@ class RedisLoginAttemptStoreTest {
         doThrow(down()).when(redis).delete(FAIL);
         store.reset(EMAIL);
         verify(fallback).reset(EMAIL);
+        assertThat(store.outages()).isEqualTo(1);
     }
 
     @Test
@@ -121,13 +122,35 @@ class RedisLoginAttemptStoreTest {
         when(redis.count(anyString())).thenThrow(down());
         when(fallback.failures(EMAIL)).thenReturn(2);
         assertThat(store.failures(EMAIL)).isEqualTo(2);
+        assertThat(store.outages()).isEqualTo(1);
     }
 
     @Test
-    void repeatedOutagesKeepWorking() {
+    void healthyRedisIsNoOutage() {
+        when(redis.ttlMillis(LOCK)).thenReturn(-2L);
+        store.lockRemainingMillis(EMAIL);
+        store.recordFailure(EMAIL);
+        store.reset(EMAIL);
+        assertThat(store.outages()).isZero();
+        assertThat(store.warnings()).isZero();
+    }
+
+    @Test
+    void anOutageIsLoggedOncePerMinuteNotOncePerLogin() {
         when(redis.ttlMillis(anyString())).thenThrow(down());
         when(fallback.lockRemainingMillis(EMAIL)).thenReturn(0L);
+
         for (int i = 0; i < 3; i++) assertThat(store.lockRemainingMillis(EMAIL)).isZero();
+        assertThat(store.outages()).isEqualTo(3);
+        assertThat(store.warnings()).isEqualTo(1);
+
+        clock.advance(Duration.ofSeconds(60));                         // exactly a minute: still quiet
+        store.lockRemainingMillis(EMAIL);
+        assertThat(store.warnings()).isEqualTo(1);
+
+        clock.advance(Duration.ofSeconds(1));
+        store.lockRemainingMillis(EMAIL);
+        assertThat(store.warnings()).isEqualTo(2);
     }
 
     @Test

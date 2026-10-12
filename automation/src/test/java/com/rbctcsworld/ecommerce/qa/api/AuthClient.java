@@ -7,12 +7,28 @@ import java.util.Map;
 
 public class AuthClient extends ApiClient {
 
+    public AuthClient() {
+    }
+
+    /** Talks to another backend instance (see TestConfig.secondBaseUrl). */
+    public AuthClient(String baseUrl) {
+        super(baseUrl);
+    }
+
     public Response register(String email, String password) {
         return anonymous().body(Map.of("email", email, "password", password)).post("/api/auth/register");
     }
 
     public Response login(String email, String password) {
         return anonymous().body(Map.of("email", email, "password", password)).post("/api/auth/login");
+    }
+
+    public Response refresh(String refreshToken) {
+        return anonymous().body(Map.of("refreshToken", refreshToken)).post("/api/auth/refresh");
+    }
+
+    public Response logout(String refreshToken) {
+        return anonymous().body(Map.of("refreshToken", refreshToken)).post("/api/auth/logout");
     }
 
     /** Registers a fresh customer and returns its JWT. */

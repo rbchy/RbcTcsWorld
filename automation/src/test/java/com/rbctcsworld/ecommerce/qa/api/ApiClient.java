@@ -17,9 +17,20 @@ public abstract class ApiClient {
 
     private static final AllureRestAssured ALLURE = new AllureRestAssured();
 
+    private final String baseUri;
+
+    protected ApiClient() {
+        this(TestConfig.baseUrl());
+    }
+
+    /** Another backend instance, e.g. the second one behind the same database and Redis. */
+    protected ApiClient(String baseUri) {
+        this.baseUri = baseUri;
+    }
+
     protected RequestSpecification anonymous() {
         return given().spec(new RequestSpecBuilder()
-                .setBaseUri(TestConfig.baseUrl())
+                .setBaseUri(baseUri)
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .addFilter(ALLURE)

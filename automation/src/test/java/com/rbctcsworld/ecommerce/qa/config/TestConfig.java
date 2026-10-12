@@ -13,6 +13,14 @@ public final class TestConfig {
         return get("baseUrl", "http://localhost:8081");
     }
 
+    /**
+     * A second backend instance on the same database and Redis (CI starts one on 8082). Empty = not
+     * available; tests that need it are skipped.
+     */
+    public static String secondBaseUrl() {
+        return get("secondBaseUrl", "");
+    }
+
     public static String uiUrl() {
         return get("uiUrl", "http://localhost:5173");
     }

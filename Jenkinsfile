@@ -46,7 +46,8 @@ pipeline {
             steps {
                 // fail in seconds with a clear message instead of in the middle of the pipeline
                 // reports of an earlier build must never show up as this build's result (build #30)
-                sh 'rm -rf qa-reports backend/target automation/target performance/reports osv-results.json security/zap/zap-report.*'
+                // performance/reports/* keeps the folder (and its .gitkeep): k6 cannot create it (build #41, DEF-025)
+                sh 'rm -rf qa-reports backend/target automation/target performance/reports/* osv-results.json security/zap/zap-report.*'
                 sh '''
                     for t in java mvn docker python3 jq curl; do
                       command -v "$t" >/dev/null || { echo "MISSING TOOL: $t (PATH=$PATH)"; exit 1; }
@@ -174,6 +175,11 @@ pipeline {
                     performance/k6run.sh -e DURATION=30s performance/tests/smoke.js
                     performance/k6run.sh -e BUYERS=60 -e STOCK=15 performance/tests/flash-sale.js
                     performance/k6run.sh -e DURATION=20s performance/tests/catalog.js
+                    # k6 only logs an error when it cannot save its summary; without the files the
+                    # QA Reports page would say "not run" for a stage that ran, so fail loudly instead
+                    for t in smoke flash-sale catalog; do
+                      test -s "performance/reports/$t-summary.json" || { echo "k6 summary missing: performance/reports/$t-summary.json"; exit 1; }
+                    done
                 '''
             }
             post {

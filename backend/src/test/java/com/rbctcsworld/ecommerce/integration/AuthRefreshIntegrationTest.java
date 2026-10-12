@@ -68,10 +68,21 @@ class AuthRefreshIntegrationTest {
     void reusingASpentTokenLogsOutTheWholeSession() throws Exception {
         String first = register().get("refreshToken").asString();
         String second = json(refresh(first).andExpect(status().isOk())).get("refreshToken").asString();
+        String third = json(refresh(second).andExpect(status().isOk())).get("refreshToken").asString();
 
-        refresh(first).andExpect(status().isUnauthorized())                         // stolen copy comes back
+        refresh(first).andExpect(status().isUnauthorized())          // stolen copy comes back after its successor was used
                 .andExpect(jsonPath("$.message").value("Session expired. Please log in again."));
-        refresh(second).andExpect(status().isUnauthorized());                       // family revoked: real user too
+        refresh(third).andExpect(status().isUnauthorized());         // family revoked: the real user logs in again
+    }
+
+    @Test
+    void aLostResponseIsNotTheft() throws Exception {
+        String first = register().get("refreshToken").asString();
+        String lost = json(refresh(first).andExpect(status().isOk())).get("refreshToken").asString();   // never arrived
+
+        String retry = json(refresh(first).andExpect(status().isOk())).get("refreshToken").asString();  // within 30 s
+        assertThat(retry).isNotEqualTo(lost);
+        refresh(retry).andExpect(status().isOk());                   // the session goes on
     }
 
     @Test

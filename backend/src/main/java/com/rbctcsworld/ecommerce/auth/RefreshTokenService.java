@@ -20,6 +20,10 @@ import java.util.UUID;
  *  - Every refresh uses the token up and returns a new one (rotation). The tokens of one login form a family.
  *  - A used token that comes back was copied: the thief or the real user is replaying it. Both get logged
  *    out by revoking the whole family; the real user simply logs in again.
+ *  - Grace period (as Okta/Auth0): a response can get lost - the page reloads or the tab closes while the
+ *    refresh is on the way, and the browser still holds the spent token. Within GRACE seconds the spent
+ *    token is accepted once more, but only while its successor is still unused and the session is alive.
+ *    Two tabs refreshing at the same moment are covered by the same rule.
  *  - Logout revokes the family, so the refresh token is worthless afterwards (the access token still lives
  *    until it expires, at most 15 minutes - the reason it is kept short).
  */
@@ -32,13 +36,16 @@ public class RefreshTokenService {
     private final UserRepository users;
     private final Clock clock;
     private final Duration lifetime;
+    private final Duration grace;
 
     public RefreshTokenService(RefreshTokenRepository repo, UserRepository users, Clock clock,
-                               @Value("${app.jwt.refresh-days:14}") long refreshDays) {
+                               @Value("${app.jwt.refresh-days:14}") long refreshDays,
+                               @Value("${app.jwt.refresh-grace-seconds:30}") long graceSeconds) {
         this.repo = repo;
         this.users = users;
         this.clock = clock;
         this.lifetime = Duration.ofDays(refreshDays);
+        this.grace = Duration.ofSeconds(graceSeconds);
     }
 
     public record Rotated(AppUser user, String refreshToken) {
@@ -60,17 +67,31 @@ public class RefreshTokenService {
     public Rotated rotate(String rawToken) {
         RefreshToken token = find(rawToken);
         LocalDateTime now = LocalDateTime.now(clock);
-        if (token.getRevokedAt() != null) {
-            repo.revokeFamily(token.getFamilyId(), now);             // replay of a used token
-            throw new InvalidRefreshTokenException();
-        }
         if (!now.isBefore(token.getExpiresAt())) {
             throw new InvalidRefreshTokenException();
         }
-        if (repo.revokeIfActive(token.getId(), now) == 0) {
-            repo.revokeFamily(token.getFamilyId(), now);             // lost a race against the same token
-            throw new InvalidRefreshTokenException();
+        if (token.getRevokedAt() == null && repo.revokeIfActive(token.getId(), now) == 1) {
+            return successor(token, now);                            // the normal case
         }
+        // spent - earlier, or a moment ago by a parallel request (then read its new state)
+        RefreshToken spent = token.getRevokedAt() != null ? token : find(rawToken);
+        if (lostResponse(spent, now)) {
+            return successor(spent, now);
+        }
+        repo.revokeFamily(spent.getFamilyId(), now);                 // replay of a used token: end the session
+        throw new InvalidRefreshTokenException();
+    }
+
+    /** Spent within the grace period, its successor unused, the session still alive. */
+    private boolean lostResponse(RefreshToken spent, LocalDateTime now) {
+        LocalDateTime revokedAt = spent.getRevokedAt();
+        return revokedAt != null
+                && now.isBefore(revokedAt.plus(grace))
+                && !repo.existsByFamilyIdAndRevokedAtAfter(spent.getFamilyId(), revokedAt)
+                && repo.existsByFamilyIdAndRevokedAtIsNull(spent.getFamilyId());
+    }
+
+    private Rotated successor(RefreshToken token, LocalDateTime now) {
         AppUser user = users.findById(token.getUserId()).orElseThrow(InvalidRefreshTokenException::new);
         return new Rotated(user, create(token.getUserId(), token.getFamilyId(), now));
     }

@@ -88,8 +88,8 @@ Details: [Defect Reports](DEFECT_REPORTS.md).
 
 | Risk | Why accepted | Follow-up |
 |---|---|---|
-| Login lock is per instance (memory) | One backend instance | Redis when scaling out |
-| Logged-out token valid until expiry (1 h) | Short expiry | Refresh tokens / denylist |
+| Login lock falls back to per-instance memory while Redis is down | Logins keep working; each instance still locks after 5 failures | Alert on the outage counter |
+| Logged-out access token valid until expiry (max 15 min) | Refresh token is revoked at once; a denylist costs a lookup per request | Denylist if a shorter window is required |
 | Tomcat 11.0.26 / Jackson 3.1.7 pinned above Boot 4.1.1 | Fix advisories in the managed versions | Remove the pins when Boot ships them |
 | 8 surviving mutants (PIT) | 5 are equivalent (cannot change behaviour, e.g. Luhn `d > 9` vs `d >= 9`), 3 are defensive or housekeeping code | Reviewed one by one in docs/modules/MUTATION_BN.md |
 | Mock payment gateway | No real money in this release | Provider sandbox contract tests |

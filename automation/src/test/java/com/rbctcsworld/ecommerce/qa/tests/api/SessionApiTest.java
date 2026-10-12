@@ -54,14 +54,24 @@ class SessionApiTest {
     }
 
     @Test
-    @DisplayName("A spent refresh token used again ends the whole session (theft detection)")
+    @DisplayName("A spent refresh token used again after its successor ends the whole session (theft detection)")
     void reuseRevokesTheFamily() {
         String stolen = newSession().path("refreshToken");
-        String current = auth.refresh(stolen).then().statusCode(200).extract().path("refreshToken");
+        String next = auth.refresh(stolen).then().statusCode(200).extract().path("refreshToken");
+        String current = auth.refresh(next).then().statusCode(200).extract().path("refreshToken");
 
         auth.refresh(stolen).then().statusCode(401)
                 .body("message", equalTo("Session expired. Please log in again."));
         auth.refresh(current).then().statusCode(401);                // the real user must log in again too
+    }
+
+    @Test
+    @DisplayName("Lost response (page reloaded during refresh): the spent token works once more within 30 s")
+    void lostResponseIsNotTheft() {
+        String first = newSession().path("refreshToken");
+        auth.refresh(first).then().statusCode(200);                  // answer never reached the browser
+        String retry = auth.refresh(first).then().statusCode(200).extract().path("refreshToken");
+        auth.refresh(retry).then().statusCode(200);
     }
 
     @Test

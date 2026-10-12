@@ -161,9 +161,10 @@ three regressions before the merge (a new Tomcat CVE, DEF-016, DEF-017).
 Stating these is part of the test report, not a footnote.
 
 - **Payments are mocked.** A deterministic gateway with test card numbers; no provider sandbox yet.
-- **Login lockout is held in memory.** Correct for one instance; several instances would need a shared
-  store (e.g. Redis).
-- **No refresh tokens.** Access tokens expire and the user logs in again.
+- **Tokens live in the browser's localStorage.** An XSS bug could read them; the strict CSP and React's
+  escaping reduce that risk. HttpOnly cookies would remove it but bring CSRF handling with them.
+- **A logged-out access token stays valid until it expires** (at most 15 minutes). The refresh token is
+  revoked at once; a denylist for access tokens was judged not worth a database call on every request.
 - **Automated accessibility rules find part of the problems.** Keyboard-only, screen-reader and zoom
   checks are manual items on the release checklist.
 - **Safari runs only on a Mac** (Jenkins `BROWSER=safari`, no headless mode); no mobile devices.
@@ -187,7 +188,7 @@ Stating these is part of the test report, not a footnote.
 
 ## Run it
 
-**Whole application, one command** (PostgreSQL + backend + storefront):
+**Whole application, one command** (PostgreSQL + Redis + backend + storefront):
 
 ```bash
 docker compose --profile app up -d --build        # storefront http://localhost:5173, API http://localhost:8081
@@ -262,6 +263,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 | Foundation, cart, orders + inventory, checkout + payment, fulfilment + returns, reviews + wishlist | [Module 0](docs/modules/MODULE_00_FOUNDATION_BN.md) · [1](docs/modules/MODULE_01_CART_BN.md) · [2](docs/modules/MODULE_02_ORDERS_INVENTORY_BN.md) · [3](docs/modules/MODULE_03_CHECKOUT_PAYMENT_BN.md) · [4](docs/modules/MODULE_04_FULFILLMENT_RETURNS_BN.md) · [5](docs/modules/MODULE_05_REVIEWS_WISHLIST_BN.md) |
 | Storefront and UI tests, cross-browser | [FRONTEND_UI_TESTS_BN](docs/modules/FRONTEND_UI_TESTS_BN.md) |
 | Menu, store-admin panel, six languages, help, desktop | [STOREFRONT_UI_BN](docs/modules/STOREFRONT_UI_BN.md) |
+| Login sessions: refresh tokens, Redis login lockout | [AUTH_SESSIONS_BN](docs/modules/AUTH_SESSIONS_BN.md) |
 | API contract and accessibility | [API_CONTRACT_A11Y_BN](docs/modules/API_CONTRACT_A11Y_BN.md) |
 | Performance (k6) | [PERFORMANCE_K6_BN](docs/modules/PERFORMANCE_K6_BN.md) |
 | Security | [SECURITY_BN](docs/modules/SECURITY_BN.md) |

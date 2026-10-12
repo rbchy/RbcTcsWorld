@@ -24,6 +24,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("update RefreshToken t set t.revokedAt = :now where t.familyId = :familyId and t.revokedAt is null")
     int revokeFamily(@Param("familyId") String familyId, @Param("now") LocalDateTime now);
 
+    /** Was any token of the family revoked after this moment? Then the successor was used (or logout/theft). */
+    boolean existsByFamilyIdAndRevokedAtAfter(String familyId, LocalDateTime moment);
+
+    /** Is the session still alive (a usable token in the family)? */
+    boolean existsByFamilyIdAndRevokedAtIsNull(String familyId);
+
     /** Housekeeping at login: expired tokens of this user are useless, so they are removed. */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("delete from RefreshToken t where t.userId = :userId and t.expiresAt < :now")

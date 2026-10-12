@@ -58,8 +58,8 @@
 
 ## জেনেশুনে মেনে নেওয়া ঝুঁকি (documented trade-offs)
 - **Lockout:** কেউ অন্যের ইমেইল জানলে ১৫ মিনিটের জন্য সেই account lock করে দিতে পারে। স্থায়ী lock না রেখে অস্থায়ী রাখায় ক্ষতি কম।
-- **Lock-এর তথ্য memory-তে থাকে।** একাধিক server থাকলে এটা Redis-এ নিতে হবে।
-- **Logout:** logout করলে token শুধু ব্রাউজার থেকে মোছে, server-এ token মেয়াদ পর্যন্ত (১ ঘণ্টা) বৈধ থাকে। পরবর্তী উন্নতি হতে পারে token-এর denylist বা short-lived access token আর refresh token।
+- **Lock-এর তথ্য এখন Redis-এ** (`LOGIN_STORE=redis`), সব backend একই হিসাব দেখে। Redis বন্ধ থাকলে login চলতে থাকে, প্রতিটা backend নিজের memory-তে গোনে। বিস্তারিত: [AUTH_SESSIONS_BN](AUTH_SESSIONS_BN.md)।
+- **Logout:** refresh token সাথে সাথে server-এ বাতিল হয়। কিন্তু access token তার মেয়াদ পর্যন্ত (সর্বোচ্চ ১৫ মিনিট) বৈধ থাকে। প্রতিটা request-এ database দেখতে হবে বলে access token-এর denylist রাখা হয়নি।
 - **Spring Boot 3.5-এর open-source সাপোর্ট জুন ২০২৬-এ শেষ।** দীর্ঘমেয়াদি সমাধান Spring Boot 4-এ যাওয়া। ততদিন OSV আর "newest versions" ধাপ নজর রাখবে।
 - **Register-এ "Email already registered" বার্তা দেখে বোঝা যায় ইমেইলটা আছে।** বেশিরভাগ e-commerce সাইট ব্যবহার সহজ রাখতে এটা মেনে নেয়।
 
@@ -72,7 +72,7 @@ mvn -f automation/pom.xml clean test -Dgroups=security
 mvn -f automation/pom.xml allure:serve                       # Epic "Security"
 curl -s http://localhost:8081/v3/api-docs | head -c 300      # OpenAPI বিবরণ
 ```
-নিজে ৫ বার ভুল পাসওয়ার্ড দিয়ে lock হয়ে গেলে ১৫ মিনিট অপেক্ষা করুন, অথবা backend restart করুন (lock-এর তথ্য memory-তে থাকে)।
+নিজে ৫ বার ভুল পাসওয়ার্ড দিয়ে lock হয়ে গেলে ১৫ মিনিট অপেক্ষা করুন। Lock এখন Redis-এ থাকে, তাই backend restart করলে আর খোলে না। Development-এ তাড়াতাড়ি খুলতে: `docker compose exec redis redis-cli FLUSHALL` (শুধু নিজের কম্পিউটারে; এই Redis-এ lockout ছাড়া আর কিছু নেই)।
 
 ## ইন্টারভিউতে যা বলবেন
 > "Security-তে তিন স্তর ব্যবহার করেছি: নিজের লেখা আক্রমণ-টেস্ট, ZAP দিয়ে DAST, আর OSV দিয়ে SCA। কোড review করে দুটো সূক্ষ্ম সমস্যা পেয়েছি: login-এ brute-force-এর কোনো সীমা ছিল না, আর response-এর সময় দেখে account আছে কি না বোঝা যেত। দুটোই টেস্ট লিখে প্রমাণ করেছি, তারপর ঠিক করেছি। Dependency scan-এ Tomcat-এর CVSS 9.8 দুর্বলতা ধরা পড়েছিল। upgrade করে ২১টা ঝুঁকিপূর্ণ লাইব্রেরি থেকে ০-তে নামিয়েছি, আর এখন CI কোনো fix-যোগ্য critical CVE থাকলে merge আটকে দেয়।"

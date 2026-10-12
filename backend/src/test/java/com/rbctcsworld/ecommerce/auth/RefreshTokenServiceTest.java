@@ -40,7 +40,7 @@ class RefreshTokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new RefreshTokenService(repo, users, CLOCK, 14);
+        service = new RefreshTokenService(repo, users, CLOCK, 14, 30);
         user = new AppUser("a@test.com", "hash");
         ReflectionTestUtils.setField(user, "id", 7L);
     }
@@ -113,13 +113,73 @@ class RefreshTokenServiceTest {
         verify(repo, never()).save(any());
     }
 
+    // ---------- grace period: a lost response is not theft ----------
+
     @Test
-    void losingTheRaceAgainstTheSameTokenCountsAsReuse() {
-        when(repo.findByTokenHash(anyString())).thenReturn(Optional.of(stored("t", "fam-3", NOW.plusDays(3), null)));
-        when(repo.revokeIfActive(3L, NOW)).thenReturn(0);
+    void lostResponseWithinTheGracePeriodGetsAnotherSuccessor() {
+        when(repo.findByTokenHash(anyString())).thenReturn(Optional.of(stored("t", "fam-g", NOW.plusDays(3), NOW.minusSeconds(29))));
+        when(repo.existsByFamilyIdAndRevokedAtAfter("fam-g", NOW.minusSeconds(29))).thenReturn(false);
+        when(repo.existsByFamilyIdAndRevokedAtIsNull("fam-g")).thenReturn(true);
+        when(users.findById(7L)).thenReturn(Optional.of(user));
+
+        assertThat(service.rotate("t").user()).isSameAs(user);
+        assertThat(saved().getFamilyId()).isEqualTo("fam-g");
+        verify(repo, never()).revokeFamily(anyString(), any());
+    }
+
+    @Test
+    void graceEndsAfterExactlyThirtySeconds() {
+        when(repo.findByTokenHash(anyString())).thenReturn(Optional.of(stored("t", "fam-g", NOW.plusDays(3), NOW.minusSeconds(30))));
 
         assertThatThrownBy(() -> service.rotate("t")).isInstanceOf(InvalidRefreshTokenException.class);
-        verify(repo).revokeFamily("fam-3", NOW);
+        verify(repo).revokeFamily("fam-g", NOW);
+    }
+
+    @Test
+    void successorAlreadyUsedMeansTheftEvenWithinTheGracePeriod() {
+        when(repo.findByTokenHash(anyString())).thenReturn(Optional.of(stored("t", "fam-g", NOW.plusDays(3), NOW.minusSeconds(5))));
+        when(repo.existsByFamilyIdAndRevokedAtAfter("fam-g", NOW.minusSeconds(5))).thenReturn(true);
+
+        assertThatThrownBy(() -> service.rotate("t")).isInstanceOf(InvalidRefreshTokenException.class);
+        verify(repo).revokeFamily("fam-g", NOW);
+        verify(repo, never()).save(any());
+    }
+
+    @Test
+    void loggedOutSessionStaysClosedWithinTheGracePeriod() {
+        when(repo.findByTokenHash(anyString())).thenReturn(Optional.of(stored("t", "fam-g", NOW.plusDays(3), NOW.minusSeconds(5))));
+        when(repo.existsByFamilyIdAndRevokedAtAfter("fam-g", NOW.minusSeconds(5))).thenReturn(false);
+        when(repo.existsByFamilyIdAndRevokedAtIsNull("fam-g")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.rotate("t")).isInstanceOf(InvalidRefreshTokenException.class);
+        verify(repo, never()).save(any());
+    }
+
+    @Test
+    void twoParallelRefreshesBothSucceed() {
+        // the other request spent the token a moment ago: this one reads the new state and gets its own successor
+        when(repo.findByTokenHash(anyString())).thenReturn(
+                Optional.of(stored("t", "fam-p", NOW.plusDays(3), null)),
+                Optional.of(stored("t", "fam-p", NOW.plusDays(3), NOW)));
+        when(repo.revokeIfActive(3L, NOW)).thenReturn(0);
+        when(repo.existsByFamilyIdAndRevokedAtAfter("fam-p", NOW)).thenReturn(false);
+        when(repo.existsByFamilyIdAndRevokedAtIsNull("fam-p")).thenReturn(true);
+        when(users.findById(7L)).thenReturn(Optional.of(user));
+
+        assertThat(service.rotate("t").user()).isSameAs(user);
+        verify(repo, never()).revokeFamily(anyString(), any());
+    }
+
+    @Test
+    void parallelRefreshAgainstALogoutFails() {
+        when(repo.findByTokenHash(anyString())).thenReturn(
+                Optional.of(stored("t", "fam-l", NOW.plusDays(3), null)),
+                Optional.of(stored("t", "fam-l", NOW.plusDays(3), NOW)));
+        when(repo.revokeIfActive(3L, NOW)).thenReturn(0);
+        when(repo.existsByFamilyIdAndRevokedAtAfter("fam-l", NOW)).thenReturn(false);
+        when(repo.existsByFamilyIdAndRevokedAtIsNull("fam-l")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.rotate("t")).isInstanceOf(InvalidRefreshTokenException.class);
         verify(repo, never()).save(any());
     }
 

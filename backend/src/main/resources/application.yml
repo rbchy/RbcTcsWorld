@@ -32,6 +32,7 @@ app:
     secret: ${JWT_SECRET:change-this-development-secret-key-which-must-be-long-enough-123456789}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}   # access token: 15 minutes, renewed with the refresh token
     refresh-days: ${REFRESH_DAYS:14}              # refresh token: 14 days, rotated on every use
+    refresh-grace-seconds: ${REFRESH_GRACE_SECONDS:30}   # a spent token works once more within 30 s (lost response)
   seed:
     # DEV ONLY - override with environment variables in any shared environment
     admin-email: ${ADMIN_EMAIL:admin@rbctcsworld.com}

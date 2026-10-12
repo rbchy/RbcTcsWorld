@@ -120,7 +120,8 @@ are counted the same way, so the lock does not reveal which accounts exist.
 `SecurityIntegrationTest#fiveWrongPasswordsLockTheAccountEvenForTheRightPassword`,
 `AuthenticationAttackTest#bruteForceLockout`, `AuthenticationAttackTest#lockoutDoesNotEnumerate`.
 **Accepted residual risk:** someone who knows a customer's e-mail can lock it for 15 minutes
-(temporary lock chosen to keep this small). The counter is in memory; several instances need Redis.
+(temporary lock chosen to keep this small). Follow-up done: the counter is now shared in Redis by all
+instances (`SharedLockoutTest`, `RedisLoginLockoutIntegrationTest`).
 
 ---
 

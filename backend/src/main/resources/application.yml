@@ -48,6 +48,13 @@ app:
       secret-key: ${STRIPE_SECRET_KEY:}           # sk_test_... ; a live key is refused outside 'prod'
       currency: usd
       timeout-seconds: 10
+  notifications:
+    channel: ${NOTIFICATIONS_CHANNEL:log}         # log (development) | smtp
+    smtp:
+      host: ${MAIL_HOST:localhost}
+      port: ${MAIL_PORT:1025}                     # Mailpit; a real provider uses 587 + credentials
+    from: "RbcTcsWorld <orders@rbctcsworld.test>"
+    poll-ms: ${NOTIFICATIONS_POLL_MS:2000}        # how often the outbox is checked
   returns:
     window-days: 30                   # a return may be requested up to 30 days after delivery
   security:

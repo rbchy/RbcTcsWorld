@@ -12,6 +12,8 @@ import com.rbctcsworld.ecommerce.order.OrderService;
 import com.rbctcsworld.ecommerce.order.OrderStatus;
 import com.rbctcsworld.ecommerce.payment.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
+import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +39,11 @@ public class ReturnService {
     private final PaymentService payments;
     private final Clock clock;
     private final int windowDays;
+    private final ApplicationEventPublisher events;
 
     public ReturnService(ReturnRequestRepository returns, OrderRepository orders, OrderService orderService,
                          InventoryService inventory, PaymentService payments, Clock clock,
-                         @Value("${app.returns.window-days}") int windowDays) {
+                         @Value("${app.returns.window-days}") int windowDays, ApplicationEventPublisher events) {
         this.returns = returns;
         this.orders = orders;
         this.orderService = orderService;
@@ -48,6 +51,7 @@ public class ReturnService {
         this.payments = payments;
         this.clock = clock;
         this.windowDays = windowDays;
+        this.events = events;
     }
 
     /** 201 | 400 window closed | 404 not mine | 409 not delivered / already requested */
@@ -81,6 +85,7 @@ public class ReturnService {
         payments.refund(order.getId(), refund);
         order.transitionTo(OrderStatus.RETURNED, "Return approved, refunded " + refund);
         r.approve(refund, restock, note);
+        events.publishEvent(new OrderNotificationEvent(order.getId(), OrderNotificationEvent.Type.RETURN_APPROVED, refund));
         return r;
     }
 
@@ -89,6 +94,7 @@ public class ReturnService {
         CustomerOrder order = orders.findById(r.getOrderId()).orElseThrow();
         order.transitionTo(OrderStatus.DELIVERED, "Return rejected" + (note == null ? "" : ": " + note));
         r.reject(note);
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.RETURN_REJECTED));
         return r;
     }
 

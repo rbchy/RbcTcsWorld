@@ -6,6 +6,8 @@ import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.TrackingResponse;
 import com.rbctcsworld.ecommerce.order.OrderRepository;
 import com.rbctcsworld.ecommerce.order.OrderStatus;
+import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,11 @@ public class FulfillmentService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final OrderRepository orders;
+    private final ApplicationEventPublisher events;
 
-    public FulfillmentService(OrderRepository orders) {
+    public FulfillmentService(OrderRepository orders, ApplicationEventPublisher events) {
         this.orders = orders;
+        this.events = events;
     }
 
     /** 200 SHIPPED | 404 | 409 unless PAID (an unpaid or cancelled order must never leave the warehouse). */
@@ -32,6 +36,7 @@ public class FulfillmentService {
         CustomerOrder order = order(orderId);
         order.assertCanMoveTo(OrderStatus.SHIPPED);
         order.ship(carrier, newTrackingNumber(carrier));
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.ORDER_SHIPPED));
         return OrderResponse.from(order);
     }
 
@@ -39,6 +44,7 @@ public class FulfillmentService {
     public OrderResponse deliver(Long orderId) {
         CustomerOrder order = order(orderId);
         order.deliver();
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.ORDER_DELIVERED));
         return OrderResponse.from(order);
     }
 

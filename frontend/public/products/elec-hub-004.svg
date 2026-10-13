@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">USB-C Hub 7-in-1</title>
+<rect width="400" height="300" fill="#dbe8ec"/>
+<circle cx="330" cy="240" r="90" fill="#cfe0e5"/>
+<ellipse cx="200" cy="214" rx="150" ry="12" fill="#12313f" opacity=".14"/>
+<path d="M60 160c-30 0-40-30-20-60s10-50-10-60" stroke="#12313f" stroke-width="10" fill="none" stroke-linecap="round"/>
+<rect x="56" y="148" width="26" height="24" rx="4" fill="#1d4555"/>
+<rect x="80" y="120" width="270" height="84" rx="22" fill="#12313f"/>
+<rect x="88" y="128" width="254" height="22" rx="11" fill="#1d4555"/>
+<g fill="#e8f1f3"><rect x="108" y="164" width="30" height="16" rx="3"/><rect x="148" y="164" width="30" height="16" rx="3"/><rect x="188" y="164" width="30" height="16" rx="3"/><rect x="230" y="166" width="22" height="12" rx="6"/><rect x="262" y="166" width="22" height="12" rx="6"/></g>
+<rect x="296" y="162" width="32" height="20" rx="3" fill="#b45309"/><rect x="302" y="168" width="20" height="8" rx="1" fill="#12313f"/>
+<circle cx="326" cy="139" r="4" fill="#f4d58d"/>
+</svg>

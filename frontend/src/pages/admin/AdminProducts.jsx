@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
+import ProductImage, { IMAGE_URL } from '../../ProductImage';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '' };
 
-/** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0. */
+/** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
+ *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
 export function validateProduct(f) {
   const e = {};
   if (!f.name.trim()) e.name = 'vRequired';
@@ -15,6 +17,8 @@ export function validateProduct(f) {
   else if (Number(f.price) <= 0) e.price = 'vPositive';
   else if (!/^\d+(\.\d{1,2})?$/.test(String(f.price).trim())) e.price = 'vMoney';
   if (f.stock === '' || !/^\d+$/.test(String(f.stock).trim())) e.stock = 'vWhole';
+  const img = (f.imageUrl ?? '').trim();
+  if (img && (img.length > 500 || !IMAGE_URL.test(img))) e.imageUrl = 'vImage';
   return e;
 }
 
@@ -43,7 +47,7 @@ export default function AdminProducts() {
 
   const open = p => {
     setErrors({}); setOk(''); setError(''); setConfirm(null);
-    setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock) } : { ...EMPTY });
+    setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '' } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -57,7 +61,7 @@ export default function AdminProducts() {
     setErrors(found);
     if (Object.keys(found).length) return;
     const body = { name: form.name.trim(), sku: form.sku.trim(), category: form.category.trim() || null,
-      price: Number(form.price), stock: Number(form.stock) };
+      price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl.trim() || null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -107,6 +111,14 @@ export default function AdminProducts() {
           <Field id="pf-stock" label={t('stock')} error={errors.stock}>
             <input value={form.stock} onChange={set('stock')} inputMode="numeric" data-testid="pf-stock" />
           </Field>
+          <div className="image-field">
+            <Field id="pf-image" label={t('picture')} error={errors.imageUrl} hint={t('pictureHint')}>
+              <input value={form.imageUrl} onChange={set('imageUrl')} maxLength={500} inputMode="url" spellCheck={false}
+                     placeholder="/products/my-product.svg" data-testid="pf-image" />
+            </Field>
+            <ProductImage product={{ category: form.category, imageUrl: errors.imageUrl ? '' : form.imageUrl.trim() }}
+                          className="pf-preview" testId="pf-image-preview" eager />
+          </div>
           <div className="row form-actions">
             <button type="submit" data-testid="pf-save">{form.id ? t('updateProduct') : t('saveProduct')}</button>
             <button type="button" className="ghost" onClick={() => setForm(null)} data-testid="pf-cancel">{t('cancel')}</button>
@@ -116,13 +128,14 @@ export default function AdminProducts() {
 
       <div className="table-wrap card">
         <table data-testid="admin-product-table">
-          <thead><tr><th>{t('sku')}</th><th>{t('name')}</th><th>{t('category')}</th><th className="num">{t('price')}</th>
+          <thead><tr><th><span className="sr-only">{t('picture')}</span></th><th>{t('sku')}</th><th>{t('name')}</th><th>{t('category')}</th><th className="num">{t('price')}</th>
             <th className="num">{t('stock')}</th><th>{t('actions')}</th></tr></thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan="6" className="muted">{t('noRows')}</td></tr>}
+            {rows.length === 0 && <tr><td colSpan="7" className="muted">{t('noRows')}</td></tr>}
             {rows.map(p => (
               <React.Fragment key={p.id}>
                 <tr data-testid="admin-product-row" data-sku={p.sku}>
+                  <td className="pic"><ProductImage product={p} className="row-thumb" testId="apr-image" /></td>
                   <td>{p.sku}</td>
                   <td data-testid="apr-name">{p.name}</td>
                   <td>{p.category}</td>
@@ -136,7 +149,7 @@ export default function AdminProducts() {
                 </tr>
                 {confirm?.id === p.id && (
                   <tr className="confirm-row" data-testid="delete-confirm">
-                    <td colSpan="6">
+                    <td colSpan="7">
                       <span>{t('confirmDelete', { name: p.name })}</span>
                       <button className="danger-btn" onClick={() => remove(p)} data-testid="apr-delete-yes">{t('yesDelete')}</button>
                       <button className="ghost" onClick={() => setConfirm(null)}>{t('cancel')}</button>

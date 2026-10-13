@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">27-inch 4K Monitor</title>
+<rect width="400" height="300" fill="#dbe8ec"/>
+<ellipse cx="200" cy="268" rx="110" ry="10" fill="#12313f" opacity=".14"/>
+<path d="M182 214h36l10 46h-56z" fill="#1d4555"/><rect x="140" y="256" width="120" height="10" rx="5" fill="#12313f"/>
+<rect x="38" y="32" width="324" height="190" rx="10" fill="#12313f"/>
+<rect x="48" y="42" width="304" height="164" rx="3" fill="#f4d58d"/>
+<path d="M48 150l70-56 54 40 64-62 116 92v42H48z" fill="#1d4555"/>
+<path d="M48 176l92-44 70 30 70-24 72 30v38H48z" fill="#12313f"/>
+<circle cx="292" cy="86" r="20" fill="#b45309"/>
+<rect x="190" y="212" width="20" height="4" rx="2" fill="#3f6b7a"/>
+</svg>

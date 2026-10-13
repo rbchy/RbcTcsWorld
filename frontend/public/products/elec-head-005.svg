@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Limited Edition Headphones</title>
+<rect width="400" height="300" fill="#dbe8ec"/>
+<circle cx="200" cy="140" r="110" fill="#cfe0e5"/>
+<ellipse cx="200" cy="270" rx="120" ry="11" fill="#12313f" opacity=".14"/>
+<path d="M112 172v-34a88 88 0 0 1 176 0v34" stroke="#12313f" stroke-width="18" fill="none" stroke-linecap="round"/>
+<path d="M122 120a80 80 0 0 1 156 0" stroke="#b45309" stroke-width="6" fill="none" stroke-linecap="round"/>
+<rect x="84" y="156" width="64" height="98" rx="28" fill="#12313f"/><rect x="132" y="168" width="22" height="74" rx="10" fill="#1d4555"/>
+<rect x="252" y="156" width="64" height="98" rx="28" fill="#12313f"/><rect x="246" y="168" width="22" height="74" rx="10" fill="#1d4555"/>
+<circle cx="110" cy="205" r="12" fill="#b45309"/><circle cx="290" cy="205" r="12" fill="#b45309"/>
+<g transform="translate(316 50)"><circle r="30" fill="#f4d58d"/><path d="M0-17l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#8f4207"/></g>
+</svg>

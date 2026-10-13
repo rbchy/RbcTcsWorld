@@ -12,6 +12,7 @@ import OrderDetail from './pages/OrderDetail';
 import ProductDetail from './pages/ProductDetail';
 import Wishlist from './pages/Wishlist';
 import Help from './pages/Help';
+import Goodbye from './pages/Goodbye';
 import { AdminOnly } from './pages/admin/common';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -45,6 +46,7 @@ function App() {
   else if (route === '/login') page = <Login redirect="/" />;
   else if (route === '/register') page = <Login redirect="/" initialMode="register" />;
   else if (route === '/help' || route.startsWith('/help/')) page = <Help />;
+  else if (route === '/goodbye') page = <Goodbye session={session} />;
   else if (ADMIN[route]) { const P = ADMIN[route]; page = <AdminOnly session={session}><P /></AdminOnly>; }
   else if (route === '/cart') page = <Cart />;
   else if (route === '/checkout') page = <Checkout />;

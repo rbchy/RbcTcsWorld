@@ -42,6 +42,9 @@ public class Product {
     @Column(name = "rating_count", nullable = false)
     private int ratingCount;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     protected Product() {
     }
 
@@ -71,6 +74,12 @@ public class Product {
     public boolean isActive() { return active; }
     public BigDecimal getRatingAverage() { return ratingAverage; }
     public int getRatingCount() { return ratingCount; }
+    public String getImageUrl() { return imageUrl; }
+
+    /** null or blank = no own picture (the storefront shows the category picture). */
+    public void changeImage(String imageUrl) {
+        this.imageUrl = imageUrl == null || imageUrl.isBlank() ? null : imageUrl.trim();
+    }
 
     public void setActive(boolean active) { this.active = active; }
     public void setStock(int stock) { this.stock = stock; }

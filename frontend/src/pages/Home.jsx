@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { getSession, go } from '../session';
 import Stars from './Stars';
+import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
 
 const PAGE_SIZE = 20;
@@ -84,7 +85,8 @@ export default function Home() {
 function ProductCard({ p, onAdd, onWish, t }) {
   const [qty, setQty] = useState(1);
   return (
-    <article data-testid="product-card" data-sku={p.sku}>
+    <article className="product-card" data-testid="product-card" data-sku={p.sku}>
+      <ProductImage product={p} />
       <h2><a href={`#/products/${p.id}`} data-testid="product-name">{p.name}</a></h2>
       <p className="muted">{p.category}</p>
       <Stars average={p.ratingAverage} count={p.ratingCount} />

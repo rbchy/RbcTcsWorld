@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { getSession, go } from '../session';
 import Stars from './Stars';
+import ProductImage from '../ProductImage';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
 export default function ProductDetail({ id }) {
@@ -32,10 +33,15 @@ export default function ProductDetail({ id }) {
   if (!product || !data) return error ? <p data-testid="review-error" className="error">{error}</p> : <p>Loading product...</p>;
   return (
     <section className="card">
-      <h1 data-testid="detail-name">{product.name}</h1>
-      <p className="muted">{product.category} · SKU {product.sku}</p>
-      <p><strong data-testid="detail-price">{money(product.price)}</strong> · Stock {product.stock}</p>
-      <button className="ghost" data-testid="detail-wishlist" onClick={wish}>♡ Save to wishlist</button>
+      <div className="detail-head">
+        <ProductImage product={product} alt={product.name} className="detail-image" testId="detail-image" eager />
+        <div>
+          <h1 data-testid="detail-name">{product.name}</h1>
+          <p className="muted">{product.category} · SKU {product.sku}</p>
+          <p><strong data-testid="detail-price">{money(product.price)}</strong> · Stock {product.stock}</p>
+          <button className="ghost" data-testid="detail-wishlist" onClick={wish}>♡ Save to wishlist</button>
+        </div>
+      </div>
       {notice && <p data-testid="review-notice" className="ok">{notice}</p>}
       {error && <p data-testid="review-error" className="error">{error}</p>}
 

@@ -163,4 +163,39 @@ class ProductServiceTest {
         assertThat(updated.getName()).isEqualTo("New name");
         assertThat(updated.getSku()).isEqualTo("SKU-1");
     }
+
+    // ---------- product pictures ----------
+
+    @Test
+    void createKeepsThePicture() {
+        when(repo.existsBySku("SKU-P")).thenReturn(false);
+        when(repo.save(org.mockito.ArgumentMatchers.any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Product p = service.create(new ProductRequest("Lamp", "SKU-P", "home", new BigDecimal("9.99"), 3,
+                " https://cdn.example.com/lamp.png "));
+
+        assertThat(p.getImageUrl()).isEqualTo("https://cdn.example.com/lamp.png");
+    }
+
+    @Test
+    void updateReplacesOrRemovesThePicture() {
+        Product existing = product(1L, "SKU-1");
+        existing.changeImage("/products/old.svg");
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(existing));
+        when(repo.findBySku("SKU-1")).thenReturn(Optional.of(existing));
+        when(repo.save(existing)).thenReturn(existing);
+
+        service.update(1L, new ProductRequest("Old name", "SKU-1", "old", new BigDecimal("10.00"), 5, "/products/new.svg"));
+        assertThat(existing.getImageUrl()).isEqualTo("/products/new.svg");
+
+        service.update(1L, new ProductRequest("Old name", "SKU-1", "old", new BigDecimal("10.00"), 5));
+        assertThat(existing.getImageUrl()).isNull();                  // PUT without a picture removes it
+    }
+
+    @Test
+    void blankPictureMeansNone() {
+        Product p = product(2L, "SKU-2");
+        p.changeImage("   ");
+        assertThat(p.getImageUrl()).isNull();
+    }
 }

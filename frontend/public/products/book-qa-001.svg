@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Software Testing Handbook</title>
+<rect width="400" height="300" fill="#e6ebdf"/>
+<circle cx="330" cy="230" r="86" fill="#dce3d3"/>
+<ellipse cx="200" cy="270" rx="110" ry="10" fill="#12313f" opacity=".16"/>
+<path d="M118 34h170v226H118z" fill="#fffdf6"/>
+<path d="M110 30h170c6 0 10 4 10 10v214c0 6-4 10-10 10H110z" fill="#12313f"/>
+<rect x="110" y="30" width="18" height="234" fill="#0b2029"/>
+<rect x="146" y="58" width="116" height="10" rx="5" fill="#9fb3bb"/>
+<rect x="146" y="76" width="80" height="10" rx="5" fill="#9fb3bb"/>
+<circle cx="204" cy="164" r="44" fill="#b45309"/>
+<path d="M182 164l16 16 30-32" stroke="#fffdf6" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#3f6b7a"><rect x="146" y="230" width="16" height="10" rx="2"/><rect x="168" y="230" width="16" height="10" rx="2"/><rect x="190" y="230" width="16" height="10" rx="2"/></g>
+</svg>

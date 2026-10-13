@@ -6,12 +6,29 @@
 
 | অংশ | কী আছে |
 |---|---|
-| **Topbar** | লোগো, ভাষা বাছাই, "Install app" (desktop), Help, লগইন বা রেজিস্টার, অথবা ইমেইল + Admin badge + লগ আউট |
-| **Sidebar (মেনু)** | Shop: Catalog, Wishlist, Cart, Orders · Account: Log in, Create account · **Store admin** (শুধু ADMIN-এর জন্য): Dashboard, Products, Coupons, All orders, Returns, Reviews · Support: Help |
+| **Topbar** | লোগো, ভাষা বাছাই, "Install app" (desktop), Help, লগইন বা রেজিস্টার, অথবা ইমেইল + Admin badge + **Log out** বোতাম; আর সবসময় **Exit** বোতাম। মোবাইলে দুটো বোতাম শুধু আইকন |
+| **Sidebar (মেনু)** | Shop: Catalog, Wishlist, Cart, Orders · Account: Log in, Create account (লগইন থাকলে Log out), আর Exit · **Store admin** (শুধু ADMIN-এর জন্য): Dashboard, Products, Coupons, All orders, Returns, Reviews · Support: Help |
 | **ব্যানার** | পার্সেলের লেবেলের মতো দেখতে, ভেতরে স্বাগতম কুপন **WELCOME10**। পুরো ডিজাইনে এটাই একমাত্র "জোরালো" জিনিস, বাকি সব শান্ত। |
 | **মোবাইল** | ৮৬০px-এর নিচে মেনু "Menu" বোতামের পেছনে চলে যায়। Esc চাপলে বা বাইরে ক্লিক করলে বন্ধ হয়। |
 
 রঙ: harbor teal (`#12313f`) দিয়ে ফ্রেম, copper (`#b45309`) দিয়ে বোতাম। সব লেখার contrast WCAG AA মেনে (৪.৫:১)।
+
+### Log out আর Exit (পরে যোগ হয়েছে)
+
+| বোতাম | কী করে | কী করে না |
+|---|---|---|
+| **Log out** (দরজা-তীর আইকন) | server-এ refresh token revoke, browser-এর session মুছে Catalog-এ ফেরা | উইন্ডো বন্ধ করে না |
+| **Exit** (পাওয়ার আইকন) | লগইন থাকলে Log out, তারপর `#/goodbye` পাতা, আর `window.close()` চেষ্টা | server বা Docker বন্ধ করে না। সেটা `RbcTcsWorld-Stop` লঞ্চারের কাজ |
+
+- ব্রাউজার নিয়ম: script শুধু নিজের খোলা উইন্ডো (বা এক পাতার ইতিহাসওয়ালা উইন্ডো) বন্ধ করতে পারে। তাই সাধারণ ট্যাবে goodbye পাতাই থাকে, আর সেখানে `⌘ W` / `Ctrl + W` লেখা থাকে।
+- Server বন্ধের বোতাম ইচ্ছা করেই রাখা হয়নি: ইন্টারনেটে থাকা যেকোনো ভিজিটর তাহলে দোকান বন্ধ করে দিতে পারত।
+
+### পণ্যের ছবি (পরে যোগ হয়েছে)
+
+- ৮টা সিড পণ্যের নিজস্ব SVG illustration (`frontend/public/products/`), একই রঙে (harbor teal + copper) আঁকা, তাই catalog একসাথে দেখতে মানানসই।
+- `ProductImage` component: `imageUrl` না থাকলে বা লোড ব্যর্থ হলে category-র ছবি (`electronics`, `home`, `books`, বাকি সব `product` = পার্সেল বাক্স)। `data-fallback` attribute দিয়ে টেস্ট বোঝে কোনটা দেখাচ্ছে।
+- Backend: `products.image_url` কলাম (Flyway V11), `ProductRequest.imageUrl`-এ `@Pattern`: শুধু `/products/<নাম>.svg|png|jpg|webp` বা `https://`। Browser-এ একই regex (`IMAGE_URL`)।
+- Catalog card-এ উপরে ছবি (`alt=""`, কারণ নাম ঠিক নিচেই লেখা), পণ্যের পাতায় বড় ছবি (`alt` = পণ্যের নাম), admin টেবিলে ছোট thumbnail, আর ফর্মে লাইভ preview।
 
 ## ২. Store admin প্যানেল (`#/admin`)
 - **Dashboard:** মোট অর্ডার, শিপের অপেক্ষায় থাকা অর্ডার, আয়, কম স্টকের পণ্য, সিদ্ধান্তের অপেক্ষায় থাকা রিটার্ন।
@@ -33,7 +50,7 @@ Browser-এর নিয়ম আর backend-এর নিয়ম **হুব
 | ফর্ম | নিয়ম |
 |---|---|
 | Registration / Login | ইমেইলের ফরম্যাট, পাসওয়ার্ড ৮–৭২ অক্ষর, দুবার লেখা পাসওয়ার্ড মিলতে হবে, "পাসওয়ার্ড দেখান" |
-| Product | নাম আর SKU লাগবেই, দাম > 0 আর সর্বোচ্চ ২ দশমিক, স্টক ০ বা তার বেশি পূর্ণ সংখ্যা |
+| Product | নাম আর SKU লাগবেই, দাম > 0 আর সর্বোচ্চ ২ দশমিক, স্টক ০ বা তার বেশি পূর্ণ সংখ্যা, ছবি খালি / `/products/…` / `https://…` |
 | Coupon | কোডে শুধু অক্ষর, সংখ্যা, `_` আর `-`; মান > 0; শতাংশ ≤ ১০০; সর্বোচ্চ ব্যবহার ≥ ১ |
 
 - ভুল ঘর লাল হয়, আর তার ঠিক নিচে বার্তা দেখায় (`aria-invalid` + `aria-describedby`), তাই screen reader-ও পড়ে শোনায়।
@@ -75,7 +92,12 @@ English, বাংলা, Español, Français, العربية, 中文। Topbar 
 | `UiShellTest#registrationValidation` | খালি ঘর, ছোট পাসওয়ার্ড, না-মেলা পাসওয়ার্ড, ভুল ইমেইল, তারপর সফল রেজিস্ট্রেশন |
 | `UiShellTest#languages` | বাংলা, আরবি (`dir=rtl`), চীনা; reload-এর পরেও পছন্দ থাকে |
 | `UiShellTest#helpCenter` | সব বিষয় আছে; "4242" খুঁজলে শুধু checkout বিষয়টা আসে; ফরাসিতেও একই বিষয় |
-| `AccessibilityTest#wcag21aa` | এখন **১৩টা পাতা**: আগের ৮টা, সাথে Registration, Help, Admin dashboard, Products আর Orders |
+| `AccessibilityTest#wcag21aa` | এখন **১৫টা পাতা**: আগের ৮টা, সাথে Registration, Help, Admin dashboard, Products, Orders, E-mails আর Goodbye |
+| `UiAuthTest#exitEndsTheSessionAndSaysGoodbye` | Exit → goodbye পাতা, browser-এর token মুছে গেছে, database-এ refresh token revoked |
+| `UiAuthTest#menuLogoutAndExit` | Sidebar-এর Log out আর Exit (অতিথি অবস্থায়ও) |
+| `HomePageUiTest#seededProductPictures` | ৮টা সিড পণ্যের প্রতিটার নিজের ছবি, আর browser সত্যিই সেটা লোড করেছে (`naturalWidth > 0`) |
+| `HomePageUiTest#productWithoutPictureGetsTheFallback` | ছবিহীন পণ্যে ভাঙা আইকন না, category-র ছবি |
+| `UiAdminProductsTest#productPicture` | `javascript:` লিংক browser-এ আটকায়; বৈধ ছবি সেভ হয়, API-তে থাকে, catalog-এ দেখায় |
 
 - সব নতুন UI টেস্ট Chrome, Firefox আর Edge তিনটাতেই চলে।
 - Page object (`LoginPage`) এখন শিরোনামের লেখা না পড়ে `data-mode` attribute পড়ে। তাই ভাষা বদলালেও টেস্ট ভাঙে না।

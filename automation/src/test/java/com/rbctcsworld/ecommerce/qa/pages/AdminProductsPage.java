@@ -38,6 +38,12 @@ public class AdminProductsPage extends BasePage {
         return this;
     }
 
+    /** Picture field: /products/name.svg or an https:// link; empty means the category picture. */
+    public AdminProductsPage picture(String url) {
+        type("pf-image", url);
+        return this;
+    }
+
     public void save() {
         click("pf-save");
     }
@@ -86,6 +92,10 @@ public class AdminProductsPage extends BasePage {
 
     public String stockOf(String sku) {
         return wait.until(d -> d.findElement(inRow(sku, "apr-stock")).getText().trim());
+    }
+
+    public String pictureOf(String sku) {
+        return wait.until(d -> d.findElement(inRow(sku, "apr-image")).getDomAttribute("src"));
     }
 
     public String nameOf(String sku) {

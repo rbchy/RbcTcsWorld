@@ -5,12 +5,15 @@ import io.qameta.allure.Feature;
 import com.rbctcsworld.ecommerce.qa.drivers.DriverFactory;
 import com.rbctcsworld.ecommerce.qa.pages.HomePage;
 import com.rbctcsworld.ecommerce.qa.reporting.ScreenshotOnFailure;
+import com.rbctcsworld.ecommerce.qa.testdata.Fixtures;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openqa.selenium.WebDriver;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -70,6 +73,29 @@ class HomePageUiTest {
         assertAll("after Load more",
                 () -> assertEquals(21, home.productCount()),
                 () -> assertFalse(home.canLoadMore(), "button disappears on the last page"));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"ELEC-MOUSE-001", "ELEC-KEYB-002", "ELEC-MON-003", "ELEC-HUB-004",
+            "HOME-BOTL-001", "HOME-MUG-002", "BOOK-QA-001", "ELEC-HEAD-005"})
+    @DisplayName("Every seeded product shows its own picture, and it really loads")
+    void seededProductPictures(String sku) {
+        HomePage.Picture pic = home.pictureOf(sku);
+        assertAll(sku,
+                () -> assertEquals("/products/" + sku.toLowerCase() + ".svg", pic.src()),
+                () -> assertFalse(pic.fallback(), "own picture, not the category one"),
+                () -> assertTrue(pic.loaded(), "browser decoded the picture (no broken image)"));
+    }
+
+    @Test
+    @DisplayName("A product without a picture shows the category picture instead of a broken image")
+    void productWithoutPictureGetsTheFallback() {
+        Fixtures.Product p = Fixtures.namedProduct("4.00", 2);   // category "qa", no imageUrl
+        home.search(p.name());
+        HomePage.Picture pic = home.pictureOf(p.sku());
+        assertAll(() -> assertEquals("/products/product.svg", pic.src()),
+                  () -> assertTrue(pic.fallback()),
+                  () -> assertTrue(pic.loaded()));
     }
 
     @Test

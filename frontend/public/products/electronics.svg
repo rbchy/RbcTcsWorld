@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Electronics</title>
+<rect width="400" height="300" fill="#dbe8ec"/>
+<g stroke="#9fb3bb" stroke-width="6" stroke-linecap="round"><path d="M160 90V50M200 90V40M240 90V50M160 210v40M200 210v50M240 210v40M140 110h-40M140 150h-60M140 190h-40M260 110h40M260 150h60M260 190h40"/></g>
+<rect x="140" y="90" width="120" height="120" rx="14" fill="#12313f"/>
+<rect x="166" y="116" width="68" height="68" rx="8" fill="#b45309"/>
+<circle cx="156" cy="106" r="5" fill="#9fb3bb"/>
+</svg>

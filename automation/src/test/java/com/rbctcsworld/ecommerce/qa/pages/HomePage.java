@@ -63,6 +63,18 @@ public class HomePage extends BasePage {
         return this;
     }
 
+    /** The picture on a product card: its address, whether it is the category fallback, and whether it loaded. */
+    public record Picture(String src, boolean fallback, boolean loaded) {
+    }
+
+    public Picture pictureOf(String sku) {
+        By img = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "'] [data-testid='product-image']");
+        visible(img);
+        boolean loaded = pictureLoaded(img);   // a failed link switches to the fallback first, so read src afterwards
+        WebElement e = driver.findElement(img);
+        return new Picture(e.getDomAttribute("src"), "true".equals(e.getDomAttribute("data-fallback")), loaded);
+    }
+
     /** "4.5" or "0.0" from the card's rating element. */
     public String ratingOf(String sku) {
         By rating = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "'] [data-testid='product-rating']");

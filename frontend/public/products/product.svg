@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Product</title>
+<rect width="400" height="300" fill="#e3e8ee"/>
+<ellipse cx="200" cy="256" rx="120" ry="10" fill="#12313f" opacity=".14"/>
+<path d="M200 60l100 40v120l-100 36-100-36V100z" fill="#c7a77a"/>
+<path d="M200 100l100-40v160l-100 36z" fill="#b08a58"/>
+<path d="M100 100l100 40 100-40-100-40z" fill="#dcc29a"/>
+<path d="M150 80l100 40v40" stroke="#fffdf6" stroke-width="16" fill="none"/>
+<rect x="116" y="160" width="60" height="40" rx="3" fill="#fffdf6" transform="skewY(20) translate(0 -60)"/>
+</svg>

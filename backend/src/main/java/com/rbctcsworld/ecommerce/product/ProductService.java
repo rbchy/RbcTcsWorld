@@ -63,7 +63,9 @@ public class ProductService {
         if (repo.existsBySku(sku)) {
             throw new ConflictException("SKU already exists: " + sku);
         }
-        return repo.save(new Product(r.name().trim(), sku, r.category(), r.price(), r.stock()));
+        Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
+        p.changeImage(r.imageUrl());
+        return repo.save(p);
     }
 
     public Product update(long id, ProductRequest r) {
@@ -73,6 +75,7 @@ public class ProductService {
                 .filter(other -> !other.getId().equals(p.getId()))
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
+        p.changeImage(r.imageUrl());                                  // PUT replaces: no imageUrl = no picture
         return repo.save(p);
     }
 

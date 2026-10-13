@@ -19,6 +19,36 @@ function useInstallPrompt() {
   return prompt && (() => { prompt.prompt(); prompt.userChoice.finally(() => setPrompt(null)); });
 }
 
+/** Small line icons (decorative: the button text is the accessible name). */
+const ICONS = {
+  logout: 'M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9',
+  exit: 'M12 3v8M7.1 6.4a7 7 0 1 0 9.8 0',
+};
+export function Icon({ name }) {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d={ICONS[name]} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Log out: the server revokes the refresh token, this browser forgets the session, back to the catalog. */
+export function signOut() {
+  logout();
+  go('/');
+}
+
+/**
+ * Exit: log out (when signed in), show the goodbye page and ask the browser to close the window.
+ * Browsers only allow window.close() for windows a script or the installed app opened; otherwise the goodbye
+ * page stays and explains how to close it. Exit never stops the server: that is the Stop launcher's job.
+ */
+export function exitShop() {
+  logout();
+  go('/goodbye');
+  setTimeout(() => window.close(), 150);
+}
+
 export function Topbar({ session, onMenu, menuOpen }) {
   const { t, lang, setLanguage } = useI18n();
   const install = useInstallPrompt();
@@ -45,7 +75,9 @@ export function Topbar({ session, onMenu, menuOpen }) {
             <span className="sr-only">{t('signedInAs')}</span>
             <span className="who" data-testid="nav-user">{session.email}</span>
             {session.role === 'ADMIN' && <span className="role-badge" data-testid="nav-role">{t('adminBadge')}</span>}
-            <button className="link on-dark" data-testid="nav-logout" onClick={() => { logout(); go('/'); }}>{t('navLogout')}</button>
+            <button className="top-btn" data-testid="nav-logout" onClick={signOut}>
+              <Icon name="logout" /><span className="btn-label">{t('navLogout')}</span>
+            </button>
           </div>
         ) : (
           <>
@@ -53,6 +85,9 @@ export function Topbar({ session, onMenu, menuOpen }) {
             <a href="#/register" className="top-cta" data-testid="nav-register">{t('navRegister')}</a>
           </>
         )}
+        <button className="top-btn exit" data-testid="nav-exit" onClick={exitShop} title={t('exitHint')}>
+          <Icon name="exit" /><span className="btn-label">{t('navExit')}</span>
+        </button>
       </div>
     </header>
   );
@@ -81,15 +116,26 @@ export function Sidebar({ route, session, open, onNavigate }) {
         <Item route={route} href="#/cart" testId="nav-cart" onNavigate={onNavigate}>{t('navCart')}</Item>
         <Item route={route} href="#/orders" testId="nav-orders" onNavigate={onNavigate}>{t('navOrders')}</Item>
       </ul>
-      {!session && (
-        <>
-          <p className="side-head" id="sec-account">{t('secAccount')}</p>
-          <ul aria-labelledby="sec-account">
+      <p className="side-head" id="sec-account">{t('secAccount')}</p>
+      <ul aria-labelledby="sec-account">
+        {session ? (
+          <li>
+            <button className="side-action" data-testid="side-logout" onClick={() => { onNavigate(); signOut(); }}>
+              <Icon name="logout" />{t('navLogout')}
+            </button>
+          </li>
+        ) : (
+          <>
             <Item route={route} href="#/login" testId="side-login" onNavigate={onNavigate}>{t('navLogin')}</Item>
             <Item route={route} href="#/register" testId="side-register" onNavigate={onNavigate}>{t('navRegister')}</Item>
-          </ul>
-        </>
-      )}
+          </>
+        )}
+        <li>
+          <button className="side-action" data-testid="side-exit" onClick={() => { onNavigate(); exitShop(); }}>
+            <Icon name="exit" />{t('navExit')}
+          </button>
+        </li>
+      </ul>
       {isAdmin && (
         <>
           <p className="side-head" id="sec-admin">{t('secAdmin')}</p>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Ceramic Coffee Mug Set</title>
+<rect width="400" height="300" fill="#f1e6d6"/>
+<circle cx="320" cy="60" r="80" fill="#ead9c2"/>
+<ellipse cx="200" cy="258" rx="160" ry="11" fill="#12313f" opacity=".16"/>
+<g fill="none" stroke="#9fb3bb" stroke-width="6" stroke-linecap="round"><path d="M118 92c-10-14 10-24 0-40"/><path d="M142 92c-10-14 10-24 0-40"/><path d="M262 108c-10-14 10-24 0-40"/></g>
+<path d="M72 140h-22a26 26 0 0 0 0 52h22" stroke="#12313f" stroke-width="12" fill="none"/>
+<path d="M70 104h130v128c0 14-10 22-24 22H94c-14 0-24-8-24-22z" fill="#12313f"/>
+<rect x="70" y="104" width="130" height="14" fill="#1d4555"/>
+<path d="M338 152h18a22 22 0 0 1 0 44h-18" stroke="#b45309" stroke-width="11" fill="none"/>
+<path d="M222 124h118v108c0 14-10 22-24 22h-70c-14 0-24-8-24-22z" fill="#b45309"/>
+<rect x="222" y="124" width="118" height="12" fill="#8f4207"/>
+<path d="M238 190h86" stroke="#fffdf6" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 14"/>
+</svg>

@@ -268,4 +268,35 @@ class ApiIntegrationTest {
         mvc.perform(auth(delete("/api/cart"), token)).andExpect(status().isNoContent());
         mvc.perform(auth(get("/api/cart"), token)).andExpect(jsonPath("$.items.length()").value(0));
     }
+
+    // ---------- product pictures ----------
+
+    @Test
+    void seededProductsHaveTheirPictures() throws Exception {
+        mvc.perform(get("/api/products").param("q", "Wireless Mouse")).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].sku").value("ELEC-MOUSE-001"))
+                .andExpect(jsonPath("$[0].imageUrl").value("/products/elec-mouse-001.svg"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest(name = "image {0} -> 400")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"javascript:alert(1)", "http://plain.example.com/a.png",
+            "data:image/png;base64,AAAA", "/products/../secret.svg", "https://a.com/x\\\" onerror=\\\"x"})
+    void unsafePictureLinksAre400(String url) throws Exception {
+        mvc.perform(auth(post("/api/products"), adminToken()).content("{\"name\":\"Pic\",\"sku\":\"PIC-"
+                        + UUID.randomUUID().toString().substring(0, 8) + "\",\"price\":1.00,\"stock\":1,\"imageUrl\":\"" + url + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.imageUrl").exists());
+    }
+
+    @Test
+    void adminCanGiveAProductAPicture() throws Exception {
+        String sku = "PIC-" + UUID.randomUUID().toString().substring(0, 8);
+        String body = mvc.perform(auth(post("/api/products"), adminToken()).content("{\"name\":\"Pic\",\"sku\":\"" + sku
+                        + "\",\"price\":1.00,\"stock\":1,\"imageUrl\":\"https://cdn.example.com/pic.webp\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.imageUrl").value("https://cdn.example.com/pic.webp"))
+                .andReturn().getResponse().getContentAsString();
+        long id = mapper.readTree(body).get("id").asLong();
+        mvc.perform(get("/api/products/" + id)).andExpect(jsonPath("$.imageUrl").value("https://cdn.example.com/pic.webp"));
+    }
 }

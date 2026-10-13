@@ -83,6 +83,7 @@ class AccessibilityTest {
             "Login,           /login,           none,     auth-submit",
             "Registration,    /register,        none,     confirm-input",
             "Help center,     /help,            none,     help-topic",
+            "Goodbye (Exit),  /goodbye,         none,     goodbye",
             "Catalog,         /,                customer, product-card",
             "Product detail,  /products/{p},    customer, detail-name",
             "Wishlist,        /wishlist,        customer, wishlist-table",

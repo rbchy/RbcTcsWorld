@@ -43,6 +43,37 @@ public class ShellPage extends BasePage {
         click("nav-logout");
     }
 
+    /** Exit in the top bar: log out, goodbye page, and the browser is asked to close the window. */
+    public ShellPage exit() {
+        click("nav-exit");
+        return this;
+    }
+
+    /** Log out / Exit in the sidebar's Account section (desktop: the sidebar is always open). */
+    public void logoutFromMenu() {
+        click("side-logout");
+    }
+
+    public ShellPage exitFromMenu() {
+        click("side-exit");
+        return this;
+    }
+
+    /** The goodbye page after Exit. A WebDriver window is never closed by the page itself, so it stays. */
+    public boolean waitGoodbye() {
+        return wait.until(d -> isShown("goodbye") && d.getCurrentUrl().endsWith("#/goodbye"));
+    }
+
+    public boolean goodbyeSaysSignedOut() {
+        return isShown("goodbye-signed-out");
+    }
+
+    public ShellPage backToShop() {
+        click("goodbye-back");
+        visible("product-card");
+        return this;
+    }
+
     /** Waits until the top bar offers "Log in" again. */
     public boolean waitLoggedOut() {
         return wait.until(d -> isShown("nav-login") && !isShown("nav-user"));

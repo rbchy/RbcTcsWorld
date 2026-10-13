@@ -32,6 +32,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-CAT-02 | Admin product CRUD updates every field, SKU unique (409), validation (400), delete is soft | `ProductServiceTest#updateChangesEveryField_regressionForStockOnlyBug`, `ProductServiceTest#createRejectsDuplicateSku`, `ProductServiceTest#deleteIsSoftDelete`, `ApiIntegrationTest#adminUpdateChangesAllFieldsAndSoftDeleteHidesProduct`, `ProductApiTest#adminCrudLifecycle`, `ProductApiTest#duplicateSku`, `ProductApiTest#invalidProduct` | U I A | Pass |
 | REQ-CAT-03 | Unknown product -> 404 JSON (not 500); non-numeric id -> 400 | `ApiIntegrationTest#missingProductIs404NotA500`, `ProductApiTest#missingProduct`, `ProductApiTest#badId`, `bdd:Unknown product returns 404 with a JSON error` | I A B | Pass |
 | REQ-CAT-04 | Catalog list is paginated: size 1..100 (default 20), stable sorts, totals and Link headers, bounded response size ([DEF-007](DEFECT_REPORTS.md#def-007)) | `ProductServiceTest#invalidPageSizeOrSortIs400`, `ProductServiceTest#requestedPageAndStableSortReachTheDatabase`, `ProductServiceTest#nameSortIgnoresCaseAndEndsWithIdSoPagesAreStable`, `ApiIntegrationTest#catalogIsPaginatedWithTotalsAndLinks_DEF007`, `CatalogPaginationTest#defaultPageIsBounded`, `CatalogPaginationTest#walkAllPages`, `CatalogPaginationTest#linkHeader`, `CatalogPaginationTest#boundaries`, `CatalogPaginationTest#sorting`, `CatalogPaginationTest#responseSizeIsBounded`, `HomePageUiTest#loadMore`, k6 `performance/tests/catalog.js` | U I A UI P | Pass |
+| REQ-CAT-05 | Every product has a picture: the 8 seeded products their own, others the category picture (also when a link fails to load). An admin may set `/products/<name>.svg/png/jpg/webp` or an `https://` link; `javascript:`, `data:`, `http://`, `../` and quotes are refused with 400 | `ProductServiceTest#createKeepsThePicture`, `ProductServiceTest#updateReplacesOrRemovesThePicture`, `ProductServiceTest#blankPictureMeansNone`, `ApiIntegrationTest#seededProductsHaveTheirPictures`, `ApiIntegrationTest#unsafePictureLinksAre400`, `ApiIntegrationTest#adminCanGiveAProductAPicture`, `ApiContractTest#catalogContract`, `HomePageUiTest#seededProductPictures`, `HomePageUiTest#productWithoutPictureGetsTheFallback`, `UiAdminProductsTest#productPicture` | U I A UI | Pass |
 
 ## Cart
 
@@ -117,6 +118,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-UI-06 | Registration and login forms validate e-mail format, password length (8-72) and the repeated password before calling the API | `UiShellTest#registrationValidation`, `UiAuthTest#wrongPassword` | UI | Pass |
 | REQ-UI-07 | Interface and help center in six languages (EN, BN, ES, FR, AR, ZH); Arabic is right-to-left; the choice is remembered | `UiShellTest#languages`, `UiShellTest#helpCenter` | UI | Pass |
 | REQ-UI-08 | Sidebar menu, top bar and login flow: a protected page asks for login and returns to it | `UiShellTest#sidebarNavigation`, `UiAuthTest#protectedRouteRedirect` | UI | Pass |
+| REQ-UI-09 | Log out and Exit are buttons in the top bar and in the menu. Exit logs out (server revokes the session), shows a goodbye page and asks the browser to close the window; it never stops the server | `UiAuthTest#exitEndsTheSessionAndSaysGoodbye`, `UiAuthTest#menuLogoutAndExit`, `UiAuthTest#logoutRevokesOnTheServer`, `AccessibilityTest#wcag21aa` | UI | Pass |
 
 ## Non-functional
 
@@ -133,7 +135,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | NFR-DATA-01 | Database invariants: no negative stock, timeline matches status, rating summary matches reviews, no card data | `OrderDatabaseTest#noNegativeStock`, `LifecycleDatabaseTest#timelineMatchesStatus`, `ReviewDatabaseTest#ratingSummaryMatchesReviewsForAllProducts`, `PaymentDatabaseTest#noCardDataColumns` | D | Pass |
 | NFR-API-01 | API responses keep their contract: required fields, types, formats and enums; no undeclared field (privacy: public tracking without customer data, masked reviewers, last 4 card digits only) | `ApiContractTest#authContract`, `ApiContractTest#catalogContract`, `ApiContractTest#purchaseContract`, `ApiContractTest#reviewsContract`, `ApiContractTest#wishlistContract`, `ApiContractTest#errorContract` | A | Pass |
 | NFR-API-02 | No breaking API change without an approved baseline (removed endpoint/field, new required input, changed type) | OpenAPI breaking-change gate (`.github/scripts/openapi-breaking-changes.sh`, with self-test) | CI | Pass (34 paths unchanged) |
-| NFR-A11Y-01 | Every storefront page meets WCAG 2.1 level A and AA (no serious or critical axe-core violation) | `AccessibilityTest#wcag21aa` (13 pages incl. registration, help and store admin) | UI | Pass |
+| NFR-A11Y-01 | Every storefront page meets WCAG 2.1 level A and AA (no serious or critical axe-core violation) | `AccessibilityTest#wcag21aa` (15 pages incl. registration, help, goodbye and store admin) | UI | Pass |
 | NFR-UI-02 | The storefront works the same in Chrome, Firefox and Edge | `UiShoppingJourneyTest#endToEndPurchase`, `UiOrderAfterSalesTest#trackingAndReturn`, `AccessibilityTest#wcag21aa` (all UI tests in each browser; CI job "UI tests in firefox / edge") | UI | Pass (all UI tests per browser) |
 
 ## Coverage summary
@@ -141,13 +143,13 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 11 | 11 | - |
-| Catalog | 4 | 4 | - |
+| Catalog | 5 | 5 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 6 | 6 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
 | Fulfilment and returns | 6 | 6 | - |
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
-| Storefront UI | 8 | 8 | - |
+| Storefront UI | 9 | 9 | - |
 | Non-functional | 13 | 13 | - |
-| **Total** | **78** | **78 (100 %)** | **0** |
+| **Total** | **80** | **80 (100 %)** | **0** |

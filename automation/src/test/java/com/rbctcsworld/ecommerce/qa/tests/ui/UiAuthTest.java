@@ -105,6 +105,46 @@ class UiAuthTest {
                 () -> assertTrue(revokedInDatabase(refresh), "server revoked it (checked in the database, not by using it)"));
     }
 
+    @Test
+    @DisplayName("Exit logs out, revokes the session on the server and shows the goodbye page")
+    void exitEndsTheSessionAndSaysGoodbye() throws Exception {
+        String email = TestData.uniqueEmail();
+        var session = new AuthClient().register(email, TestData.PASSWORD).then().statusCode(201).extract();
+        String refresh = session.path("refreshToken");
+        BasePage.loginWithTokens(driver, session.path("token"), refresh, email, "CUSTOMER");
+        ShellPage shell = new ShellPage(driver).open("/");
+        assertTrue(shell.waitLoggedInAs(email));
+
+        shell.exit();
+
+        assertAll(
+                () -> assertTrue(shell.waitGoodbye(), "goodbye page (a test browser window is never closed by a page)"),
+                () -> assertTrue(shell.goodbyeSaysSignedOut()),
+                () -> assertNull(shell.stored("token"), "browser forgot the session"),
+                () -> assertNull(shell.stored("refreshToken")),
+                () -> assertTrue(shell.waitLoggedOut(), "top bar offers Log in again"));
+        if (DatabaseUtils.isAvailable()) assertTrue(revokedInDatabase(refresh), "server revoked the refresh token");
+
+        shell.backToShop();
+        assertTrue(shell.waitLoggedOut(), "back in the shop as a guest");
+    }
+
+    @Test
+    @DisplayName("Log out and Exit are also in the menu's Account section; Exit works for guests too")
+    void menuLogoutAndExit() {
+        Fixtures.Customer c = Fixtures.newCustomer();
+        BasePage.loginWithToken(driver, c.token(), c.email());
+        ShellPage shell = new ShellPage(driver).open("/");
+        assertTrue(shell.waitLoggedInAs(c.email()));
+
+        shell.logoutFromMenu();
+        assertTrue(shell.waitLoggedOut());
+
+        shell.exitFromMenu();
+        assertAll(() -> assertTrue(shell.waitGoodbye()),
+                  () -> assertTrue(shell.goodbyeSaysSignedOut()));
+    }
+
     /** The logout call runs in the background; poll the row instead of sleeping a fixed time. */
     private static boolean revokedInDatabase(String refresh) throws Exception {
         String hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")

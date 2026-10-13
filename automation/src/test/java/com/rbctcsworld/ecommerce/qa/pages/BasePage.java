@@ -137,6 +137,20 @@ public abstract class BasePage {
         driver.navigate().refresh();
     }
 
+    /**
+     * Waits until the browser has decoded this picture (a broken image keeps naturalWidth 0). Scrolls it into
+     * view first, because the catalog loads pictures lazily. False when it never loads within the wait.
+     */
+    protected boolean pictureLoaded(By img) {
+        try {
+            return wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                    "const i = arguments[0]; i.scrollIntoView({block: 'center'}); return i.complete && i.naturalWidth > 0;",
+                    d.findElement(img))));
+        } catch (org.openqa.selenium.TimeoutException e) {
+            return false;
+        }
+    }
+
     /** A value the storefront keeps in localStorage (token, refreshToken, email, role). */
     public String stored(String key) {
         return (String) ((JavascriptExecutor) driver).executeScript("return localStorage.getItem(arguments[0]);", key);

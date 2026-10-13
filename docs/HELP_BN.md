@@ -199,8 +199,9 @@ flowchart LR
   T --> T3["Install app"]
   T --> T4["Help"]
   T --> T5["Log in / Create account<br/>অথবা ইমেইল + Admin badge + Log out"]
+  T --> T6["Exit (সবসময়)"]
   S["Sidebar"] --> S1["Shop: Catalog, Wishlist, Cart, Orders"]
-  S --> S2["Account: Log in, Create account"]
+  S --> S2["Account: Log in, Create account<br/>অথবা Log out; আর Exit"]
   S --> S3["Store admin (শুধু ADMIN):<br/>Dashboard, Products, Coupons,<br/>All orders, Returns, Reviews"]
   S --> S4["Support: Help"]
 ```
@@ -216,6 +217,7 @@ flowchart LR
 | অর্ডারের পাতা | `#/orders/{id}` | হ্যাঁ | অবস্থা, ট্র্যাকিং, বাতিল, রিটার্নের অনুরোধ |
 | Log in / Create account | `#/login`, `#/register` | না | নিচে ৪.২ দেখুন |
 | Help | `#/help`, `#/help/{topic}` | না | ৯টা বিষয়, ৬ ভাষায়, খোঁজা যায় |
+| Exit-এর পরের পাতা | `#/goodbye` | না | "আপনি শপ থেকে বেরিয়ে এসেছেন", Close window, Back to the shop |
 
 - লগইন লাগে এমন পাতায় লগইন ছাড়া গেলে আগে লগইন পাতা আসে। লগইনের পর সেই পাতাতেই ফিরে যায়।
 - কীবোর্ড: Tab দিয়ে ঘোরা, পাতার শুরুতে "Skip to content", মোবাইল মেনু Esc দিয়ে বন্ধ হয়।
@@ -242,7 +244,21 @@ flowchart TD
 - **Show password** টিক দিলে পাসওয়ার্ড দেখা যায়।
 - পরপর ৫ বার ভুল পাসওয়ার্ড দিলে ঐ ইমেইল ১৫ মিনিট লক থাকে (HTTP 429)। লক Redis-এ থাকে, তাই backend restart দিলেও খোলে না। Development-এ তাড়াতাড়ি খুলতে: `docker compose exec redis redis-cli FLUSHALL`।
 - লগইন থাকে ১৪ দিন পর্যন্ত (প্রতিবার ব্যবহারে নতুন করে শুরু হয়)। এর মধ্যে মাঝে মাঝে আবার লগইন করতে হয় না।
-- Log out: Topbar-এর **Log out**। এতে server-এও session বন্ধ হয়, অন্য কেউ token কপি করে রাখলেও আর কাজে লাগবে না।
+- Log out: Topbar-এর **Log out** বোতাম (দরজা-তীর আইকন), অথবা sidebar-এর Account অংশে **Log out**। এতে server-এও session বন্ধ হয়, অন্য কেউ token কপি করে রাখলেও আর কাজে লাগবে না। লগ আউটের পর Catalog-এ ফিরে আসে।
+- Exit: Topbar-এর **Exit** বোতাম (পাওয়ার আইকন) বা sidebar-এর **Exit**। লগইন থাকলে আগে লগ আউট করে, তারপর `#/goodbye` পাতা দেখায় আর ব্রাউজারকে উইন্ডো বন্ধ করতে বলে।
+  - ব্রাউজার শুধু script-এ খোলা উইন্ডো বন্ধ করতে দেয়। নিজে খোলা ট্যাব খোলাই থাকে; তখন goodbye পাতার কথামতো `⌘ W` (Mac) বা `Ctrl + W` চাপুন।
+  - Exit **server বন্ধ করে না** (নিরাপত্তার জন্য ইচ্ছা করেই: ওয়েব পাতার একটা বোতাম যেন পুরো শপ বন্ধ করতে না পারে)। নিজের Mac-এ সব বন্ধ করতে ডেস্কটপের `RbcTcsWorld-Stop` লঞ্চার চালান।
+  - মোবাইলে (সরু স্ক্রিন) Log out আর Exit শুধু আইকন হিসেবে দেখায়; screen reader তবু নাম পড়ে।
+
+```mermaid
+flowchart LR
+  X["Exit চাপা"] --> L{"লগইন আছে?"}
+  L -->|"হ্যাঁ"| R["Server-এ refresh token revoke<br/>browser-এর session মুছে ফেলা"] --> G
+  L -->|"না"| G["#/goodbye পাতা"]
+  G --> W{"window.close()"}
+  W -->|"ব্রাউজার রাজি"| C["উইন্ডো বন্ধ"]
+  W -->|"নিজে খোলা ট্যাব"| H["পাতায় ⌘W / Ctrl+W আর<br/>RbcTcsWorld-Stop-এর কথা লেখা"]
+```
 - "Session expired. Please log in again." দেখালে: refresh token-এর মেয়াদ শেষ, logout হয়েছে, অথবা একই token দুবার ব্যবহার হয়েছে (চুরির সন্দেহ)। আবার লগইন করুন।
 
 ### ৪.৩ কেনাকাটার পুরো পথ
@@ -296,7 +312,7 @@ stateDiagram-v2
 | পাতা | ঠিকানা | কাজ |
 |---|---|---|
 | Dashboard | `#/admin` | মোট অর্ডার, শিপের অপেক্ষায়, আয়, কম স্টক, অপেক্ষমাণ রিটার্ন |
-| Products | `#/admin/products` | Add, Edit, Update, Delete, নাম দিয়ে Search, পাতা ভাগ (২৫টা করে), Stock history |
+| Products | `#/admin/products` | Add, Edit, Update, Delete, ছবি (Picture), নাম দিয়ে Search, পাতা ভাগ (২৫টা করে), Stock history |
 | Coupons | `#/admin/coupons` | নতুন কুপন (PERCENT বা FIXED), তালিকা |
 | All orders | `#/admin/orders` | অবস্থা দিয়ে ফিল্টার, অর্ডার নম্বরে খোঁজা, UPS/FedEx/USPS দিয়ে Ship, Mark delivered |
 | Returns | `#/admin/returns` | নোট লিখে Approve বা Reject |
@@ -306,7 +322,7 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
   P["Products"] --> A["Add product"]
-  A --> F["নাম, SKU, category, দাম, স্টক"]
+  A --> F["নাম, SKU, category, দাম, স্টক, ছবি"]
   F --> V{"যাচাই"}
   V -->|"ভুল"| FE["ঘরের নিচে বার্তা"] --> F
   V -->|"SKU আগে থেকেই আছে"| E409["উপরে 409 error, লেখা হারায় না"] --> F
@@ -317,10 +333,18 @@ flowchart TD
 
 | ফর্ম | নিয়ম |
 |---|---|
-| Product | নাম আর SKU লাগবেই; দাম > 0, সর্বোচ্চ ২ দশমিক; স্টক ০ বা তার বেশি পূর্ণ সংখ্যা |
+| Product | নাম আর SKU লাগবেই; দাম > 0, সর্বোচ্চ ২ দশমিক; স্টক ০ বা তার বেশি পূর্ণ সংখ্যা; ছবি খালি, `/products/<নাম>.svg/png/jpg/webp` অথবা `https://` লিংক |
 | Coupon | কোডে শুধু অক্ষর, সংখ্যা, `_`, `-`; মান > 0; PERCENT হলে ≤ ১০০; সর্বোচ্চ ব্যবহার ≥ ১ |
 
 > Products-এর খোঁজা শুধু **নাম** মেলায়, SKU না (DEF-023)।
+
+**পণ্যের ছবি**
+
+- সিড করা ৮টা পণ্যের নিজস্ব ছবি আছে: `frontend/public/products/<sku ছোট হাতে>.svg` (যেমন `elec-mouse-001.svg`)। এগুলো এই প্রজেক্টের জন্য আঁকা নিজস্ব SVG, কোনো কপিরাইটের ঝামেলা নেই।
+- ছবি না থাকলে বা লিংক লোড না হলে category-র ছবি দেখায়: `electronics.svg`, `home.svg`, `books.svg`, বাকি সবার জন্য `product.svg` (পার্সেল বাক্স)। তাই কখনো ভাঙা ছবির আইকন দেখা যায় না।
+- নতুন ছবি দিতে: ফাইলটা `frontend/public/products/`-এ রাখুন (নাম ছোট হাতের অক্ষর, সংখ্যা, `-`), তারপর Products → Edit → **Picture** ঘরে `/products/নাম.png` লিখে Update। অথবা যেকোনো `https://` লিংক। ঘরের পাশে সাথে সাথে preview দেখায়।
+- `javascript:`, `data:`, `http://`, `../` বা উদ্ধৃতিচিহ্ন থাকা লিংক browser-এও আটকায়, backend-ও 400 দেয় (XSS আর path traversal ঠেকাতে)। nginx-এর CSP-তে তাই `img-src 'self' data: https:` রাখা হয়েছে।
+- সাবধান: Edit করে Picture ঘর খালি করে Update দিলে ছবি মুছে যায় (API-তে `PUT` পুরো পণ্য বদলায়, `imageUrl` না পাঠালে `null`)।
 
 ---
 

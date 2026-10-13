@@ -5,6 +5,7 @@ import com.rbctcsworld.ecommerce.qa.config.TestConfig;
 import com.rbctcsworld.ecommerce.qa.drivers.DriverFactory;
 import com.rbctcsworld.ecommerce.qa.pages.AdminProductsPage;
 import com.rbctcsworld.ecommerce.qa.pages.BasePage;
+import com.rbctcsworld.ecommerce.qa.pages.HomePage;
 import com.rbctcsworld.ecommerce.qa.pages.ShellPage;
 import com.rbctcsworld.ecommerce.qa.reporting.ScreenshotOnFailure;
 import com.rbctcsworld.ecommerce.qa.testdata.Fixtures;
@@ -95,6 +96,28 @@ class UiAdminProductsTest {
         assertEquals("Product deleted", page.notice());
         assertTrue(page.waitUntilGone(sku));
         assertTrue(new ProductClient().page(sku, 0, 5, "id").jsonPath().getList("sku").isEmpty(), "hidden from customers");
+    }
+
+    @Test
+    @DisplayName("Admin gives a product a picture: an unsafe link is stopped in the browser, a safe one is saved and shown")
+    void productPicture() {
+        Fixtures.Product p = Fixtures.namedProduct("6.00", 4);
+        AdminProductsPage page = asAdmin();
+        page.search(p.name()).waitForRow(p.sku());
+        assertEquals("/products/product.svg", page.pictureOf(p.sku()), "no picture yet: the general one");
+
+        page.edit(p.sku()).picture("javascript:alert(1)").save();
+        assertAll("unsafe link",
+                () -> assertFalse(page.fieldError("image").isBlank(), "explained next to the field"),
+                () -> assertTrue(page.formOpen(), "nothing sent, form still open"));
+
+        page.picture("/products/home-mug-002.svg").save();
+        assertEquals("Product updated", page.notice());
+        assertEquals("/products/home-mug-002.svg", page.pictureOf(p.sku()));
+        assertEquals("/products/home-mug-002.svg", findBySku(p.sku()).get("imageUrl"), "API holds the picture");
+
+        HomePage home = new HomePage(driver).open().search(p.name());
+        assertTrue(home.pictureOf(p.sku()).loaded(), "customers see it in the catalog");
     }
 
     @Test

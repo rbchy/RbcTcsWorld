@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "card_declined",
+    "decline_code": "insufficient_funds",
+    "doc_url": "https://stripe.com/docs/error-codes/card-declined",
+    "message": "Your card has insufficient funds.",
+    "payment_intent": { "id": "pi_3QdeclinedNSF0A1b2C3d4E", "object": "payment_intent", "status": "requires_payment_method" },
+    "type": "card_error"
+  }
+}

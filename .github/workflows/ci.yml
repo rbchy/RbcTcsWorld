@@ -27,6 +27,9 @@ jobs:
       - name: Traceability matrix references only tests that exist
         run: python3 docs/qa/check_rtm.py
       - name: mvn verify
+        env:
+          # optional: real Stripe TEST mode for StripeSandboxIntegrationTest; without the secret it is skipped
+          STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
         run: |
           set -o pipefail
           mvn -B -f backend/pom.xml verify 2>&1 | tee build.log

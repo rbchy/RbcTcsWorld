@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -46,6 +48,14 @@ public class PaymentTransaction {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    /** mock | stripe - internal, not part of the API. */
+    @Column(nullable = false, length = 10)
+    private String provider = "mock";
+
+    /** The provider's id (Stripe pi_... / re_...) for refunds and support - internal, not part of the API. */
+    @Column(name = "provider_ref", length = 64)
+    private String providerReference;
+
     protected PaymentTransaction() {
     }
 
@@ -57,6 +67,13 @@ public class PaymentTransaction {
         this.amount = amount;
         this.cardLast4 = cardLast4;
         this.failureReason = failureReason;
+    }
+
+    public PaymentTransaction(Long orderId, String type, String status, BigDecimal amount, String cardLast4,
+                              String failureReason, String provider, String providerReference) {
+        this(orderId, type, status, amount, cardLast4, failureReason);
+        this.provider = provider;
+        this.providerReference = providerReference;
     }
 
     @PrePersist
@@ -72,4 +89,6 @@ public class PaymentTransaction {
     public String getCardLast4() { return cardLast4; }
     public String getFailureReason() { return failureReason; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    @JsonIgnore public String getProvider() { return provider; }
+    @JsonIgnore public String getProviderReference() { return providerReference; }
 }

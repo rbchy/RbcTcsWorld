@@ -1,0 +1,9 @@
+{
+  "id": "re_3QabcDEFghIJkl0A1Refund1",
+  "object": "refund",
+  "amount": 1000,
+  "currency": "usd",
+  "payment_intent": "pi_3QabcDEFghIJkl0A1b2C3d4E",
+  "status": "succeeded",
+  "metadata": { "order_id": "42" }
+}

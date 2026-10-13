@@ -41,6 +41,13 @@ app:
     tax-rate: 0.06                    # 6% sales tax on merchandise (not on shipping)
     free-shipping-threshold: 50.00    # merchandise total after discount
     shipping-fee: 5.99
+  payment:
+    provider: ${PAYMENT_PROVIDER:mock}            # mock (test cards, default) | stripe
+    stripe:
+      api-base: ${STRIPE_API_BASE:https://api.stripe.com}   # stripe-mock: http://localhost:12111
+      secret-key: ${STRIPE_SECRET_KEY:}           # sk_test_... ; a live key is refused outside 'prod'
+      currency: usd
+      timeout-seconds: 10
   returns:
     window-days: 30                   # a return may be requested up to 30 days after delivery
   security:

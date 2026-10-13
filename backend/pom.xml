@@ -64,6 +64,7 @@
 <param>com.rbctcsworld.ecommerce.payment.MockPaymentGateway</param>
 <param>com.rbctcsworld.ecommerce.auth.InMemoryLoginAttemptStore</param>
 <param>com.rbctcsworld.ecommerce.auth.RedisLoginAttemptStore</param>
+<param>com.rbctcsworld.ecommerce.payment.StripePaymentGateway</param>
 </targetClasses>
 <!-- fast unit tests only; the Spring integration tests would make every mutant start a Spring context -->
 <targetTests><param>com.rbctcsworld.ecommerce.*.*Test</param></targetTests>

@@ -92,7 +92,8 @@ Details: [Defect Reports](DEFECT_REPORTS.md).
 | Logged-out access token valid until expiry (max 15 min) | Refresh token is revoked at once; a denylist costs a lookup per request | Denylist if a shorter window is required |
 | Tomcat 11.0.26 / Jackson 3.1.7 pinned above Boot 4.1.1 | Fix advisories in the managed versions | Remove the pins when Boot ships them |
 | 8 surviving mutants (PIT) | 5 are equivalent (cannot change behaviour, e.g. Luhn `d > 9` vs `d >= 9`), 3 are defensive or housekeeping code | Reviewed one by one in docs/modules/MUTATION_BN.md |
-| Mock payment gateway | No real money in this release | Provider sandbox contract tests |
+| Stripe behaviour only proven with a test key | stripe-mock checks every request; declines come from recorded answers | Add `STRIPE_TEST_SECRET_KEY` to GitHub secrets |
+| E-mail at least once (rare duplicate after a crash) | Losing a confirmation is worse than a duplicate | None planned |
 | Registration reveals that an e-mail exists | Usability; common e-commerce trade-off | Re-evaluate with product owner |
 
 ## 8. Lessons learned

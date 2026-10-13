@@ -27,12 +27,14 @@
 | Backend API | http://localhost:8081 (OpenAPI: `/v3/api-docs`) |
 | PostgreSQL | localhost:5432, database / user / password সব `ecommerce` |
 | Redis | localhost:6379 (login lockout-এর হিসাব) |
+| Mailpit (ইমেইল inbox) | http://localhost:8025 (দোকানের পাঠানো সব ইমেইল; বাইরে কিছু যায় না) |
 | Jenkins | http://localhost:8080 |
 | অ্যাডমিন লগইন (শুধু development) | `admin@rbctcsworld.com` / `Admin@12345` |
 | কুপন | `WELCOME10` (চালু), `SAVE5` (চালু), `EXPIRED20` (মেয়াদ শেষ), `FUTURE15` (এখনো শুরু হয়নি), `DISABLED` (বন্ধ) |
 | টেস্ট কার্ড | `4242424242424242` পাস · `4000000000000002` declined · `4000000000009995` টাকা নেই |
 | ব্যবসার নিয়ম | $50 থেকে ফ্রি শিপিং (নইলে $5.99), কর ৬%, ৫ বার ভুল পাসওয়ার্ডে ১৫ মিনিট লক, ৩০ দিনের মধ্যে রিটার্ন |
 | Session | access token ১৫ মিনিট, refresh token ১৪ দিন (প্রতিবার ব্যবহারে বদলায়) |
+| পেমেন্ট | default mock; `PAYMENT_PROVIDER=stripe` + `STRIPE_SECRET_KEY=sk_test_...` দিলে Stripe test mode |
 
 > Port 8080 ইচ্ছা করেই Jenkins-এর জন্য খালি রাখা হয়েছে, তাই API চলে 8081-এ।
 
@@ -299,6 +301,7 @@ stateDiagram-v2
 | All orders | `#/admin/orders` | অবস্থা দিয়ে ফিল্টার, অর্ডার নম্বরে খোঁজা, UPS/FedEx/USPS দিয়ে Ship, Mark delivered |
 | Returns | `#/admin/returns` | নোট লিখে Approve বা Reject |
 | Reviews | `#/admin/reviews` | Hide বা Publish |
+| E-mails | `#/admin/notifications` | কাকে কোন ইমেইল গেছে (PENDING / SENT / FAILED), ভুলের কারণ, FAILED-এ **Send again** |
 
 ```mermaid
 flowchart TD
@@ -495,6 +498,11 @@ flowchart TD
 | QA Reports সবুজ, কিন্তু build ফেল | পুরোনো রিপোর্ট পড়ছিল (DEF-022) | ঠিক করা হয়েছে, build-এর শুরুতে পুরোনো রিপোর্ট মোছে |
 | k6 "not run" অথচ চলেছে | রিপোর্টের ফোল্ডার মুছে যেত (DEF-025) | ঠিক করা হয়েছে, `git pull` |
 | UI টেস্ট লগইন পাতায় আটকে | token বসানোর পর পাতা reload হতো না | ঠিক করা হয়েছে (`loginWithToken` reload করে) |
+| গ্রাহক ইমেইল পাননি | `NOTIFICATIONS_CHANNEL=log` (default) হলে ইমেইল শুধু log-এ যায়; অথবা mail server বন্ধ | Docker-এ http://localhost:8025 দেখুন; admin → E-mails-এ অবস্থা আর ভুলের কারণ; FAILED হলে **Send again** |
+| ইমেইল আসতে কয়েক সেকেন্ড লাগে | ইচ্ছাকৃত: outbox প্রতি ২ সেকেন্ডে পাঠায়, checkout অপেক্ষা করে না | স্বাভাবিক; `NOTIFICATIONS_POLL_MS` দিয়ে বদলানো যায় |
+| `port 8025/1025 is already allocated` | Mac-এ আরেকটা Mailpit/MailHog চলছে | `brew services stop mailpit`, অথবা compose-এ port বদলান |
+| Pay চাপলে 503 "Payment service is not available" | Stripe চালু (`PAYMENT_PROVIDER=stripe`) কিন্তু নেটওয়ার্ক/ key সমস্যা | backend log-এ "Stripe charge ... failed"; key `sk_test_` কিনা দেখুন; একই কার্ডে আবার চাপলে দ্বিতীয়বার টাকা কাটে না |
+| Backend চালু হয় না: "Refusing a LIVE Stripe key" | `sk_live_` key `prod` profile ছাড়া | development-এ সবসময় `sk_test_` key |
 | লগইন হয় না, 429 | ৫ বার ভুল পাসওয়ার্ডে ১৫ মিনিট লক (Redis-এ, restart-এ খোলে না) | অপেক্ষা করুন; development-এ `docker compose exec redis redis-cli FLUSHALL` |
 | `port 6379 is already allocated` | Mac-এ নিজের Redis চলছে | `brew services stop redis`, অথবা compose-এ port বদলান |
 | হঠাৎ লগইন পাতা, "Session expired" | refresh token বাতিল (১৪ দিনের মেয়াদ, logout, বা পুরোনো token আবার ব্যবহার) | আবার লগইন করুন |
@@ -528,6 +536,9 @@ flowchart TD
 | Real server-এ deploy | dev পাসওয়ার্ড আর JWT secret সবাই জানে | `ADMIN_EMAIL`, `ADMIN_PASSWORD` আর `JWT_SECRET` environment variable দিয়ে বদলান; HTTPS ব্যবহার করুন |
 | ৩০ সেকেন্ড পরেও পুরোনো refresh token ফেরত আসে (খুব ধীর নেটওয়ার্ক) | Grace period শেষ, তাই চুরি ধরা হয় | ব্যবহারকারী আবার লগইন করেন; দরকারে `REFRESH_GRACE_SECONDS` বাড়ান |
 | Redis-এর memory ভরে যায় | খুব বেশি আলাদা ইমেইলে আক্রমণ | `maxmemory 64mb` + `volatile-ttl`: সবচেয়ে আগে মেয়াদ শেষ হবে এমন key আগে যায় |
+| আসল ইমেইল সেবা (SES, SendGrid, Gmail) | এখনকার SMTP-তে login আর TLS নেই | port 587 + STARTTLS + username/password যোগ করতে হবে (`SmtpMailChannel`) |
+| Stripe API-র নতুন version | stripe-mock-এর version pin করা (`v0.206.0`) | নতুন version-এ contract টেস্ট চালিয়ে তারপর pin বদলান |
+| Stripe-এ পরে refund/dispute হলে দোকান জানে না | webhook নেই | `/api/stripe/webhook` + signature যাচাই (পরের কাজ) |
 | Redis-এ password বা TLS লাগবে (cloud) | Production Redis খোলা থাকে না | `REDIS_URL=rediss://:password@host:6380` (Lettuce নিজেই বোঝে) |
 | Token চুরির ঝুঁকি (XSS) | token `localStorage`-এ | কড়া CSP আছে; পরের ধাপ: refresh token HttpOnly cookie-তে |
 
@@ -561,6 +572,13 @@ brew services restart jenkins-lts
 git pull
 git checkout -b feature/x && git push -u origin feature/x
 
+# ইমেইল (Mailpit)
+open http://localhost:8025                                               # inbox
+curl -s http://localhost:8025/api/v1/messages | head -c 400              # API দিয়ে
+
+# Stripe test mode-এ চালানো (key: stripe.com → Developers → API keys)
+PAYMENT_PROVIDER=stripe STRIPE_SECRET_KEY=sk_test_... mvn -f backend/pom.xml spring-boot:run
+
 # Redis (login lockout)
 docker compose exec redis redis-cli --scan --pattern 'rbc:login:*'   # কোন কোন lock/counter আছে
 docker compose exec redis redis-cli FLUSHALL                         # development-এ সব lock খোলা
@@ -571,4 +589,4 @@ docker system df         # Docker কত জায়গা নিচ্ছে
 ipconfig getifaddr en0   # Mac-এর IP (ফোন থেকে খুলতে)
 ```
 
-**আরও বিস্তারিত:** [Login, session, Redis](modules/AUTH_SESSIONS_BN.md) · [Storefront UI](modules/STOREFRONT_UI_BN.md) · [CI/CD + Jenkins](modules/CICD_BN.md) · [Performance](modules/PERFORMANCE_K6_BN.md) · [Security](modules/SECURITY_BN.md) · [Allure](modules/ALLURE_REPORT_BN.md) · [Defect Reports](qa/DEFECT_REPORTS.md)
+**আরও বিস্তারিত:** [Stripe আর ইমেইল](modules/PAYMENTS_NOTIFICATIONS_BN.md) · [Login, session, Redis](modules/AUTH_SESSIONS_BN.md) · [Storefront UI](modules/STOREFRONT_UI_BN.md) · [CI/CD + Jenkins](modules/CICD_BN.md) · [Performance](modules/PERFORMANCE_K6_BN.md) · [Security](modules/SECURITY_BN.md) · [Allure](modules/ALLURE_REPORT_BN.md) · [Defect Reports](qa/DEFECT_REPORTS.md)

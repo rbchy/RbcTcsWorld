@@ -8,7 +8,8 @@
 [![Mutation](https://img.shields.io/badge/mutation%20score-89.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
 
-An Amazon-inspired online store (catalog, cart, checkout, payment, shipping, returns, reviews, wishlist)
+An Amazon-inspired online store (catalog, cart, checkout, Stripe or mock payment, shipping, returns, reviews,
+wishlist, order e-mails)
 that I built **to be tested**: the application is the test object, and the real work is the test system around it.
 Every push goes through 14 quality gates in GitHub Actions; the same pipeline runs in Jenkins on a Mac.
 
@@ -160,7 +161,11 @@ three regressions before the merge (a new Tomcat CVE, DEF-016, DEF-017).
 
 Stating these is part of the test report, not a footnote.
 
-- **Payments are mocked.** A deterministic gateway with test card numbers; no provider sandbox yet.
+- **Payments run on the mock gateway by default.** Stripe (`PAYMENT_PROVIDER=stripe`) is contract-tested
+  against stripe-mock on every build; real test-mode runs need a `STRIPE_TEST_SECRET_KEY` secret. The card
+  form is the shop's own (a production shop would use Stripe Elements), and there are no Stripe webhooks yet.
+- **Order e-mails are English plain text** and the SMTP channel has no authentication or TLS yet (enough
+  for Mailpit; a real mail service needs both).
 - **Tokens live in the browser's localStorage.** An XSS bug could read them; the strict CSP and React's
   escaping reduce that risk. HttpOnly cookies would remove it but bring CSRF handling with them.
 - **A logged-out access token stays valid until it expires** (at most 15 minutes). The refresh token is
@@ -188,7 +193,7 @@ Stating these is part of the test report, not a footnote.
 
 ## Run it
 
-**Whole application, one command** (PostgreSQL + Redis + backend + storefront):
+**Whole application, one command** (PostgreSQL + Redis + Mailpit + backend + storefront):
 
 ```bash
 docker compose --profile app up -d --build        # storefront http://localhost:5173, API http://localhost:8081
@@ -229,7 +234,8 @@ mvn -f automation/pom.xml clean test -Dcucumber.filter.tags="@flagship"   # regi
 mvn -f automation/pom.xml allure:serve                          # open the Allure report
 ```
 
-Other tags: `contract`, `a11y`, `db`, `security`, `concurrency`, `payment`, `returns`.
+Other tags: `contract`, `a11y`, `db`, `security`, `concurrency`, `payment`, `returns`, `notification`.
+E-mails the shop sends land in Mailpit: http://localhost:8025.
 k6 scripts and how to run them: [performance](docs/modules/PERFORMANCE_K6_BN.md).
 
 ---
@@ -264,6 +270,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 | Storefront and UI tests, cross-browser | [FRONTEND_UI_TESTS_BN](docs/modules/FRONTEND_UI_TESTS_BN.md) |
 | Menu, store-admin panel, six languages, help, desktop | [STOREFRONT_UI_BN](docs/modules/STOREFRONT_UI_BN.md) |
 | Login sessions: refresh tokens, Redis login lockout | [AUTH_SESSIONS_BN](docs/modules/AUTH_SESSIONS_BN.md) |
+| Stripe payments (3 test layers), order e-mails (transactional outbox, Mailpit) | [PAYMENTS_NOTIFICATIONS_BN](docs/modules/PAYMENTS_NOTIFICATIONS_BN.md) |
 | API contract and accessibility | [API_CONTRACT_A11Y_BN](docs/modules/API_CONTRACT_A11Y_BN.md) |
 | Performance (k6) | [PERFORMANCE_K6_BN](docs/modules/PERFORMANCE_K6_BN.md) |
 | Security | [SECURITY_BN](docs/modules/SECURITY_BN.md) |

@@ -52,7 +52,7 @@ class FulfillmentServiceTest {
     @org.junit.jupiter.api.Test
     void deliveringTellsTheCustomer() {
         order(OrderStatus.SHIPPED);
-        service.deliver(3L);
+        assertThat(service.deliver(3L).status()).isEqualTo(OrderStatus.DELIVERED);
         org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(3L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_DELIVERED));
     }
 
@@ -61,6 +61,8 @@ class FulfillmentServiceTest {
         order(OrderStatus.PLACED);
         assertThatThrownBy(() -> service.ship(3L, "UPS")).isInstanceOf(ConflictException.class);
         org.mockito.Mockito.verifyNoInteractions(events);
+        // refused before any work: no tracking number is even generated
+        org.mockito.Mockito.verify(orders, org.mockito.Mockito.never()).existsByTrackingNumber(org.mockito.ArgumentMatchers.anyString());
     }
 
     @ParameterizedTest(name = "cannot ship a {0} order")

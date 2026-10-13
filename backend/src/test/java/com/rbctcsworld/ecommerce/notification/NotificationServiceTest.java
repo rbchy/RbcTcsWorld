@@ -152,12 +152,12 @@ class NotificationServiceTest {
         Notification n = new Notification(55L, "a@test.com", "ORDER_PLACED", "s", "b", LocalDateTime.now(CLOCK));
         when(notifications.findByOrderIdOrderByIdAsc(55L)).thenReturn(List.of(n));
         when(notifications.findTop100ByStatusOrderByIdDesc("FAILED")).thenReturn(List.of(n, n));
-        when(notifications.findTop100ByOrderByIdDesc()).thenReturn(List.of());
+        when(notifications.findTop100ByOrderByIdDesc()).thenReturn(List.of(n, n, n));
 
         assertThat(service.list("ignored", 55L)).hasSize(1);
         assertThat(service.list(" failed ", null)).hasSize(2);
-        assertThat(service.list("  ", null)).isEmpty();
-        assertThat(service.list(null, null)).isEmpty();
+        assertThat(service.list("  ", null)).hasSize(3);             // blank filter = latest of every status
+        assertThat(service.list(null, null)).hasSize(3);
     }
 
     @Test

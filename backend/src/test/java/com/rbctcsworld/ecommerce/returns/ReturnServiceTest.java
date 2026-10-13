@@ -49,11 +49,12 @@ class ReturnServiceTest {
     @Mock OrderService orderService;
     @Mock InventoryService inventory;
     @Mock PaymentService payments;
+    @Mock org.springframework.context.ApplicationEventPublisher events;
     private ReturnService service;
 
     @BeforeEach
     void setUp() {
-        service = new ReturnService(returns, orders, orderService, inventory, payments, CLOCK, 30);
+        service = new ReturnService(returns, orders, orderService, inventory, payments, CLOCK, 30, events);
     }
 
     /** Order total 27.19 = 20.00 + 5.99 shipping + 1.20 tax, delivered at the given time. */
@@ -130,6 +131,11 @@ class ReturnServiceTest {
         assertThat(result.isRestocked()).isEqualTo(restock);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.RETURNED);
         verify(payments).refund(10L, new BigDecimal(refund));
+        org.mockito.ArgumentCaptor<com.rbctcsworld.ecommerce.notification.OrderNotificationEvent> event = org.mockito.ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue().orderId()).isEqualTo(10L);
+        assertThat(event.getValue().type()).isEqualTo(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_APPROVED);
+        assertThat(event.getValue().amount()).isEqualByComparingTo(refund);   // the e-mail states the refund
         if (restock) {
             verify(inventory).release(1L, 2, 10L, StockMovement.RETURN_RESTOCK);
         } else {
@@ -149,6 +155,7 @@ class ReturnServiceTest {
         assertThat(r.getStatus()).isEqualTo(ReturnRequest.REJECTED);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
         verify(payments, never()).refund(any(), any());
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(10L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_REJECTED));
     }
 
     @Test

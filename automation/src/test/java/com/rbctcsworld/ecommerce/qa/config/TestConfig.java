@@ -21,6 +21,11 @@ public final class TestConfig {
         return get("secondBaseUrl", "");
     }
 
+    /** Mailpit's web API (docker compose / CI): every e-mail the shop sends lands there. */
+    public static String mailpitUrl() {
+        return get("mailpitUrl", "http://localhost:8025");
+    }
+
     public static String uiUrl() {
         return get("uiUrl", "http://localhost:5173");
     }

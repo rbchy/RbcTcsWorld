@@ -112,4 +112,111 @@ class PaymentServiceTest {
                     .isInstanceOf(BusinessRuleException.class).hasMessage("Invalid card number");
         }
     }
+
+    // ---------- provider reference, outages and refunds (any PaymentGateway) ----------
+
+    private PaymentService with(PaymentGateway gateway) {
+        return new PaymentService(gateway, transactions, CLOCK);
+    }
+
+    private static PaymentTransaction charged(String reference) {
+        return new PaymentTransaction(1L, PaymentTransaction.CHARGE, PaymentTransaction.SUCCEEDED, AMOUNT, "4242", null,
+                "stripe", reference);
+    }
+
+    @Test
+    void successfulChargeKeepsTheProviderAndItsReference() {
+        PaymentGateway stripe = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(stripe.name()).thenReturn("stripe");
+        when(stripe.charge(1L, "4242424242424242", AMOUNT)).thenReturn(PaymentGateway.GatewayResult.ok("pi_123"));
+        when(transactions.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentTransaction tx = with(stripe).charge(1L, AMOUNT, card("4242 4242 4242 4242", 12, 2030));
+
+        assertThat(tx.getProvider()).isEqualTo("stripe");
+        assertThat(tx.getProviderReference()).isEqualTo("pi_123");
+    }
+
+    @Test
+    void declineKeepsTheProviderReferenceForSupport() {
+        PaymentGateway stripe = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(stripe.name()).thenReturn("stripe");
+        when(stripe.charge(any(), any(), any())).thenReturn(PaymentGateway.GatewayResult.decline("Card declined", "pi_9"));
+
+        assertThatThrownBy(() -> with(stripe).charge(1L, AMOUNT, card("4242424242424242", 12, 2030)))
+                .isInstanceOf(PaymentDeclinedException.class);
+        ArgumentCaptor<PaymentTransaction> tx = ArgumentCaptor.forClass(PaymentTransaction.class);
+        verify(transactions).save(tx.capture());
+        assertThat(tx.getValue().getProviderReference()).isEqualTo("pi_9");
+        assertThat(tx.getValue().getProvider()).isEqualTo("stripe");
+    }
+
+    @Test
+    void providerOutageIsRecordedAndReportedAs503() {
+        PaymentGateway stripe = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(stripe.name()).thenReturn("stripe");
+        when(stripe.charge(any(), any(), any()))
+                .thenThrow(new com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException("down"));
+
+        assertThatThrownBy(() -> with(stripe).charge(1L, AMOUNT, card("4242424242424242", 12, 2030)))
+                .isInstanceOf(com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException.class);
+        ArgumentCaptor<PaymentTransaction> tx = ArgumentCaptor.forClass(PaymentTransaction.class);
+        verify(transactions).save(tx.capture());
+        assertThat(tx.getValue().getStatus()).isEqualTo(PaymentTransaction.FAILED);
+        assertThat(tx.getValue().getFailureReason()).isEqualTo("Provider unavailable");
+        assertThat(tx.getValue().getCardLast4()).isEqualTo("4242");
+        assertThat(tx.getValue().getProviderReference()).isNull();
+    }
+
+    @Test
+    void refundUsesTheChargeReferenceAndCountsEarlierRefunds() {
+        PaymentGateway stripe = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(stripe.name()).thenReturn("stripe");
+        PaymentTransaction earlierRefund = new PaymentTransaction(1L, PaymentTransaction.REFUND, PaymentTransaction.SUCCEEDED,
+                new BigDecimal("5.00"), "4242", null, "stripe", "re_1");
+        PaymentTransaction failedCharge = new PaymentTransaction(1L, PaymentTransaction.CHARGE, PaymentTransaction.FAILED,
+                AMOUNT, "0002", "Card declined", "stripe", "pi_failed");
+        when(transactions.findByOrderIdOrderByIdAsc(1L)).thenReturn(java.util.List.of(failedCharge, charged("pi_ok"), earlierRefund));
+        when(stripe.refund(1L, "pi_ok", new BigDecimal("10.00"), 2)).thenReturn(PaymentGateway.GatewayResult.ok("re_2"));
+        when(transactions.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentTransaction tx = with(stripe).refund(1L, new BigDecimal("10.00"));
+
+        assertThat(tx.getType()).isEqualTo(PaymentTransaction.REFUND);
+        assertThat(tx.getProviderReference()).isEqualTo("re_2");
+        assertThat(tx.getCardLast4()).isEqualTo("4242");                // from the successful charge, not the failed one
+        assertThat(tx.getProvider()).isEqualTo("stripe");
+    }
+
+    @Test
+    void refusedRefundRollsBackAs503() {
+        PaymentGateway stripe = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(transactions.findByOrderIdOrderByIdAsc(1L)).thenReturn(java.util.List.of(charged("pi_ok")));
+        when(stripe.refund(1L, "pi_ok", AMOUNT, 1)).thenReturn(PaymentGateway.GatewayResult.decline("failed", "re_x"));
+
+        assertThatThrownBy(() -> with(stripe).refund(1L, AMOUNT))
+                .isInstanceOf(com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException.class)
+                .hasMessage("Refund was not accepted: failed");
+        verify(transactions, never()).save(any());
+    }
+
+    @Test
+    void refundWithoutAnyChargeStillAsksTheGatewayWithoutReference() {
+        PaymentGateway gateway = org.mockito.Mockito.mock(PaymentGateway.class);
+        when(gateway.name()).thenReturn("mock");
+        when(transactions.findByOrderIdOrderByIdAsc(1L)).thenReturn(java.util.List.of());
+        when(gateway.refund(1L, null, AMOUNT, 1)).thenReturn(PaymentGateway.GatewayResult.ok("mock_re"));
+        when(transactions.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThat(with(gateway).refund(1L, AMOUNT).getCardLast4()).isNull();
+    }
+
+    @Test
+    void mockGatewayGivesReferencesAndItsName() {
+        MockPaymentGateway mock = new MockPaymentGateway();
+        assertThat(mock.name()).isEqualTo("mock");
+        assertThat(mock.charge(1L, "4242424242424242", AMOUNT).reference()).startsWith("mock_ch_");
+        assertThat(mock.charge(1L, MockPaymentGateway.DECLINED_CARD, AMOUNT).reference()).isNull();
+        assertThat(mock.refund(1L, "mock_ch_1", AMOUNT, 1).reference()).startsWith("mock_re_");
+    }
 }

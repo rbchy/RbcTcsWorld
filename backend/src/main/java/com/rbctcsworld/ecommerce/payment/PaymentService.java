@@ -2,7 +2,8 @@ package com.rbctcsworld.ecommerce.payment;
 
 import com.rbctcsworld.ecommerce.common.exception.BusinessRuleException;
 import com.rbctcsworld.ecommerce.common.exception.PaymentDeclinedException;
-import com.rbctcsworld.ecommerce.payment.MockPaymentGateway.GatewayResult;
+import com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException;
+import com.rbctcsworld.ecommerce.payment.PaymentGateway.GatewayResult;
 import com.rbctcsworld.ecommerce.payment.PaymentDtos.PayRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,11 +26,11 @@ import java.util.List;
 @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = PaymentDeclinedException.class)
 public class PaymentService {
 
-    private final MockPaymentGateway gateway;
+    private final PaymentGateway gateway;
     private final PaymentTransactionRepository transactions;
     private final Clock clock;
 
-    public PaymentService(MockPaymentGateway gateway, PaymentTransactionRepository transactions, Clock clock) {
+    public PaymentService(PaymentGateway gateway, PaymentTransactionRepository transactions, Clock clock) {
         this.gateway = gateway;
         this.transactions = transactions;
         this.clock = clock;
@@ -37,7 +38,8 @@ public class PaymentService {
 
     /**
      * 400 for malformed/expired card (nothing recorded - the card never reached the gateway),
-     * 402 for a declined card (FAILED transaction IS recorded), otherwise a SUCCEEDED transaction.
+     * 402 for a declined card (FAILED transaction IS recorded), 503 when the provider cannot be reached
+     * (FAILED "Provider unavailable" recorded), otherwise a SUCCEEDED transaction with the provider's id.
      */
     public PaymentTransaction charge(Long orderId, BigDecimal amount, PayRequest card) {
         String number = card.cardNumber().replace(" ", "");
@@ -49,25 +51,41 @@ public class PaymentService {
         }
         String last4 = number.substring(number.length() - 4);
 
-        GatewayResult result = gateway.charge(number, amount);
+        GatewayResult result;
+        try {
+            result = gateway.charge(orderId, number, amount);
+        } catch (PaymentUnavailableException e) {
+            transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE, PaymentTransaction.FAILED,
+                    amount, last4, "Provider unavailable", gateway.name(), null));
+            throw e;
+        }
         if (!result.approved()) {
             transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE, PaymentTransaction.FAILED,
-                    amount, last4, result.reason()));
+                    amount, last4, result.reason(), gateway.name(), result.reference()));
             throw new PaymentDeclinedException("Payment declined: " + result.reason());
         }
         return transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE,
-                PaymentTransaction.SUCCEEDED, amount, last4, null));
+                PaymentTransaction.SUCCEEDED, amount, last4, null, gateway.name(), result.reference()));
     }
 
-    /** Refunds the full amount of the successful charge (used when a PAID order is cancelled). */
+    /**
+     * Refunds an amount of the order's successful charge (cancelled order: all of it; return: the refund
+     * the return policy allows). A provider that cannot refund -> 503, and the caller's transaction rolls back.
+     */
     public PaymentTransaction refund(Long orderId, BigDecimal amount) {
-        String last4 = transactions.findByOrderIdOrderByIdAsc(orderId).stream()
+        List<PaymentTransaction> history = transactions.findByOrderIdOrderByIdAsc(orderId);
+        PaymentTransaction charge = history.stream()
                 .filter(t -> PaymentTransaction.CHARGE.equals(t.getType()) && PaymentTransaction.SUCCEEDED.equals(t.getStatus()))
-                .map(PaymentTransaction::getCardLast4)
                 .findFirst().orElse(null);
-        gateway.refund(amount);
-        return transactions.save(new PaymentTransaction(orderId, PaymentTransaction.REFUND,
-                PaymentTransaction.SUCCEEDED, amount, last4, null));
+        int refundNumber = 1 + (int) history.stream()
+                .filter(t -> PaymentTransaction.REFUND.equals(t.getType()) && PaymentTransaction.SUCCEEDED.equals(t.getStatus()))
+                .count();
+        GatewayResult result = gateway.refund(orderId, charge == null ? null : charge.getProviderReference(), amount, refundNumber);
+        if (!result.approved()) {
+            throw new PaymentUnavailableException("Refund was not accepted: " + result.reason());
+        }
+        return transactions.save(new PaymentTransaction(orderId, PaymentTransaction.REFUND, PaymentTransaction.SUCCEEDED,
+                amount, charge == null ? null : charge.getCardLast4(), null, gateway.name(), result.reference()));
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

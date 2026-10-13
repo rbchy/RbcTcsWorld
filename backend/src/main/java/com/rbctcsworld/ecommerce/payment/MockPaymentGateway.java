@@ -1,8 +1,7 @@
 package com.rbctcsworld.ecommerce.payment;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
+import java.util.UUID;
 
 /**
  * Stand-in for a real payment provider (Stripe/Adyen style test cards). Deterministic, so tests can
@@ -13,23 +12,30 @@ import java.math.BigDecimal;
  *   any other Luhn-valid -> approved            (e.g. 4242 4242 4242 4242)
  *
  * Card format, Luhn and expiry are validated BEFORE the gateway is called (PaymentService).
+ * Default provider (app.payment.provider=mock, see PaymentGatewayConfig); StripePaymentGateway is the real one.
  */
-@Component
-public class MockPaymentGateway {
+public class MockPaymentGateway implements PaymentGateway {
 
     public static final String DECLINED_CARD = "4000000000000002";
     public static final String INSUFFICIENT_FUNDS_CARD = "4000000000009995";
 
-    public GatewayResult charge(String cardNumber, BigDecimal amount) {
+    @Override
+    public GatewayResult charge(Long orderId, String cardNumber, BigDecimal amount) {
         return switch (cardNumber) {
-            case DECLINED_CARD -> GatewayResult.decline("Card declined");
-            case INSUFFICIENT_FUNDS_CARD -> GatewayResult.decline("Insufficient funds");
-            default -> GatewayResult.ok();
+            case DECLINED_CARD -> GatewayResult.decline("Card declined", null);
+            case INSUFFICIENT_FUNDS_CARD -> GatewayResult.decline("Insufficient funds", null);
+            default -> GatewayResult.ok("mock_ch_" + UUID.randomUUID());
         };
     }
 
-    public GatewayResult refund(BigDecimal amount) {
-        return GatewayResult.ok();
+    @Override
+    public GatewayResult refund(Long orderId, String chargeReference, BigDecimal amount, int refundNumber) {
+        return GatewayResult.ok("mock_re_" + UUID.randomUUID());
+    }
+
+    @Override
+    public String name() {
+        return "mock";
     }
 
     /** Luhn (mod 10) checksum used by every real card number. */
@@ -46,10 +52,5 @@ public class MockPaymentGateway {
             doubleIt = !doubleIt;
         }
         return sum % 10 == 0;
-    }
-
-    public record GatewayResult(boolean approved, String reason) {
-        static GatewayResult ok() { return new GatewayResult(true, null); }
-        static GatewayResult decline(String reason) { return new GatewayResult(false, reason); }
     }
 }

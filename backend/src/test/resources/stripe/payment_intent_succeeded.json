@@ -1,0 +1,13 @@
+{
+  "id": "pi_3QabcDEFghIJkl0A1b2C3d4E",
+  "object": "payment_intent",
+  "amount": 2450,
+  "amount_received": 2450,
+  "currency": "usd",
+  "status": "succeeded",
+  "latest_charge": "ch_3QabcDEFghIJkl0A1xYz",
+  "livemode": false,
+  "metadata": { "order_id": "42" },
+  "payment_method": "pm_1QabcDEFghIJklmnOPqr",
+  "payment_method_types": ["card"]
+}

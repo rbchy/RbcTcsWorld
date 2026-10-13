@@ -194,7 +194,10 @@ test is a defect, not "just re-run it".
 
 ## 14. Known limitations and accepted risks
 
-* Payments use a **mock gateway**; a real provider would need sandbox contract tests.
+* Payments use the **mock gateway** by default. Stripe is covered by a consumer contract (stripe-mock),
+  recorded answers and an optional real test-mode run; behaviour against live Stripe is only proven when the
+  `STRIPE_TEST_SECRET_KEY` secret is set.
+* Order e-mails are delivered at least once (a crash between "accepted" and "SENT" can duplicate one).
 * Lockout state is in **Redis** (`LOGIN_STORE=redis`); while Redis is down each instance counts in memory.
 * Logout revokes the refresh token at once; a stolen **access** token stays valid until it expires (15 minutes).
 * Tomcat and Jackson are pinned to patch releases newer than the ones Spring Boot 4.1.1 manages (OSV

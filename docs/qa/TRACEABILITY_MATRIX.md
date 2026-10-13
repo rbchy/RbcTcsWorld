@@ -65,6 +65,9 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-PAY-02 | Declined card -> 402, FAILED attempt kept, order stays PLACED, retry works | `PaymentServiceTest#declinedCardIsRecordedAsFailedThen402`, `CheckoutPaymentIntegrationTest#declinedPaymentIs402ButTheFailedAttemptIsKept`, `PaymentApiTest#declined`, `PaymentDatabaseTest#declinedAttemptPersisted`, `UiShoppingJourneyTest#endToEndPurchase`, `bdd:Paying for an order with different test cards` | U I A B D UI | Pass |
 | REQ-PAY-03 | Bad Luhn, expired card, bad month, short CVV -> 400 and nothing recorded | `PaymentServiceTest#luhnOrLengthFailureIs400AndNothingRecorded`, `PaymentServiceTest#expiryBoundary`, `PaymentServiceTest#luhnAlgorithm`, `PaymentApiTest#cardValidation`, `CheckoutPaymentIntegrationTest#invalidOrExpiredCardIs400AndNothingIsRecorded` | U I A | Pass |
 | REQ-PAY-04 | No double charge (second pay 409); other customers cannot pay or read my payments | `OrderServiceTest#paidOrderCannotBePaidAgain`, `PaymentApiTest#noDoubleCharge`, `PaymentApiTest#idor`, `CheckoutPaymentIntegrationTest#cannotPaySomeoneElsesOrder` | U I A | Pass |
+| REQ-PAY-05 | With PAYMENT_PROVIDER=stripe, charges and refunds go through Stripe PaymentIntents / Refunds in cents; Stripe card errors give the same short reasons as the mock (402), anything else is 503; the provider's id is kept but never shown | `StripePaymentGatewayTest#approvedChargeKeepsThePaymentIntentId`, `StripePaymentGatewayTest#cardErrorsBecomeShortCustomerSafeReasons`, `StripePaymentGatewayTest#everythingThatIsNotAboutTheCardIs503`, `StripePaymentGatewayTest#amountsGoToStripeInCents`, `StripeClientTest#cardDeclineIsACardErrorWithItsCodesAndPaymentIntent`, `StripeClientTest#slowStripeTimesOutAsAConnectionError`, `PaymentServiceTest#providerOutageIsRecordedAndReportedAs503`, `PaymentServiceTest#successfulChargeKeepsTheProviderAndItsReference`, `StripeSandboxIntegrationTest#declinedAndInsufficientFundsCardsGiveTheSameReasonsAsTheMock` | U I | Pass |
+| REQ-PAY-06 | Consumer contract with Stripe: every request the shop sends is a valid Stripe API request (stripe-mock from Stripe's OpenAPI spec); dollar amounts, unknown parameters and missing keys are rejected | `StripeContractIntegrationTest#ourPaymentIntentRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#ourRefundRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#theWholeGatewayTalksToStripe`, `StripeContractIntegrationTest#stripeRejectsDollarAmounts`, `StripeContractIntegrationTest#stripeRejectsUnknownParameters`, `StripeClientTest#paymentIntentRequestIsExactlyWhatStripeExpects`, `StripeClientTest#refundRequestAndAnswer` | I | Pass |
+| REQ-PAY-07 | A retried charge or refund never moves money twice (idempotency key from order, amount and card / refund number); a live Stripe key cannot run outside the prod profile | `StripePaymentGatewayTest#sameOrderAmountAndCardGiveTheSameIdempotencyKeyAnotherCardADifferentOne`, `StripePaymentGatewayTest#refundSucceedsOrIsPending`, `PaymentServiceTest#refundUsesTheChargeReferenceAndCountsEarlierRefunds`, `PaymentGatewayConfigTest#aLiveKeyOnlyRunsWithTheProdProfile`, `PaymentGatewayConfigTest#stripeWithoutAKeyStopsTheStart`, `StripeSandboxIntegrationTest#aRetryWithTheSameKeyDoesNotChargeTwice` | U I | Pass |
 
 ## Fulfilment and returns
 
@@ -76,6 +79,15 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-RET-01 | Return only for DELIVERED orders, within 30 days, once per order | `ReturnServiceTest#lastMomentOfTheWindowIsAccepted`, `ReturnServiceTest#oneSecondAfterTheWindowIsRejected`, `ReturnServiceTest#notYetDeliveredCannotBeReturned`, `ReturnServiceTest#onlyOneReturnPerOrder`, `ReturnApiTest#notDeliveredYet`, `ReturnApiTest#validationAndDuplicates` | U A | Pass |
 | REQ-RET-02 | Decision table: DAMAGED full refund no restock; NO_LONGER_NEEDED total minus shipping; others full refund + restock | `ReturnServiceTest#approvalFollowsTheDecisionTable`, `ReturnApiTest#decisionTable`, `FulfillmentReturnIntegrationTest#damagedReturnIsNotRestockedAndRemorseReturnKeepsShipping`, `LifecycleDatabaseTest#fullLifecycleIsConsistent`, `bdd:Return decision table - refund and restock depend on the reason` | U I A B D | Pass |
 | REQ-RET-03 | Rejection puts the order back to DELIVERED without refund; a resolved return cannot be resolved again | `ReturnServiceTest#rejectionPutsOrderBackToDeliveredWithoutRefund`, `ReturnServiceTest#resolvedReturnCannotBeResolvedAgain`, `ReturnApiTest#rejection`, `bdd:A rejected return sends the order back to DELIVERED` | U A B | Pass |
+
+## Customer e-mails
+
+| ID | Requirement | Tests | Levels | Status |
+|---|---|---|---|---|
+| REQ-NTF-01 | The customer gets an e-mail when the order is placed, paid, shipped (carrier + tracking number), delivered, cancelled (with refund) and when a return is approved (refund) or rejected | `NotificationServiceTest#orderPlacedListsItemsAndTheWholePriceBreakdown`, `NotificationServiceTest#shippedNamesCarrierAndTrackingNumber`, `NotificationServiceTest#cancelledWithAndWithoutRefund`, `NotificationServiceTest#returnApprovedStatesTheRefund`, `OrderServiceTest#cancellingAPaidOrderRefundsTheTotal`, `FulfillmentServiceTest#deliveringTellsTheCustomer`, `NotificationIntegrationTest#shipDeliverAndCancelAreAnnounced`, `NotificationEmailTest#orderAndPaymentEmails`, `NotificationEmailTest#shippedEmailHasTheTrackingNumber` | U I A | Pass |
+| REQ-NTF-02 | An e-mail exists only if its order change was committed (transactional outbox): a declined card or a refused change sends nothing | `NotificationIntegrationTest#aDeclinedCardSendsNoPaymentEmail`, `NotificationIntegrationTest#aRefusedChangeWritesNoEmail`, `FulfillmentServiceTest#nothingIsAnnouncedWhenTheMoveIsRefused`, `NotificationEmailTest#declinedCardNoPaymentEmail` | U I A | Pass |
+| REQ-NTF-03 | Delivery: every e-mail is sent once by one instance; failures are retried after 30 s, 1, 2, 4 min and marked FAILED after 5 attempts; one bad address does not block the others | `NotificationDeliveryServiceTest#claimedRowIsSentAndMarkedSent`, `NotificationDeliveryServiceTest#aRowAnotherInstanceClaimedIsLeftAlone`, `NotificationDeliveryServiceTest#fourthFailureWaitsFourMinutesFifthGivesUp`, `NotificationDeliveryServiceTest#oneBadRowDoesNotStopTheOthers`, `NotificationIntegrationTest#theDeliveryJobSendsDueEmails`, `MailpitSmtpIntegrationTest#anOrderEmailArrivesWithSenderSubjectAndUtf8Text`, `MailpitSmtpIntegrationTest#anUnreachableMailServerIsAnErrorTheOutboxRetries`, `NotificationEmailTest#orderAndPaymentEmails` | U I A | Pass |
+| REQ-NTF-04 | Admins see the outbox (no e-mail bodies) and can re-send only FAILED e-mails; customers cannot see it | `NotificationServiceTest#onlyFailedNotificationsCanBeSentAgain`, `NotificationIntegrationTest#adminSeesTheOutboxWithoutTheBodyCustomersDoNot`, `NotificationEmailTest#adminSeesTheOutbox`, `AccessibilityTest#wcag21aa` | U I A UI | Pass |
 
 ## Reviews and wishlist
 
@@ -128,13 +140,14 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
-| Identity and access | 7 | 7 | - |
+| Identity and access | 11 | 11 | - |
 | Catalog | 4 | 4 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 6 | 6 | - |
-| Pricing, coupons, payments | 9 | 9 | - |
+| Pricing, coupons, payments | 12 | 12 | - |
 | Fulfilment and returns | 6 | 6 | - |
+| Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 8 | 8 | - |
 | Non-functional | 13 | 13 | - |
-| **Total** | **67** | **67 (100 %)** | **0** |
+| **Total** | **78** | **78 (100 %)** | **0** |

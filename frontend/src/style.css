@@ -104,6 +104,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .field label { font-size: 14px; font-weight: 600; color: var(--ink); }
 .field input, .field select { width: 100%; }
 .field-error { color: var(--bad); font-size: 13px; }
+.error-text { color: var(--bad); overflow-wrap: anywhere; }
 .hint { color: var(--muted); font-size: 13px; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
 label.check { flex-direction: row; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); }

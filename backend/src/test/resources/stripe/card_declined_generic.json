@@ -1,0 +1,17 @@
+{
+  "error": {
+    "code": "card_declined",
+    "decline_code": "generic_decline",
+    "doc_url": "https://stripe.com/docs/error-codes/card-declined",
+    "message": "Your card was declined.",
+    "payment_intent": {
+      "id": "pi_3QdeclinedGEN0A1b2C3d4E",
+      "object": "payment_intent",
+      "amount": 2450,
+      "currency": "usd",
+      "status": "requires_payment_method"
+    },
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_abc",
+    "type": "card_error"
+  }
+}

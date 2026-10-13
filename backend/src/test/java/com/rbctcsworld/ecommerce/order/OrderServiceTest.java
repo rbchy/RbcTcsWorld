@@ -56,6 +56,7 @@ class OrderServiceTest {
     @Mock InventoryService inventory;
     @Mock CouponService coupons;
     @Mock PaymentService payments;
+    @Mock org.springframework.context.ApplicationEventPublisher events;
     @Spy PricingService pricing = new PricingService(new BigDecimal("0.06"), new BigDecimal("50.00"), new BigDecimal("5.99"));
     @InjectMocks OrderService service;
 
@@ -108,6 +109,7 @@ class OrderServiceTest {
         seq.verify(inventory).reserve(mouse, 2, null);
         seq.verify(inventory).reserve(keyboard, 1, null);
         seq.verify(cartItems).deleteByUserId(7L);
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(null, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_PLACED));
     }
 
     @Test
@@ -162,6 +164,7 @@ class OrderServiceTest {
 
         verify(payments).refund(55L, new BigDecimal("27.19"));
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(events).publishEvent(new com.rbctcsworld.ecommerce.notification.OrderNotificationEvent(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_CANCELLED, new BigDecimal("27.19")));
     }
 
     @Test
@@ -174,6 +177,7 @@ class OrderServiceTest {
         service.cancel(EMAIL, 55L);
 
         verify(payments, never()).refund(any(), any());
+        verify(events).publishEvent(new com.rbctcsworld.ecommerce.notification.OrderNotificationEvent(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_CANCELLED, null));   // no refund line in the e-mail
     }
 
     @Test
@@ -260,6 +264,7 @@ class OrderServiceTest {
         OrderResponse r = service.pay(EMAIL, 55L, card);
 
         verify(payments).charge(55L, new BigDecimal("27.19"), card);
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.PAYMENT_RECEIVED));
         assertThat(r.status()).isEqualTo(OrderStatus.PAID);
         assertThat(r.paidAt()).isNotNull();
         assertThat(r.createdAt()).isEqualTo(LocalDateTime.of(2026, 10, 1, 9, 30));

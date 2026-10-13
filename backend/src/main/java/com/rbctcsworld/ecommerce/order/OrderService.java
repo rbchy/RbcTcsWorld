@@ -20,6 +20,8 @@ import com.rbctcsworld.ecommerce.payment.PaymentTransaction;
 import com.rbctcsworld.ecommerce.pricing.PricingService;
 import com.rbctcsworld.ecommerce.pricing.PricingService.PriceBreakdown;
 import com.rbctcsworld.ecommerce.product.Product;
+import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,10 +58,11 @@ public class OrderService {
     private final PricingService pricing;
     private final CouponService coupons;
     private final PaymentService payments;
+    private final ApplicationEventPublisher events;
 
     public OrderService(OrderRepository orders, CartItemRepository cartItems, UserRepository users,
                         InventoryService inventory, PricingService pricing, CouponService coupons,
-                        PaymentService payments) {
+                        PaymentService payments, ApplicationEventPublisher events) {
         this.orders = orders;
         this.cartItems = cartItems;
         this.users = users;
@@ -67,6 +70,7 @@ public class OrderService {
         this.pricing = pricing;
         this.coupons = coupons;
         this.payments = payments;
+        this.events = events;
     }
 
     // ---------------------------------------------------------------- checkout
@@ -110,6 +114,7 @@ public class OrderService {
         }
 
         cartItems.deleteByUserId(user.getId());
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.ORDER_PLACED));
         return OrderResponse.from(order);
     }
 
@@ -122,6 +127,7 @@ public class OrderService {
         order.assertCanMoveTo(OrderStatus.PAID);                      // 409 before any money moves
         payments.charge(order.getId(), order.getTotal(), card);   // throws 400 / 402 on problems
         order.markPaid();
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.PAYMENT_RECEIVED));
         return OrderResponse.from(order);
     }
 
@@ -153,10 +159,13 @@ public class OrderService {
         order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getProductId))
                 .forEach(i -> inventory.release(i.getProductId(), i.getQuantity(), order.getId()));
+        BigDecimal refunded = null;
         if (order.isPaid()) {
             payments.refund(order.getId(), order.getTotal());
+            refunded = order.getTotal();
         }
         order.cancel();
+        events.publishEvent(new OrderNotificationEvent(order.getId(), OrderNotificationEvent.Type.ORDER_CANCELLED, refunded));
         return OrderResponse.from(order);
     }
 

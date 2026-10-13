@@ -5,3 +5,8 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+# integration tests call NotificationDeliveryService.sendDue() themselves; the scheduler stays quiet
+app:
+  notifications:
+    poll-ms: 3600000

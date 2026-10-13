@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 class FulfillmentServiceTest {
 
     @Mock OrderRepository orders;
+    @Mock org.springframework.context.ApplicationEventPublisher events;
     @InjectMocks FulfillmentService service;
 
     private CustomerOrder order(String status) {
@@ -45,6 +46,23 @@ class FulfillmentServiceTest {
         assertThat(r.carrier()).isEqualTo(carrier);
         assertThat(r.trackingNumber()).matches(carrier + "-\\d{12}");
         assertThat(r.shippedAt()).isNotNull();
+        org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(3L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_SHIPPED));
+    }
+
+    @org.junit.jupiter.api.Test
+    void deliveringTellsTheCustomer() {
+        order(OrderStatus.SHIPPED);
+        assertThat(service.deliver(3L).status()).isEqualTo(OrderStatus.DELIVERED);
+        org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(3L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_DELIVERED));
+    }
+
+    @org.junit.jupiter.api.Test
+    void nothingIsAnnouncedWhenTheMoveIsRefused() {
+        order(OrderStatus.PLACED);
+        assertThatThrownBy(() -> service.ship(3L, "UPS")).isInstanceOf(ConflictException.class);
+        org.mockito.Mockito.verifyNoInteractions(events);
+        // refused before any work: no tracking number is even generated
+        org.mockito.Mockito.verify(orders, org.mockito.Mockito.never()).existsByTrackingNumber(org.mockito.ArgumentMatchers.anyString());
     }
 
     @ParameterizedTest(name = "cannot ship a {0} order")

@@ -18,30 +18,30 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 
 | # | Criterion | Target | Result | |
 |---|---|---|---|---|
-| 1 | Automated tests on CI | 100 % pass | **662 / 662** passed, 0 skipped (+44 smoke against Docker) | ✅ |
+| 1 | Automated tests on CI | 100 % pass | **758 / 758** passed, 0 skipped (+44 smoke against Docker) | ✅ |
 | 2 | Requirement coverage | >= 95 % | **63 / 63 = 100 %** | ✅ |
 | 3 | Open Critical / High defects | 0 | **0** | ✅ |
 | 4 | k6 smoke + load SLOs | all pass | all pass | ✅ |
 | 5 | k6 flash sale | orders = stock, stock 0 | 15 / 15 (CI), 50 / 50 (local, 300 buyers) | ✅ |
 | 6 | OWASP ZAP | 0 Medium / High | **0** (Low only, informational) | ✅ |
 | 7 | OSV-Scanner | 0 unaccepted CVSS >= 9 | **0 open, 0 accepted** (was 21; both Spring CVEs fixed by the Boot 4 upgrade) | ✅ |
-| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.0 % lines, 91.9 % branches** | ✅ |
-| 9 | Mutation score (PIT, business logic) | >= 84 % | **89.2 %** (was 65.5 %); test strength 99.0 % | ✅ |
+| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.1 % lines, 93.4 % branches** | ✅ |
+| 9 | Mutation score (PIT, business logic) | >= 84 % | **91.9 %** (was 65.5 %); test strength 99.3 % | ✅ |
 | 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, OpenAPI unchanged (34 paths)** | ✅ |
-| 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **13/13 pages clean** (the first 8 all failed before DEF-018) | ✅ |
-| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **34/34 Firefox 157, 34/34 Edge 154** (Chrome in criterion 1) | ✅ |
+| 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **14/14 pages clean** (the first 8 all failed before DEF-018) | ✅ |
+| 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **35/35 Firefox 157, 35/35 Edge 154** (Chrome in criterion 1) | ✅ |
 
 ## 3. Test execution
 
 | Suite | Tests | Passed | Failed | Skipped | Runs against |
 |---|---|---|---|---|---|
-| Backend unit + integration | 352 | 352 | 0 | 0 | H2 (PostgreSQL mode) + Flyway |
-| Automation: API, DB, security, BDD, UI | 310 | 310 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
-| **Total** | **662** | **662** | **0** | **0** | |
-| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 68 | 68 | 0 | 0 | headless Firefox 157 / Edge 154 |
-| Smoke against the Docker images | 44 | 44 | 0 | 0 | `docker compose --profile app` (postgres + redis + backend + nginx storefront) |
+| Backend unit + integration | 443 | 443 | 0 | 0 | H2 (PostgreSQL mode) + Flyway |
+| Automation: API, DB, security, BDD, UI | 315 | 315 | 0 | 0 | Backend + PostgreSQL 16 + headless Chrome |
+| **Total** | **758** | **758** | **0** | **0** | |
+| UI journeys + accessibility in Firefox and Edge (separate CI jobs) | 70 | 70 | 0 | 0 | headless Firefox 157 / Edge 154 |
+| Smoke against the Docker images | 44 | 44 | 0 | 0 | `docker compose --profile app` (postgres + redis + mailpit + backend + nginx storefront) |
 
-The automation total contains 43 Cucumber scenarios, 21 Selenium UI journeys, 13 accessibility page checks and 6 API contract tests; the rest are API,
+The automation total contains 43 Cucumber scenarios, 21 Selenium UI journeys, 14 accessibility page checks and 6 API contract tests; the rest are API,
 database and security tests. Figures come from the CI "Test totals" annotations (surefire XML).
 
 ## 4. Performance

@@ -19,10 +19,12 @@ import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminReturns from './pages/admin/AdminReturns';
 import AdminReviews from './pages/admin/AdminReviews';
+import AdminNotifications from './pages/admin/AdminNotifications';
 
 const ADMIN = {
   '/admin': AdminDashboard, '/admin/products': AdminProducts, '/admin/coupons': AdminCoupons,
   '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
+  '/admin/notifications': AdminNotifications,
 };
 
 // data-testid attributes are the stable hooks used by Selenium (automation/.../pages/*.java).

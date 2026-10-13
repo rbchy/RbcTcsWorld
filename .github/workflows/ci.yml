@@ -151,8 +151,15 @@ jobs:
         ports: ['6379:6379']
         options: >-
           --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+      mailpit:
+        image: axllent/mailpit:v1.31.5
+        ports: ['1025:1025', '8025:8025']
     env:
       LOGIN_STORE: redis                       # lockout counters in Redis, shared by both backends below
+      NOTIFICATIONS_CHANNEL: smtp              # order e-mails go to Mailpit; both backends share one outbox
+      MAIL_HOST: localhost
+      MAIL_PORT: '1025'
+      NOTIFICATIONS_POLL_MS: '500'
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -181,6 +188,7 @@ jobs:
         run: >-
           mvn -B -f automation/pom.xml test
           -DbaseUrl=http://localhost:8081 -DsecondBaseUrl=http://localhost:8082 -DuiUrl=http://localhost:5173 -Dheadless=true
+          -DmailpitUrl=http://localhost:8025
 
       # ---------- k6 performance smoke + flash-sale invariant ----------
       - uses: grafana/setup-k6-action@v1

@@ -1,9 +1,10 @@
 # Two ways to use this file:
 #
-#   docker compose up -d                          -> PostgreSQL + Redis only (daily development: run the backend
+#   docker compose up -d                          -> PostgreSQL + Redis + Mailpit (daily development: run the backend
 #                                                    from Eclipse / "mvn spring-boot:run" and "npm run dev")
 #   docker compose --profile app up -d --build    -> the WHOLE application in containers:
-#                                                    PostgreSQL + Redis + backend (8081) + storefront (http://localhost:5173)
+#                                                    PostgreSQL + Redis + Mailpit + backend (8081) + storefront (http://localhost:5173)
+#   E-mails the shop sends: http://localhost:8025 (Mailpit inbox; nothing leaves your computer)
 #   docker compose --profile app down             -> stop it (add -v to also delete the database volume)
 #
 # The backend waits until PostgreSQL and Redis are healthy, the storefront until the backend is healthy.
@@ -37,6 +38,12 @@ services:
       retries: 20
     mem_limit: 128m
 
+  # Test mail server: catches every e-mail (SMTP 1025) and shows it in a web inbox on http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    ports: ["8025:8025", "1025:1025"]
+    mem_limit: 128m
+
   backend:
     profiles: ["app"]
     build: ./backend
@@ -49,12 +56,17 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
       LOGIN_STORE: ${LOGIN_STORE:-redis}
       REDIS_URL: redis://redis:6379
+      NOTIFICATIONS_CHANNEL: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
     ports: ["8081:8081"]
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     mem_limit: 768m
 
   frontend:

@@ -6,6 +6,14 @@ import java.util.Map;
 
 public class AdminClient extends ApiClient {
 
+    public Response notifications(String token, long orderId) {
+        return as(token).queryParam("orderId", orderId).get("/api/admin/notifications");
+    }
+
+    public Response retryNotification(String token, long notificationId) {
+        return as(token).post("/api/admin/notifications/{id}/retry", notificationId);
+    }
+
     public Response allOrders(String token) {
         return as(token).get("/api/admin/orders");
     }

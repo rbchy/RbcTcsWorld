@@ -17,7 +17,7 @@
 ## নিজের Mac-এ দেখার নিয়ম
 ```bash
 cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
-mvn -f automation/pom.xml clean test -DexcludedGroups=ui   # backend চালু থাকতে হবে
+mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile   # backend চালু থাকতে হবে
 mvn -f automation/pom.xml allure:serve                     # ব্রাউজারে রিপোর্ট খুলবে
 ```
 `clean` দেওয়া জরুরি। নাহলে আগের রানের ফলাফল মিশে গিয়ে একই টেস্ট একাধিকবার দেখাবে।

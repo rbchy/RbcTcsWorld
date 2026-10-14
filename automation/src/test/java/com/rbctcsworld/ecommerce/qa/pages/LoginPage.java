@@ -48,7 +48,19 @@ public class LoginPage extends BasePage {
         type("email-input", email);
         type("password-input", password);
         if ("register".equals(mode())) type("confirm-input", repeated);
+        if (com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile()) {
+            // close the on-screen keyboard first: while it slides away the page moves, and a tap at the button's
+            // old position missed it on the Android emulator (nothing happened)
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                    "if (document.activeElement) document.activeElement.blur();"
+                            + "document.querySelector('[data-testid=auth-submit]').scrollIntoView({block: 'center'});");
+        }
         click("auth-submit");
+    }
+
+    private java.util.List<String> fieldErrors() {
+        return java.util.stream.Stream.of("email", "password", "confirm").map(this::fieldError)
+                .filter(e -> !e.isBlank()).toList();
     }
 
     /** Client-side validation message under a field ("email", "password", "confirm"), or "" if none. */
@@ -60,7 +72,17 @@ public class LoginPage extends BasePage {
     public HomePage register(String email, String password) {
         switchToRegister();
         submit(email, password);
-        wait.until(d -> isShown("nav-user"));
+        // logged in - or a message that says why not (a dropped key on a slow phone shows up here, readable)
+        try {
+            wait.until(d -> isShown("nav-user") || isShown("auth-error") || !fieldErrors().isEmpty());
+        } catch (org.openqa.selenium.TimeoutException e) {
+            throw new AssertionError("registration: no reaction to \"Create account\" (still " + mode() + " form, typed e-mail: "
+                    + driver.findElement(testId("email-input")).getDomProperty("value") + ")", e);
+        }
+        if (!isShown("nav-user")) {
+            throw new AssertionError("registration did not log in: " + textOrEmpty("auth-error") + " " + fieldErrors()
+                    + " (typed e-mail: " + driver.findElement(testId("email-input")).getDomProperty("value") + ")");
+        }
         return new HomePage(driver);
     }
 

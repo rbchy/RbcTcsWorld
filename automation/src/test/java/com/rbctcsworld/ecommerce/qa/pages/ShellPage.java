@@ -49,7 +49,26 @@ public class ShellPage extends BasePage {
         return this;
     }
 
-    /** Log out / Exit in the sidebar's Account section (desktop: the sidebar is always open). */
+    /** Phones: the menu sits behind the "Menu" button; waits until it has slid in. */
+    public ShellPage openMenu() {
+        click("menu-toggle");
+        wait.until(d -> d.findElement(By.id("sidebar")).getDomAttribute("class").contains("open"));
+        return this;
+    }
+
+    /** No sideways scrolling: the page is never wider than the screen. */
+    public boolean fitsTheScreen() {
+        return (Boolean) ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                "return document.documentElement.scrollWidth <= window.innerWidth;");
+    }
+
+    /** On phones Log out and Exit show only their icon; the text stays for screen readers. */
+    public boolean topBarButtonsAreIconsOnly() {
+        return driver.findElements(By.cssSelector("[data-testid^='nav-'] .btn-label")).stream()
+                .allMatch(label -> "absolute".equals(label.getCssValue("position")));
+    }
+
+    /** Log out / Exit in the sidebar's Account section (desktop: the sidebar is always open; phones: openMenu first). */
     public void logoutFromMenu() {
         click("side-logout");
     }

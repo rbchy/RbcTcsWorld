@@ -55,6 +55,16 @@ public final class TestConfig {
         return Boolean.parseBoolean(get("headless", "true"));
     }
 
+    /** Appium server for the phone browsers (-Dbrowser=android-chrome | ios-safari). */
+    public static String appiumUrl() {
+        return get("appiumUrl", "http://127.0.0.1:4723");
+    }
+
+    /** Which iOS Simulator (UDID) or Android device (serial) Appium uses; empty = let Appium choose. */
+    public static String deviceId() {
+        return get("deviceId", "");
+    }
+
     public static String browser() {
         return get("browser", "chrome");
     }

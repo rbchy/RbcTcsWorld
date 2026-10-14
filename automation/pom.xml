@@ -8,9 +8,10 @@
 
   <!--
     Black-box automation against a RUNNING backend (default http://localhost:8081).
-    Run all:        mvn test
+    Run all:        mvn test                    (everything except the phone tests)
     API only:       mvn test -Dgroups=api
-    Without UI:     mvn test -DexcludedGroups=ui
+    Without UI:     mvn test -DexcludedGroups=ui,mobile
+    Phones:         mvn test -Dgroups=mobile -DexcludedGroups=none -Dbrowser=android-chrome|ios-safari  (Appium)
     DB checks:      mvn test -Dgroups=db        (needs PostgreSQL from docker compose)
     Other server:   mvn test -DbaseUrl=http://host:8081 -DuiUrl=http://host:5173
 
@@ -27,6 +28,8 @@
     <junit.platform.version>1.11.0</junit.platform.version>
     <cucumber.version>7.18.0</cucumber.version>
     <selenium.version>4.49.0</selenium.version>
+    <!-- phone tests need Appium; run them with -Dgroups=mobile -DexcludedGroups=none (docs/modules/APPIUM_MOBILE_BN.md) -->
+    <excludedGroups>mobile</excludedGroups>
     <restassured.version>5.5.0</restassured.version>
     <jackson.version>2.21.7</jackson.version>
     <postgresql.version>42.7.13</postgresql.version>

@@ -24,7 +24,9 @@ public abstract class BasePage {
 
     protected BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        // phones in CI (emulator, simulator) are several times slower than a desktop browser
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(
+                com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile() ? 30 : 10));
         // React re-renders replace DOM nodes; a reference found a moment ago can become "stale".
         // Every explicit wait simply looks the element up again instead of failing.
         this.wait.ignoring(StaleElementReferenceException.class);
@@ -90,6 +92,15 @@ public abstract class BasePage {
             }
         }
         return "";
+    }
+
+    /** A link in the sidebar menu. On phones the menu sits behind the "Menu" button, so it is opened first. */
+    protected void clickMenuItem(String testId) {
+        List<WebElement> link = all(testId(testId));
+        if ((link.isEmpty() || !link.get(0).isDisplayed()) && isShown("menu-toggle")) {
+            click("menu-toggle");
+        }
+        click(testId);
     }
 
     protected boolean isShown(String testId) {

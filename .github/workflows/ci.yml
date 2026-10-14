@@ -196,7 +196,7 @@ jobs:
     name: Appium - Chrome on an Android emulator
     needs: backend-tests
     runs-on: ${{ inputs.runner || 'ubuntu-24.04' }}
-    timeout-minutes: 45
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:16

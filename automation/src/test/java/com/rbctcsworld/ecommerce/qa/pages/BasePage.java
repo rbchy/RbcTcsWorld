@@ -92,6 +92,15 @@ public abstract class BasePage {
         return "";
     }
 
+    /** A link in the sidebar menu. On phones the menu sits behind the "Menu" button, so it is opened first. */
+    protected void clickMenuItem(String testId) {
+        List<WebElement> link = all(testId(testId));
+        if ((link.isEmpty() || !link.get(0).isDisplayed()) && isShown("menu-toggle")) {
+            click("menu-toggle");
+        }
+        click(testId);
+    }
+
     protected boolean isShown(String testId) {
         try {
             List<WebElement> found = all(testId(testId));

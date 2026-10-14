@@ -10,6 +10,7 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.http.ClientConfig;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -117,8 +118,13 @@ public final class DriverFactory {
 
     private static WebDriver mobile(String browser) {
         try {
-            RemoteWebDriver driver = new RemoteWebDriver(URI.create(TestConfig.appiumUrl()).toURL(),
-                    mobileCapabilities(browser, TestConfig.deviceId()));
+            // creating a session can take minutes (WebDriverAgent build/launch on iOS, chromedriver download on
+            // Android): wait longer than Selenium's default of 3 minutes for that answer
+            WebDriver driver = RemoteWebDriver.builder()
+                    .oneOf(mobileCapabilities(browser, TestConfig.deviceId()))
+                    .address(URI.create(TestConfig.appiumUrl()).toURL())
+                    .config(ClientConfig.defaultConfig().readTimeout(Duration.ofMinutes(8)))
+                    .build();
             driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
             return driver;
         } catch (MalformedURLException e) {

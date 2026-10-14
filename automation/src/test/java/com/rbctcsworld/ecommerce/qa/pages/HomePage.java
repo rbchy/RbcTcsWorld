@@ -108,7 +108,7 @@ public class HomePage extends BasePage {
     }
 
     public CartPage goToCart() {
-        click("nav-cart");
+        clickMenuItem("nav-cart");
         return new CartPage(driver).waitLoaded();
     }
 

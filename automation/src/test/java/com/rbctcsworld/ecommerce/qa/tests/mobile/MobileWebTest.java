@@ -66,7 +66,8 @@ class MobileWebTest {
         assertAll("phone layout",
                 () -> assertTrue(shell.fitsTheScreen(), "no sideways scrolling"),
                 () -> assertTrue(mouse.loaded(), "product picture decoded by the phone's browser"),
-                () -> assertEquals("/products/elec-mouse-001.svg", mouse.src()),
+                // Safari's automation reports the resolved address (http://host/products/...), Chrome the attribute
+                () -> assertTrue(mouse.src().endsWith("/products/elec-mouse-001.svg"), mouse.src()),
                 () -> assertTrue(shell.topBarButtonsAreIconsOnly(), "Exit shows only its icon"));
 
         home.search("mouse");

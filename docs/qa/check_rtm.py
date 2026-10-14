@@ -4,7 +4,7 @@
 Checks every back-ticked reference in docs/qa/TRACEABILITY_MATRIX.md:
   `SomeTest#method`  -> a test class SomeTest.java declares a method named `method`
   `bdd:Scenario name` -> a Cucumber scenario with exactly this name exists
-  `performance/...`   -> the file exists
+  `performance/...`, `playwright/...`, `deploy/...`, `mobile/...` -> the file exists
 Also prints coverage: requirements with and without tests.
 """
 import pathlib, re, sys
@@ -35,7 +35,7 @@ for ref in re.findall(r"`([^`]+)`", rtm):
             errors.append(f"missing class: {cls}")
         elif not re.search(r"\b(?:void|[\w<>]+)\s+" + re.escape(method) + r"\s*\(", src):
             errors.append(f"missing method: {ref}")
-    elif ref.startswith("performance/"):
+    elif ref.startswith(("performance/", "playwright/", "deploy/", "mobile/")):
         refs += 1
         if not (root / ref).exists():
             errors.append(f"missing file: {ref}")

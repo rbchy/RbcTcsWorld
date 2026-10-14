@@ -1,0 +1,22 @@
+{
+  "name": "rbctcsworld-playwright",
+  "private": true,
+  "description": "Playwright (TypeScript) suite for the RbcTcsWorld storefront: Chromium, Firefox, WebKit, Pixel 7 and iPhone 14",
+  "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:mobile": "playwright test --project=mobile-android --project=mobile-iphone",
+    "report": "playwright show-report",
+    "update-snapshots": "playwright test --project=chromium tests/visual.spec.ts --update-snapshots",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.15.21",
+    "typescript": "5.8.3"
+  },
+  "overrides": {
+    "playwright-core": "1.56.1"
+  }
+}

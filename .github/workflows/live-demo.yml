@@ -1,0 +1,30 @@
+name: Live demo check
+
+# Checks the public demo from GitHub's servers every day, like a visitor would (deploy/smoke.sh):
+# HTTPS certificate, storefront, API, pictures, security headers, demo safeguards.
+# Set the address once: GitHub -> Settings -> Secrets and variables -> Actions -> Variables -> DEMO_URL
+# (for example https://129-146-10-20.sslip.io). Without it the check is skipped.
+on:
+  schedule:
+    - cron: '17 13 * * *'      # every day 13:17 UTC (09:17 New York, summer time)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test of the live demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Smoke test (real Let's Encrypt certificate, no -k)
+        env:
+          DEMO_URL: ${{ vars.DEMO_URL }}
+        run: |
+          if [ -z "$DEMO_URL" ]; then
+            echo "::notice title=Live demo::DEMO_URL is not set yet - nothing to check"; exit 0
+          fi
+          deploy/smoke.sh "$DEMO_URL"
+          echo "::notice title=Live demo::$DEMO_URL is up and passes the smoke test"

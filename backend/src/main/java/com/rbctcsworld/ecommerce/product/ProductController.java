@@ -33,9 +33,11 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService service;
+    private final ProductImagePolicy images;
 
-    public ProductController(ProductService service) {
+    public ProductController(ProductService service, ProductImagePolicy images) {
         this.service = service;
+        this.images = images;
     }
 
     @GetMapping
@@ -75,11 +77,13 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@Valid @RequestBody ProductRequest r) {
+        images.check(r.imageUrl());
         return service.create(r);
     }
 
     @PutMapping("/{id}")
     public Product update(@PathVariable long id, @Valid @RequestBody ProductRequest r) {
+        images.check(r.imageUrl());
         return service.update(id, r);
     }
 

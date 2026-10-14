@@ -1,0 +1,112 @@
+# Public demo of the shop on ONE small server (e.g. an Oracle Cloud "Always Free" VM), with HTTPS.
+# Guide (Bangla, step by step): docs/deploy/ORACLE_CLOUD_BN.md
+#
+#   cp deploy/.env.example deploy/.env      (or let deploy/setup-vm.sh write it with random secrets)
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build --wait
+#
+# Differences to the development compose file in the project root:
+#   - only Caddy is reachable from the internet (ports 80 + 443, automatic Let's Encrypt certificate);
+#     database, Redis, Mailpit and the backend have no published ports at all
+#   - secrets come from deploy/.env; the backend refuses to start with the public development secret or
+#     admin password (DEMO_MODE=true), so a forgotten setting cannot go live
+#   - DEMO_MODE: storefront ribbon "nothing here is real", product pictures only from the shop's own files
+#   - every container restarts by itself after a crash or a server reboot
+name: rbctcsworld-demo
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/.env}
+    volumes: ["demo-pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 512m
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-ttl"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+
+  # Order e-mails stay inside the server. Inbox for the owner only, through an SSH tunnel:
+  #   ssh -L 8025:localhost:8025 ubuntu@<server>   then open http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    restart: unless-stopped
+    ports: ["127.0.0.1:8025:8025"]
+    mem_limit: 128m
+
+  backend:
+    build: ../backend
+    image: rbctcsworld/backend:demo
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in deploy/.env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@rbctcsworld.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in deploy/.env}
+      DEMO_MODE: "true"
+      PAYMENT_PROVIDER: mock          # test cards only; no Stripe key ever lives on the demo server
+      API_DOCS_ENABLED: "false"
+      LOGIN_STORE: redis
+      REDIS_URL: redis://redis:6379
+      NOTIFICATIONS_CHANNEL: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    mem_limit: 1g
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        VITE_DEMO: "true"
+    image: rbctcsworld/frontend:demo
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DEMO_DOMAIN: ${DEMO_DOMAIN:?set DEMO_DOMAIN in deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - demo-caddy-data:/data           # certificates: keep them, Let's Encrypt limits new ones
+      - demo-caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 128m
+
+volumes:
+  demo-pgdata: {}
+  demo-caddy-data: {}
+  demo-caddy-config: {}

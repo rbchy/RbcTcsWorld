@@ -3,7 +3,7 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-781-brightgreen)
+![Tests](https://img.shields.io/badge/automated%20tests-797-brightgreen)
 [![Coverage](https://img.shields.io/badge/line%20coverage-98.1%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
 [![Mutation](https://img.shields.io/badge/mutation%20score-91.9%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
@@ -11,7 +11,8 @@
 An Amazon-inspired online store (catalog, cart, checkout, Stripe or mock payment, shipping, returns, reviews,
 wishlist, order e-mails)
 that I built **to be tested**: the application is the test object, and the real work is the test system around it.
-Every push goes through 14 quality gates in GitHub Actions; the same pipeline runs in Jenkins on a Mac.
+Every push goes through 15 quality gates in GitHub Actions; the same pipeline runs in Jenkins on a Mac.
+The public demo runs on one free cloud server with HTTPS ([deploy/](deploy/), guide: [ORACLE_CLOUD_BN](docs/deploy/ORACLE_CLOUD_BN.md)).
 
 Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github.com/rbchy) · [LinkedIn](https://www.linkedin.com/in/rbchy/)
 
@@ -44,7 +45,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 453 / 453 | JUnit 5, Mockito, H2 + Flyway |
+| 1 | Backend unit + integration | 100 % pass | 469 / 469 | JUnit 5, Mockito, H2 + Flyway |
 | 2 | API, database, BDD, UI | 100 % pass | 328 / 328 | REST Assured, JDBC, Cucumber 7, Selenium 4 |
 | 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.1 % / 93.4 % | JaCoCo |
 | 4 | Mutation score | >= 84 % | 91.9 % (test strength 99.3 %) | PIT |
@@ -56,8 +57,9 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
 | 12 | Containers | stack healthy, smoke tests pass | 44 / 44 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 63 / 63 | `docs/qa/check_rtm.py` |
+| 13 | Traceability | every requirement has a test | 81 / 81 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
+| 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | 15 / 15 smoke checks | Docker Compose, Caddy, `deploy/smoke.sh` (GitHub Actions only: needs ports 80/443) |
 
 Thresholds are set just under the measured value on purpose: they stop regressions without inviting
 tests that exist only to move a number.
@@ -257,7 +259,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 ## Documentation
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (80 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (81 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (25)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.

@@ -18,6 +18,10 @@ h2 { font-size: 18px; margin: 22px 0 10px; }
 a { color: var(--harbor-2); }
 .muted { color: var(--muted); } .small { font-size: 13px; }
 
+/* ---------- public demo ribbon (VITE_DEMO=true) ---------- */
+.demo-ribbon { margin: 0; padding: 6px 16px; background: #f4d58d; color: #3b2a00; font-size: 14px; text-align: center;
+  border-bottom: 2px dashed #8f6a1a; }
+
 /* ---------- frame: topbar + sidebar + content ---------- */
 .skip { position: absolute; inset-inline-start: 8px; top: -60px; background: #fff; color: var(--ink); padding: 8px 12px; border-radius: 6px; z-index: 50; }
 .skip:focus { top: 8px; }

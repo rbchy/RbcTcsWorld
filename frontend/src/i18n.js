@@ -33,6 +33,7 @@ const T = {
   navLogin: ['Log in', 'লগ ইন', 'Iniciar sesión', 'Se connecter', 'تسجيل الدخول', '登录'],
   navRegister: ['Create account', 'অ্যাকাউন্ট খুলুন', 'Crear cuenta', 'Créer un compte', 'إنشاء حساب', '注册账户'],
   navLogout: ['Log out', 'লগ আউট', 'Cerrar sesión', 'Se déconnecter', 'تسجيل الخروج', '退出登录'],
+  demoRibbon: ['Demo shop: nothing here is real. Pay with the test card 4242 4242 4242 4242. Everything is reset every night.', 'ডেমো শপ: এখানে কিছুই আসল না। টেস্ট কার্ড 4242 4242 4242 4242 দিয়ে পেমেন্ট করুন। প্রতি রাতে সব আগের অবস্থায় ফেরে।', 'Tienda de demostración: nada es real. Paga con la tarjeta de prueba 4242 4242 4242 4242. Todo se reinicia cada noche.', 'Boutique de démonstration : rien n’est réel. Payez avec la carte de test 4242 4242 4242 4242. Tout est réinitialisé chaque nuit.', 'متجر تجريبي: لا شيء هنا حقيقي. ادفع ببطاقة الاختبار 4242 4242 4242 4242. تتم إعادة ضبط كل شيء كل ليلة.', '演示商店：这里的一切都不是真的。请使用测试卡 4242 4242 4242 4242 付款。所有数据每晚重置。'],
   navExit: ['Exit', 'প্রস্থান', 'Salir', 'Quitter', 'خروج', '离开'],
   exitHint: ['Log out and close the shop window', 'লগ আউট করে শপের উইন্ডো বন্ধ করুন', 'Cerrar sesión y cerrar la ventana de la tienda', 'Se déconnecter et fermer la fenêtre de la boutique', 'تسجيل الخروج وإغلاق نافذة المتجر', '退出登录并关闭商店窗口'],
   exitTitle: ['You have left the shop', 'আপনি শপ থেকে বেরিয়ে এসেছেন', 'Has salido de la tienda', 'Vous avez quitté la boutique', 'لقد غادرت المتجر', '您已离开商店'],

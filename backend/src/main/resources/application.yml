@@ -65,6 +65,11 @@ app:
       store: ${LOGIN_STORE:memory}               # memory (one backend) | redis (shared by all backends)
       redis-url: ${REDIS_URL:redis://localhost:6379}
 
+  demo:
+    # Public demo (deploy/): refuses the development JWT secret and admin password, and accepts only the
+    # shop's own product pictures. The storefront shows a "demo" ribbon (built with VITE_DEMO=true).
+    enabled: ${DEMO_MODE:false}
+
 # OpenAPI JSON for tools (OWASP ZAP). Switch off in production with API_DOCS_ENABLED=false.
 springdoc:
   api-docs:

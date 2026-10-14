@@ -51,6 +51,11 @@ public class LoginPage extends BasePage {
         click("auth-submit");
     }
 
+    private java.util.List<String> fieldErrors() {
+        return java.util.stream.Stream.of("email", "password", "confirm").map(this::fieldError)
+                .filter(e -> !e.isBlank()).toList();
+    }
+
     /** Client-side validation message under a field ("email", "password", "confirm"), or "" if none. */
     public String fieldError(String field) {
         return textOrEmpty(field + "-error");
@@ -60,7 +65,12 @@ public class LoginPage extends BasePage {
     public HomePage register(String email, String password) {
         switchToRegister();
         submit(email, password);
-        wait.until(d -> isShown("nav-user"));
+        // logged in - or a message that says why not (a dropped key on a slow phone shows up here, readable)
+        wait.until(d -> isShown("nav-user") || isShown("auth-error") || !fieldErrors().isEmpty());
+        if (!isShown("nav-user")) {
+            throw new AssertionError("registration did not log in: " + textOrEmpty("auth-error") + " " + fieldErrors()
+                    + " (typed e-mail: " + driver.findElement(testId("email-input")).getDomProperty("value") + ")");
+        }
         return new HomePage(driver);
     }
 

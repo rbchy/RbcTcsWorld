@@ -13,5 +13,6 @@ compose exec -T postgres psql -v ON_ERROR_STOP=1 -U ecommerce -d ecommerce \
 compose exec -T redis redis-cli FLUSHALL >/dev/null
 curl -fsS -X DELETE http://127.0.0.1:8025/api/v1/messages >/dev/null || true   # Mailpit inbox
 compose up -d --wait backend
-compose restart frontend            # nginx looks the backend up again
+compose restart frontend            # nginx looks the backend up again ...
+compose up -d --wait frontend caddy  # ... and visitors get pages only once it is healthy again
 echo "$(date -Is) reset done"

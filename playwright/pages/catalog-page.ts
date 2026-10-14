@@ -42,8 +42,12 @@ export class CatalogPage {
   /** The picture of a card: address, fallback flag, and whether the browser really decoded it. */
   async picture(sku: string) {
     const img = this.card(sku).getByTestId('product-image');
-    await img.scrollIntoViewIfNeeded();                 // the catalog loads pictures lazily
-    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+    // the catalog loads pictures lazily; a failed picture is replaced by the fallback, which is lazy again -
+    // keep it in view while waiting (WebKit started the fallback late when it was scrolled to only once)
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => {
+      i.scrollIntoView({ block: 'center' });
+      return i.complete && i.naturalWidth > 0;
+    })).toBe(true);
     return {
       src: await img.getAttribute('src'),
       fallback: (await img.getAttribute('data-fallback')) === 'true',

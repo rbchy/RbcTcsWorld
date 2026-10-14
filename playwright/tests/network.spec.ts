@@ -39,7 +39,8 @@ test.describe('Network: errors and timing', () => {
 
   test('picture server down: the category picture is shown', async ({ page, api }) => {
     const product = await api.createProduct({ category: 'home', imageUrl: 'https://cdn.rbctcsworld.test/lamp.png' });
-    await page.route('https://cdn.rbctcsworld.test/**', route => route.abort('internetdisconnected'));
+    // the picture server answers 503 (an aborted request behaved differently in WebKit from run to run)
+    await page.route('https://cdn.rbctcsworld.test/**', route => route.fulfill({ status: 503, body: 'down' }));
     const catalog = await new CatalogPage(page).open();
     await catalog.searchFor(product.name);
     expect(await catalog.picture(product.sku)).toMatchObject({ src: '/products/home.svg', fallback: true });

@@ -19,10 +19,12 @@ export default function ProductImage({ product, alt = '', className = 'thumb', t
   const fallback = fallbackImage(product.category);
   const wanted = product.imageUrl || fallback;
   const [src, setSrc] = useState(wanted);
-  useEffect(() => setSrc(wanted), [wanted]);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setSrc(wanted); setFailed(false); }, [wanted]);
   return (
-    <img className={className} src={src} alt={alt} width="400" height="300" loading={eager ? 'eager' : 'lazy'}
+    <img className={className} src={src} alt={alt} width="400" height="300" loading={eager || failed ? 'eager' : 'lazy'}
          decoding="async" data-testid={testId} data-fallback={src === fallback}
-         onError={() => { if (src !== fallback) setSrc(fallback); }} />
+         // the replacement loads at once: Safari (WebKit) did not start a lazy picture that was already on screen
+         onError={() => { if (src !== fallback) { setFailed(true); setSrc(fallback); } }} />
   );
 }

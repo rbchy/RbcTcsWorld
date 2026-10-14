@@ -48,9 +48,22 @@ public class HomePage extends BasePage {
         By card = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "']");
         WebElement c = visible(card);
         WebElement qty = c.findElement(testId("qty-input"));
+        // clear() + typing works in every browser here (iOS Safari refuses Backspace in number fields);
+        // the value is checked afterwards, so a dropped key on a slow phone fails right here, readable
         qty.clear();
         qty.sendKeys(String.valueOf(quantity));
-        c.findElement(testId("add-to-cart")).click();
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                .ignoring(org.openqa.selenium.StaleElementReferenceException.class)
+                .withMessage("quantity of " + sku + " should be " + quantity)
+                .until(d -> String.valueOf(quantity).equals(d.findElement(card).findElement(testId("qty-input")).getDomProperty("value")));
+        WebElement button = c.findElement(testId("add-to-cart"));
+        if (com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile()) {
+            // close the on-screen keyboard first, or the tap lands where the button was before it slid away
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                    "if (document.activeElement) document.activeElement.blur(); arguments[0].scrollIntoView({block: 'center'});",
+                    button);
+        }
+        button.click();
         return this;
     }
 
@@ -99,7 +112,10 @@ public class HomePage extends BasePage {
         return this;
     }
 
+    /** The confirmation after Add to cart / wishlist; if the shop answered with an error instead, says which. */
     public String flash() {
+        wait.until(d -> isShown("flash") || isShown("error-banner"));
+        if (!isShown("flash")) throw new AssertionError("no confirmation, the shop said: " + textOrEmpty("error-banner"));
         return text("flash");
     }
 

@@ -572,7 +572,14 @@ jobs:
           echo "::notice title=Demo::outside pictures refused; nightly reset removes visitors and restores the shop"
       - name: Container logs
         if: failure()
-        run: $DC logs --no-color --tail=80
+        run: |
+          # which container failed, as annotations (the full logs are in the job output)
+          $DC ps -a --format '{{.Service}} {{.Status}}' | grep -viE 'healthy|Up [0-9]+ (second|minute)s?$' \
+            | sed 's/^/::error title=Demo container::/' || true
+          for s in backend frontend caddy; do
+            $DC logs --no-color --tail=5 "$s" 2>&1 | tail -3 | sed "s/^/::warning title=$s log::/" || true
+          done
+          $DC logs --no-color --tail=80
       - name: Stop and remove the demo
         if: always()
         run: $DC down -v

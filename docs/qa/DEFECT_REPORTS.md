@@ -33,6 +33,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-023](#def-023) | Admin product search box promised "name, SKU or category" but searched names only | Product (UI) | Low | P3 | UI test checked against the API | Closed |
 | [DEF-024](#def-024) | Safari: no UI test could type into a field (11 of 32 UI tests failed) | Test code (cross-browser) | High | P1 | First Safari runs on Jenkins (#38-#40) | Closed |
 | [DEF-025](#def-025) | Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed | Test infrastructure (reporting) | Medium | P2 | Reviewing build #41 | Closed |
+| [DEF-026](#def-026) | Safari: a failed product picture was replaced by an empty frame instead of the category picture | Product - storefront | Medium | P2 | Playwright WebKit project | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -54,6 +55,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | Checking a report against the build log | DEF-022, DEF-025 |
 | UI test that re-checks every step through the API | DEF-023 |
 | A fourth browser (Safari on the Jenkins Mac) | DEF-024 |
+| A third browser engine on every push (Playwright WebKit) | DEF-026 |
 
 ---
 
@@ -615,6 +617,40 @@ longer look like "not run".
 
 **Lesson:** a fix for one report defect (DEF-022) introduced the next one. Every report value needs a source
 that is checked, including "this stage ran".
+
+---
+
+## DEF-026
+**Safari: a product picture that failed to load was replaced by an empty frame instead of the category picture**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Medium / P2 - wrong page content in Safari (WebKit) only; a blank picture frame on the catalog |
+| Component | `frontend/src/ProductImage.jsx` |
+| Environment | Playwright `webkit` project in GitHub Actions (PR #25); Chromium and Firefox never showed it |
+
+**Steps to reproduce:**
+1. Create a product with `imageUrl` `/products/this-file-does-not-exist.png`, or with an `https://` picture whose
+   server answers with an error.
+2. Open the catalog in Safari/WebKit and scroll to the product.
+
+**Expected result:** the category picture (`/products/product.svg`) is shown.
+**Actual result:** sometimes an empty frame. `src` already pointed to the fallback, but the picture was never
+loaded (`naturalWidth` 0). Two specs failed intermittently, only in WebKit:
+`network.spec.ts › picture server down` and `catalog.spec.ts › missing file falls back`.
+
+**Root cause:** the card pictures use `loading="lazy"`. When the first picture fails, `onError` switches `src` to
+the fallback, and that is lazy again. The image is already on screen, so its visibility does not change, and
+WebKit did not start the new lazy request. Chromium starts it anyway.
+
+**Fix:** a picture that has failed once is replaced with `loading="eager"`. The test for the picture server now
+answers 503 instead of aborting the request, so every engine sees a real HTTP error.
+
+**Regression test:** the two Playwright specs above, in the `webkit` project on every push. They pass on the
+first try since the fix.
+
+**Lesson:** "it works in Chrome" is not "it works in Safari". Running WebKit on every push found a user-visible
+Safari bug that the real Safari run on the Mac (a manual Jenkins choice) had not run into yet.
 
 ---
 

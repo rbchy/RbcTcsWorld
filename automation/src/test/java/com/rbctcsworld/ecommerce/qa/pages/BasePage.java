@@ -49,7 +49,14 @@ public abstract class BasePage {
     }
 
     protected void click(String testId) {
-        wait.until(ExpectedConditions.elementToBeClickable(testId(testId))).click();
+        WebElement e = wait.until(ExpectedConditions.elementToBeClickable(testId(testId)));
+        if (com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile()) {
+            // phones: close the on-screen keyboard and bring the button to the middle first - while the keyboard
+            // slides away the page moves, and a tap at the old position missed (Android emulator, several pages)
+            ((JavascriptExecutor) driver).executeScript(
+                    "if (document.activeElement) document.activeElement.blur(); arguments[0].scrollIntoView({block: 'center'});", e);
+        }
+        e.click();
     }
 
     /**
@@ -145,7 +152,14 @@ public abstract class BasePage {
                 token, email, role, refreshToken);
         // The app reads the session once at start-up, and a later driver.get() that only changes the
         // #route does not reload the page, so reload here: every caller then starts logged in.
-        driver.navigate().refresh();
+        if (com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile()) {
+            // Safari on iOS (Appium) kept the old page - and the previous test's user in the header - after
+            // refresh(); a new address always loads a fresh document there. Desktop browsers keep refresh():
+            // the extra query string confused later navigation in Firefox.
+            driver.get(TestConfig.uiUrl() + "/?session=" + System.nanoTime() + "#/");
+        } else {
+            driver.navigate().refresh();
+        }
     }
 
     /**

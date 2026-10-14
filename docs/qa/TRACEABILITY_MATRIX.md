@@ -132,6 +132,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | NFR-OPS-01 | The whole application starts with one command; containers become healthy, the storefront proxies the API, sends security headers, runs the backend as non-root | CI job "Whole app in Docker" (44 smoke tests against the containers) | S | Pass |
 | NFR-OPS-02 | Code coverage never drops below the gate (lines >= 97 %, branches >= 88 %) | JaCoCo `check` in `mvn verify` | U I | Pass (97.5 % / 88.3 %) |
 | NFR-OPS-03 | The Jenkins pipeline is valid and has the same gates as GitHub Actions | CI job "Jenkinsfile lint" (Jenkins declarative validator) | CI | Pass |
+| NFR-OPS-04 | The public demo runs behind HTTPS with only ports 80/443 open, refuses the development JWT secret and admin password, accepts only the shop's own product pictures, and a nightly reset removes visitors' data | `JwtServiceTest#publicDevSecretIsRefusedInThePublicDemo`, `DataSeederTest#developmentPasswordStopsTheStartInProductionAndInThePublicDemo`, `ProductImagePolicyTest#theDemoRefusesOutsideLinks`, `DemoModeIntegrationTest#outsideLinkIsRefusedWithAClearMessage`, `DemoModeIntegrationTest#developmentAdminPasswordDoesNotExistHere`, CI job "Public demo stack" (`deploy/smoke.sh`, `deploy/reset-demo.sh`), workflow "Live demo check" | U I S | Pass |
 | NFR-DATA-01 | Database invariants: no negative stock, timeline matches status, rating summary matches reviews, no card data | `OrderDatabaseTest#noNegativeStock`, `LifecycleDatabaseTest#timelineMatchesStatus`, `ReviewDatabaseTest#ratingSummaryMatchesReviewsForAllProducts`, `PaymentDatabaseTest#noCardDataColumns` | D | Pass |
 | NFR-API-01 | API responses keep their contract: required fields, types, formats and enums; no undeclared field (privacy: public tracking without customer data, masked reviewers, last 4 card digits only) | `ApiContractTest#authContract`, `ApiContractTest#catalogContract`, `ApiContractTest#purchaseContract`, `ApiContractTest#reviewsContract`, `ApiContractTest#wishlistContract`, `ApiContractTest#errorContract` | A | Pass |
 | NFR-API-02 | No breaking API change without an approved baseline (removed endpoint/field, new required input, changed type) | OpenAPI breaking-change gate (`.github/scripts/openapi-breaking-changes.sh`, with self-test) | CI | Pass (34 paths unchanged) |
@@ -151,5 +152,5 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 9 | 9 | - |
-| Non-functional | 13 | 13 | - |
-| **Total** | **80** | **80 (100 %)** | **0** |
+| Non-functional | 14 | 14 | - |
+| **Total** | **81** | **81 (100 %)** | **0** |

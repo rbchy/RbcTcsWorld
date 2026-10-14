@@ -1,5 +1,7 @@
 package com.rbctcsworld.ecommerce.auth;
 
+import com.rbctcsworld.ecommerce.common.SharedEnvironment;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -45,9 +46,9 @@ public class JwtService {
         if (bytes.length < 32) {
             throw new IllegalStateException("app.jwt.secret must be at least 32 bytes (256 bits) for HS256");
         }
-        boolean prod = Arrays.asList(env.getActiveProfiles()).contains("prod");
-        if (prod && DEV_DEFAULT_SECRET.equals(secret)) {
-            throw new IllegalStateException("Refusing to start: the public development JWT secret is used with the 'prod' profile."
+        if (SharedEnvironment.isShared(env) && DEV_DEFAULT_SECRET.equals(secret)) {
+            throw new IllegalStateException("Refusing to start: the public development JWT secret is used with the 'prod' profile"
+                    + " or the public demo."
                     + " Set the JWT_SECRET environment variable.");
         }
         key = Keys.hmacShaKeyFor(bytes);

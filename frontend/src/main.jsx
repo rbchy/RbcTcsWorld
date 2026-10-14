@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './style.css';
 import { useRoute, useSession } from './session';
 import { Sidebar, Topbar } from './Layout';
+import { useI18n } from './i18n';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
@@ -27,6 +28,13 @@ const ADMIN = {
   '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
   '/admin/notifications': AdminNotifications,
 };
+
+/** Public demo only (built with VITE_DEMO=true, see deploy/): says plainly that nothing here is real. */
+const DEMO = import.meta.env.VITE_DEMO === 'true';
+function DemoRibbon() {
+  const { t } = useI18n();
+  return <p className="demo-ribbon" role="note" data-testid="demo-ribbon">{t('demoRibbon')}</p>;
+}
 
 // data-testid attributes are the stable hooks used by Selenium (automation/.../pages/*.java).
 function App() {
@@ -59,6 +67,7 @@ function App() {
   return (
     <div className="shell">
       <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
+      {DEMO && <DemoRibbon />}
       <Topbar session={session} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <div className="frame">
         <Sidebar route={route} session={session} open={menuOpen} onNavigate={() => setMenuOpen(false)} />

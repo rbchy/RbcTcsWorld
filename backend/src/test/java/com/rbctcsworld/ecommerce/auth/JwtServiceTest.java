@@ -88,6 +88,16 @@ class JwtServiceTest {
     }
 
     @Test
+    void publicDevSecretIsRefusedInThePublicDemo() {
+        MockEnvironment demo = new MockEnvironment().withProperty("app.demo.enabled", "true");
+        assertThatThrownBy(() -> new JwtService(JwtService.DEV_DEFAULT_SECRET, 60_000, demo))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("public demo");
+        assertThatCode(() -> new JwtService(SECRET, 60_000, demo)).doesNotThrowAnyException();
+        MockEnvironment demoOff = new MockEnvironment().withProperty("app.demo.enabled", "false");
+        assertThatCode(() -> new JwtService(JwtService.DEV_DEFAULT_SECRET, 60_000, demoOff)).doesNotThrowAnyException();
+    }
+
+    @Test
     void secretOfExactly32BytesIsTheMinimum() {  // added after PIT: the "< 32" boundary and the null check survived
         assertThatCode(() -> new JwtService("x".repeat(32), 60_000, new MockEnvironment())).doesNotThrowAnyException();
         assertThatThrownBy(() -> new JwtService("x".repeat(31), 60_000, new MockEnvironment()))

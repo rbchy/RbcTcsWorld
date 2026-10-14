@@ -186,6 +186,20 @@ ipconfig getifaddr en0        # Mac-এর IP, যেমন 192.168.1.23 (Window
 - IP দিয়ে খুললে **Install app** আসে না, কারণ install-এর জন্য HTTPS লাগে (শুধু `localhost`-এ ছাড় আছে)।
 - না খুললে Mac-এর firewall Docker-কে আটকাচ্ছে কিনা দেখুন: System Settings → Network → Firewall।
 
+### ৩.৬ ইন্টারনেটে live demo (Oracle Cloud ফ্রি সার্ভার)
+
+Mac বন্ধ থাকলেও শপ একটা `https://` লিংকে চালু রাখতে পুরো গাইড আছে: [deploy/ORACLE_CLOUD_BN.md](deploy/ORACLE_CLOUD_BN.md)।
+
+```bash
+# সার্ভারে, একবার
+curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld_ECommerceSuite/main/deploy/setup-vm.sh | bash
+# চালু বা আপডেট (প্রতিবার merge-এর পর)
+~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+```
+
+- Demo mode-এ উপরে হলুদ ফিতা থাকে, শুধু টেস্ট কার্ড চলে, আর প্রতি রাত ৩:৩০-এ সব reset হয়।
+- Development-এর secret বা `Admin@12345` থাকলে backend চালুই হয় না।
+
 ---
 
 ## ৪. অ্যাপ ব্যবহার: মেনু, লগইন, রেজিস্ট্রেশন, help

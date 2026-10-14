@@ -6,6 +6,9 @@ RUN npm ci --no-audit --no-fund
 COPY index.html vite.config.js ./
 COPY public public
 COPY src src
+# VITE_DEMO=true (deploy/docker-compose.yml) adds the "demo shop" ribbon; empty for every other build
+ARG VITE_DEMO=
+ENV VITE_DEMO=$VITE_DEMO
 RUN npm run build
 
 # ---------- runtime stage: static files + reverse proxy ----------

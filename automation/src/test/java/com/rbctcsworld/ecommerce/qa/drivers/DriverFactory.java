@@ -119,7 +119,33 @@ public final class DriverFactory {
         return caps;
     }
 
+    /**
+     * A phone session that has really loaded the shop once. On the CI emulator Chrome sometimes loses its DevTools
+     * connection right after start ("disconnected: not connected to DevTools"); such a session is dead, so it is
+     * replaced by a fresh one (at most 3 tries) instead of failing the test that happens to get it.
+     */
     private static WebDriver mobile(String browser) {
+        org.openqa.selenium.WebDriverException last = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            WebDriver driver = newMobileSession(browser);
+            try {
+                driver.get(TestConfig.uiUrl() + "/#/");
+                return driver;
+            } catch (org.openqa.selenium.WebDriverException e) {
+                last = e;
+                System.err.println("Phone session " + attempt + " could not load the shop, starting a new one: "
+                        + e.getMessage().lines().findFirst().orElse(""));
+                try {
+                    driver.quit();
+                } catch (RuntimeException ignored) {
+                    // the session is already broken
+                }
+            }
+        }
+        throw last;
+    }
+
+    private static WebDriver newMobileSession(String browser) {
         try {
             // creating a session can take minutes (WebDriverAgent build/launch on iOS, chromedriver download on
             // Android): wait longer than Selenium's default of 3 minutes for that answer

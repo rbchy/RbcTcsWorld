@@ -36,7 +36,13 @@ public class ShellPage extends BasePage {
 
     /** Waits for the top bar to show this account (login and registration answer asynchronously). */
     public boolean waitLoggedInAs(String email) {
-        return wait.until(d -> isShown("nav-user") && email.equals(textOrEmpty("nav-user")));
+        try {
+            return wait.until(d -> isShown("nav-user") && email.equals(textOrEmpty("nav-user")));
+        } catch (org.openqa.selenium.TimeoutException e) {
+            throw new AssertionError("not logged in as " + email + ": header shows '" + textOrEmpty("nav-user")
+                    + "', stored e-mail '" + stored("email") + "', token stored: " + (stored("token") != null)
+                    + ", page " + driver.getCurrentUrl(), e);
+        }
     }
 
     public void logout() {

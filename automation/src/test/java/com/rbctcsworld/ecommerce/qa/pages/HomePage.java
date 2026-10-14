@@ -48,12 +48,9 @@ public class HomePage extends BasePage {
         By card = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "']");
         WebElement c = visible(card);
         WebElement qty = c.findElement(testId("qty-input"));
-        // like a user, and checked: clear() does not tell React, and a phone keyboard may drop a key
-        String old = qty.getDomProperty("value");
-        if (old != null && !old.isEmpty()) {
-            qty.sendKeys(org.openqa.selenium.Keys.BACK_SPACE.toString().repeat(old.length())
-                    + org.openqa.selenium.Keys.DELETE.toString().repeat(old.length()));
-        }
+        // clear() + typing works in every browser here (iOS Safari refuses Backspace in number fields);
+        // the value is checked afterwards, so a dropped key on a slow phone fails right here, readable
+        qty.clear();
         qty.sendKeys(String.valueOf(quantity));
         new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
                 .ignoring(org.openqa.selenium.StaleElementReferenceException.class)

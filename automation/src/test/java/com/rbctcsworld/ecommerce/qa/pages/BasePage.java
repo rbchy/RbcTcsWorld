@@ -151,8 +151,10 @@ public abstract class BasePage {
                         + "if (arguments[3]) localStorage.setItem('refreshToken', arguments[3]);",
                 token, email, role, refreshToken);
         // The app reads the session once at start-up, and a later driver.get() that only changes the
-        // #route does not reload the page, so reload here: every caller then starts logged in.
-        driver.navigate().refresh();
+        // #route does not reload the page, so load a NEW document here: every caller then starts logged in.
+        // A new address instead of refresh(): Safari on iOS kept the old page (and the previous test's user in
+        // the header) after refresh() through Appium.
+        driver.get(TestConfig.uiUrl() + "/?session=" + System.nanoTime() + "#/");
     }
 
     /**

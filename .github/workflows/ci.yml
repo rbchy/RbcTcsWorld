@@ -221,8 +221,10 @@ jobs:
         run: |
           npm ci
           npm run build
-          nohup npx vite preview --port 5173 --strictPort > ../frontend.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf http://localhost:5173 > /dev/null && break; sleep 1; done
+          # IPv4 on purpose: "localhost" is ::1 for Node 22, but the Android emulator reaches the machine
+          # as 10.0.2.2 -> 127.0.0.1 (connection refused otherwise)
+          nohup npx vite preview --host 127.0.0.1 --port 5173 --strictPort > ../frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5173 > /dev/null && break; sleep 1; done
       - name: Compile the automation suite (outside the emulator/simulator time)
         run: mvn -B -q -f automation/pom.xml test-compile
       - name: Appium 3 with the UiAutomator2 driver
@@ -247,7 +249,7 @@ jobs:
           script: .github/scripts/android-mobile-tests.sh
       - name: Test totals
         if: always()
-        run: .github/scripts/test-totals.sh "mobile-android" automation/target/surefire-reports
+        run: LIST_TESTS=1 .github/scripts/test-totals.sh "mobile-android" automation/target/surefire-reports
       - name: Show failed tests as annotations
         if: failure()
         run: |
@@ -292,8 +294,10 @@ jobs:
         run: |
           npm ci
           npm run build
-          nohup npx vite preview --port 5173 --strictPort > ../frontend.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf http://localhost:5173 > /dev/null && break; sleep 1; done
+          # IPv4 on purpose: "localhost" is ::1 for Node 22, but the Android emulator reaches the machine
+          # as 10.0.2.2 -> 127.0.0.1 (connection refused otherwise)
+          nohup npx vite preview --host 127.0.0.1 --port 5173 --strictPort > ../frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5173 > /dev/null && break; sleep 1; done
       - name: Compile the automation suite (outside the emulator/simulator time)
         run: mvn -B -q -f automation/pom.xml test-compile
       - name: Appium 3 with the XCUITest driver
@@ -325,7 +329,7 @@ jobs:
           -DdeviceId=${{ env.UDID }} -Dsurefire.rerunFailingTestsCount=1
       - name: Test totals
         if: always()
-        run: .github/scripts/test-totals.sh "mobile-ios" automation/target/surefire-reports
+        run: LIST_TESTS=1 .github/scripts/test-totals.sh "mobile-ios" automation/target/surefire-reports
       - name: Show failed tests as annotations
         if: failure()
         run: |

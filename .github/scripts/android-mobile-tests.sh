@@ -18,8 +18,12 @@ adb shell 'echo "_ --disable-fre --no-default-browser-check --no-first-run" > /d
 adb shell am set-debug-app --persistent com.android.chrome
 
 # Appium 3: fetch the chromedriver that matches this Chrome
+# output to the log file only, and stopped at the end: a background process that keeps the script's output
+# open makes the emulator action wait until the job times out
 appium --address 127.0.0.1 --port 4723 --allow-insecure '*:chromedriver_autodownload' \
-       --log appium.log --log-level info --log-no-colors &
+       --log appium.log --log-level info --log-no-colors > /dev/null 2>&1 &
+appium_pid=$!
+trap 'kill "$appium_pid" 2>/dev/null || true' EXIT
 for _ in $(seq 1 60); do curl -sf http://127.0.0.1:4723/status >/dev/null && break; sleep 1; done
 curl -sf http://127.0.0.1:4723/status >/dev/null
 

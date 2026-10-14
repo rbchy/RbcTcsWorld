@@ -112,6 +112,7 @@ public final class DriverFactory {
             caps.setCapability("appium:wdaLaunchTimeout", 300_000);
             caps.setCapability("appium:wdaConnectionTimeout", 300_000);
             caps.setCapability("appium:safariIgnoreFraudWarning", true);
+            caps.setCapability("appium:simulatorStartupTimeout", 300_000);   // a busy CI Mac boots slowly
         }
         return caps;
     }

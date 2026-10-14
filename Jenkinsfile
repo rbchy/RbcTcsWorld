@@ -25,6 +25,7 @@ pipeline {
     parameters {
         booleanParam(name: 'RUN_UI', defaultValue: true, description: 'Selenium UI tests')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge', 'safari'], description: 'Browser for the UI and accessibility tests (must be installed on the agent; Safari: run "sudo safaridriver --enable" once)')
+        booleanParam(name: 'RUN_PLAYWRIGHT', defaultValue: true, description: 'Playwright suite (TypeScript) in Chromium, WebKit (Safari engine) and iPhone 14; needs Node.js on the agent (brew install node), skipped with a note otherwise')
         booleanParam(name: 'RUN_MUTATION', defaultValue: true, description: 'PIT mutation testing of the business logic (about 4 minutes)')
         booleanParam(name: 'RUN_SECURITY', defaultValue: true, description: 'OSV dependency scan + API contract gate + OWASP ZAP API scan')
         choice(name: 'K6_EXTRA', choices: ['none', 'load', 'stress', 'spike', 'soak'], description: 'Extra (long) k6 test after the gates')
@@ -47,7 +48,7 @@ pipeline {
                 // fail in seconds with a clear message instead of in the middle of the pipeline
                 // reports of an earlier build must never show up as this build's result (build #30)
                 // performance/reports/* keeps the folder (and its .gitkeep): k6 cannot create it (build #41, DEF-025)
-                sh 'rm -rf qa-reports backend/target automation/target performance/reports/* osv-results.json security/zap/zap-report.*'
+                sh 'rm -rf qa-reports backend/target automation/target playwright/playwright-report playwright/test-results playwright/junit.xml performance/reports/* osv-results.json security/zap/zap-report.*'
                 sh '''
                     for t in java mvn docker python3 jq curl; do
                       command -v "$t" >/dev/null || { echo "MISSING TOOL: $t (PATH=$PATH)"; exit 1; }
@@ -154,7 +155,8 @@ pipeline {
             options { timeout(time: 30, unit: 'MINUTES') }
             steps {
                 script {
-                    def filter = params.RUN_UI ? '' : '-DexcludedGroups=ui'
+                    // "mobile" tests need an Appium server and a phone (see docs/modules/APPIUM_MOBILE_BN.md)
+                    def filter = params.RUN_UI ? '-DexcludedGroups=mobile' : '-DexcludedGroups=ui,mobile'
                     sh "mvn -B -f automation/pom.xml clean test ${filter} -DbaseUrl=${BASE_URL} -DuiUrl=${UI_URL} -Dheadless=true -Dbrowser=${params.BROWSER}"
                 }
             }
@@ -164,6 +166,30 @@ pipeline {
                     sh 'mvn -B -q -f automation/pom.xml allure:report || true'
                     archiveArtifacts allowEmptyArchive: true,
                             artifacts: 'automation/target/allure-report/**, automation/target/cucumber-report.html'
+                }
+            }
+        }
+
+        stage('Playwright (Chromium, WebKit, iPhone 14)') {
+            when { expression { params.RUN_PLAYWRIGHT } }
+            options { timeout(time: 20, unit: 'MINUTES') }
+            steps {
+                dir('playwright') {
+                    sh '''
+                        if ! command -v npx >/dev/null; then
+                          echo "NOTE: Node.js is not installed on this agent (brew install node) - Playwright skipped"; exit 0
+                        fi
+                        npm ci --no-audit --no-fund
+                        npx playwright install chromium webkit
+                        # visual baselines are Linux Chromium pictures (GitHub Actions); not compared on the Mac
+                        SKIP_VISUAL=1 UI_URL=$UI_URL npx playwright test --project=chromium --project=webkit --project=mobile-iphone
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'playwright/junit.xml'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'playwright/playwright-report/**'
                 }
             }
         }

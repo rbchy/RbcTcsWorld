@@ -39,7 +39,8 @@ export default defineConfig({
     locale: 'en-US',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // SKIP_VISUAL=1 (Jenkins on the Mac): the baselines are Linux Chromium pictures
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: process.env.SKIP_VISUAL ? /visual\.spec/ : undefined },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /visual\.spec/ },
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /visual\.spec/ },
     // phones: only the tests tagged @mobile (menu behind a button, icon-only Log out / Exit, touch)

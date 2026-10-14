@@ -61,7 +61,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 13 | Traceability | every requirement has a test | 82 / 82 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | 15 / 15 smoke checks | Docker Compose, Caddy, `deploy/smoke.sh` (GitHub Actions only: needs ports 80/443) |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 105 / 105 (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 102 / 102 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 
 Thresholds are set just under the measured value on purpose: they stop regressions without inviting
 tests that exist only to move a number.

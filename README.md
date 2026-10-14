@@ -231,7 +231,7 @@ cd frontend && npm install && npm run dev         # UI on 5173
 ```bash
 mvn -f backend/pom.xml verify                                   # unit + integration + coverage gate
 mvn -f backend/pom.xml -Pmutation -Djacoco.skip=true test-compile org.pitest:pitest-maven:mutationCoverage   # PIT
-mvn -f automation/pom.xml clean test -DexcludedGroups=ui        # API, contract, DB, BDD, security
+mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile        # API, contract, DB, BDD, security
 mvn -f automation/pom.xml clean test -Dgroups=ui                # UI + accessibility, headless Chrome
 mvn -f automation/pom.xml clean test -Dgroups=ui -Dbrowser=edge # chrome | firefox | edge | safari
 mvn -f automation/pom.xml clean test -Dcucumber.filter.tags="@flagship"   # register-to-refund journey

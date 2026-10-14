@@ -373,7 +373,7 @@ mvn -f backend/pom.xml -Pmutation -Djacoco.skip=true test-compile org.pitest:pit
 
 # Automation
 mvn -f automation/pom.xml clean test                              # সব (API, DB, BDD, security, UI)
-mvn -f automation/pom.xml clean test -DexcludedGroups=ui          # browser ছাড়া সব
+mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile          # browser ছাড়া সব
 mvn -f automation/pom.xml clean test -Dgroups=ui                  # UI + accessibility, headless Chrome
 mvn -f automation/pom.xml clean test -Dgroups=ui -Dbrowser=firefox   # chrome | firefox | edge | safari
 mvn -f automation/pom.xml clean test -Dgroups=ui -Dheadless=false    # browser চোখে দেখে

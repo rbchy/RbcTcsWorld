@@ -192,6 +192,155 @@ jobs:
           name: playwright-report
           path: playwright/playwright-report
 
+  mobile-android:
+    name: Appium - Chrome on an Android emulator
+    needs: backend-tests
+    runs-on: ${{ inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_DB: ecommerce, POSTGRES_USER: ecommerce, POSTGRES_PASSWORD: ecommerce }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ecommerce" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - name: Build and start backend
+        run: |
+          mvn -B -q -f backend/pom.xml -DskipTests package
+          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
+          curl -sf http://localhost:8081/actuator/health
+      - uses: actions/setup-node@v6
+        with: { node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - name: Build and serve frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          nohup npx vite preview --port 5173 --strictPort > ../frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5173 > /dev/null && break; sleep 1; done
+      - name: Compile the automation suite (outside the emulator/simulator time)
+        run: mvn -B -q -f automation/pom.xml test-compile
+      - name: Appium 3 with the UiAutomator2 driver
+        run: |
+          npm install -g appium@3.8.0
+          appium driver install uiautomator2@8.7.0
+          echo "::notice title=Appium::$(appium --version), $(appium driver list --installed 2>&1 | grep -o 'uiautomator2@[0-9.]*')"
+      - name: Hardware acceleration for the emulator (KVM)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Phone tests in Chrome on Android 14 (Pixel 6 emulator)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: .github/scripts/android-mobile-tests.sh
+      - name: Test totals
+        if: always()
+        run: .github/scripts/test-totals.sh "mobile-android" automation/target/surefire-reports
+      - name: Show failed tests as annotations
+        if: failure()
+        run: |
+          .github/scripts/annotate-failures.sh automation/target/surefire-reports
+          tail -60 appium.log || true
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: mobile-android-results
+          path: |
+            automation/target/surefire-reports
+            automation/target/allure-results
+            appium.log
+            backend.log
+
+  mobile-ios:
+    name: Appium - Safari on an iOS Simulator
+    needs: backend-tests
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - name: PostgreSQL 16 (no Docker on macOS runners)
+        run: |
+          brew install postgresql@16 >/dev/null
+          brew services start postgresql@16
+          export PATH="$(brew --prefix postgresql@16)/bin:$PATH"
+          for i in $(seq 1 30); do pg_isready -q && break; sleep 1; done
+          psql -d postgres -c "CREATE ROLE ecommerce LOGIN PASSWORD 'ecommerce';" -c "CREATE DATABASE ecommerce OWNER ecommerce;"
+      - name: Build and start backend
+        run: |
+          mvn -B -q -f backend/pom.xml -DskipTests package
+          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
+          curl -sf http://localhost:8081/actuator/health
+      - uses: actions/setup-node@v6
+        with: { node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - name: Build and serve frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          nohup npx vite preview --port 5173 --strictPort > ../frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5173 > /dev/null && break; sleep 1; done
+      - name: Compile the automation suite (outside the emulator/simulator time)
+        run: mvn -B -q -f automation/pom.xml test-compile
+      - name: Appium 3 with the XCUITest driver
+        run: |
+          npm install -g appium@3.8.0
+          appium driver install xcuitest@12.13.3
+          echo "::notice title=Appium::$(appium --version), Xcode $(xcodebuild -version | head -1)"
+      - name: Boot the newest iPhone simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          phones = [(runtime, d) for runtime, ds in devices.items() if '.iOS-' in runtime for d in ds if d['name'].startswith('iPhone')]
+          phones.sort(key=lambda p: [int(x) for x in p[0].split('.iOS-')[1].split('-')])
+          runtime, d = phones[-1]
+          print(d['udid']); print(d['name'], runtime, file=sys.stderr)")
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "UDID=$udid" >> "$GITHUB_ENV"
+      - name: Start Appium
+        run: |
+          nohup appium --address 127.0.0.1 --port 4723 --log appium.log --log-level info --log-no-colors > /dev/null 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:4723/status >/dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:4723/status
+      - name: Phone tests in Safari on iOS (the first session builds WebDriverAgent)
+        run: >-
+          mvn -B -f automation/pom.xml test -Dgroups=mobile -DexcludedGroups=none -Dbrowser=ios-safari
+          -DbaseUrl=http://localhost:8081 -DuiUrl=http://localhost:5173 -DappiumUrl=http://127.0.0.1:4723
+          -DdeviceId=${{ env.UDID }} -Dsurefire.rerunFailingTestsCount=1
+      - name: Test totals
+        if: always()
+        run: .github/scripts/test-totals.sh "mobile-ios" automation/target/surefire-reports
+      - name: Show failed tests as annotations
+        if: failure()
+        run: |
+          .github/scripts/annotate-failures.sh automation/target/surefire-reports
+          tail -60 appium.log || true
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: mobile-ios-results
+          path: |
+            automation/target/surefire-reports
+            automation/target/allure-results
+            appium.log
+            backend.log
+
   api-automation:
     name: API + DB + BDD + Selenium UI tests (PostgreSQL)
     needs: backend-tests

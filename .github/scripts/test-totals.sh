@@ -10,6 +10,8 @@ classes = 0
 for f in glob.glob(d + "/TEST-*.xml"):
     r = ET.parse(f).getroot(); classes += 1
     for k in t: t[k] += int(r.get(k, 0))
+    # with surefire reruns the "tests" attribute can be lower than the number of tests in the file
+    t["tests"] += max(0, len(list(r.iter("testcase"))) - int(r.get("tests", 0)))
     for tc in r.iter("testcase"):
         if os.environ.get("LIST_TESTS"):    # small suites (phones): one line per test
             state = "FAILED" if tc.find("failure") is not None or tc.find("error") is not None else \

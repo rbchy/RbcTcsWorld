@@ -113,6 +113,8 @@ public final class DriverFactory {
             caps.setCapability("appium:wdaConnectionTimeout", 300_000);
             caps.setCapability("appium:safariIgnoreFraudWarning", true);
             caps.setCapability("appium:simulatorStartupTimeout", 300_000);   // a busy CI Mac boots slowly
+            // Safari's remote debugger needs a moment after launch on a busy CI Mac (default 5 s was not enough)
+            caps.setCapability("appium:webviewConnectTimeout", 30_000);
         }
         return caps;
     }

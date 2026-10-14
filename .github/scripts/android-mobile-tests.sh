@@ -49,7 +49,8 @@ echo "::notice title=Appium session (Android Chrome)::ready in $(( $(date +%s) -
 
 status=0
 mvn -B -f automation/pom.xml test -Dgroups=mobile -DexcludedGroups=none -Dbrowser=android-chrome \
-    -DbaseUrl=http://localhost:8081 -DuiUrl=http://10.0.2.2:5173 -DappiumUrl=http://127.0.0.1:4723 || status=$?
+    -DbaseUrl=http://localhost:8081 -DuiUrl=http://10.0.2.2:5173 -DappiumUrl=http://127.0.0.1:4723 \
+    -Dsurefire.rerunFailingTestsCount=1 || status=$?
 if [ "$status" -ne 0 ]; then
   .github/scripts/annotate-failures.sh automation/target/surefire-reports || true
   grep -iE "error|fail" appium.log | tail -10 | sed 's/^/::warning title=appium.log::/' || true

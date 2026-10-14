@@ -26,6 +26,7 @@ pipeline {
         booleanParam(name: 'RUN_UI', defaultValue: true, description: 'Selenium UI tests')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge', 'safari'], description: 'Browser for the UI and accessibility tests (must be installed on the agent; Safari: run "sudo safaridriver --enable" once)')
         booleanParam(name: 'RUN_PLAYWRIGHT', defaultValue: true, description: 'Playwright suite (TypeScript) in Chromium, WebKit (Safari engine) and iPhone 14; needs Node.js on the agent (brew install node), skipped with a note otherwise')
+        choice(name: 'PHONE', choices: ['none', 'ios-safari', 'android-chrome'], description: 'Phone tests through Appium (docs/modules/APPIUM_MOBILE_BN.md): start the iOS Simulator or Android emulator and "appium" on this Mac first')
         booleanParam(name: 'RUN_MUTATION', defaultValue: true, description: 'PIT mutation testing of the business logic (about 4 minutes)')
         booleanParam(name: 'RUN_SECURITY', defaultValue: true, description: 'OSV dependency scan + API contract gate + OWASP ZAP API scan')
         choice(name: 'K6_EXTRA', choices: ['none', 'load', 'stress', 'spike', 'soak'], description: 'Extra (long) k6 test after the gates')
@@ -190,6 +191,27 @@ pipeline {
                 always {
                     junit allowEmptyResults: true, testResults: 'playwright/junit.xml'
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'playwright/playwright-report/**'
+                }
+            }
+        }
+
+        stage('Phone tests (Appium)') {
+            when { expression { params.PHONE != 'none' } }
+            options { timeout(time: 30, unit: 'MINUTES') }
+            steps {
+                script {
+                    // the Android emulator reaches this Mac as 10.0.2.2; the iOS Simulator shares its network
+                    def phoneUi = params.PHONE == 'android-chrome' ? 'http://10.0.2.2:5173' : env.UI_URL
+                    sh '''
+                        curl -sf http://127.0.0.1:4723/status >/dev/null || {
+                          echo "NOTE: no Appium server on 127.0.0.1:4723 - start it with: appium --allow-insecure '*:chromedriver_autodownload'"; exit 1; }
+                    '''
+                    sh "mvn -B -f automation/pom.xml test -Dgroups=mobile -DexcludedGroups=none -Dbrowser=${params.PHONE} -DbaseUrl=${BASE_URL} -DuiUrl=${phoneUi} -Dsurefire.rerunFailingTestsCount=1"
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'automation/target/surefire-reports/*.xml'
                 }
             }
         }

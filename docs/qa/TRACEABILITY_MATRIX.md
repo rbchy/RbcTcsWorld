@@ -139,6 +139,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | NFR-A11Y-01 | Every storefront page meets WCAG 2.1 level A and AA (no serious or critical axe-core violation) | `AccessibilityTest#wcag21aa` (15 pages incl. registration, help, goodbye and store admin) | UI | Pass |
 | NFR-UI-02 | The storefront works the same in Chrome, Firefox and Edge | `UiShoppingJourneyTest#endToEndPurchase`, `UiOrderAfterSalesTest#trackingAndReturn`, `AccessibilityTest#wcag21aa` (all UI tests in each browser; CI job "UI tests in firefox / edge") | UI | Pass (all UI tests per browser) |
 | NFR-UI-03 | The storefront works in all three browser engines (Chromium, Firefox, WebKit = Safari's engine) and on phone screens (Pixel 7, iPhone 14); failures show readable messages; product pictures do not change by accident | Playwright: `playwright/tests/journey.spec.ts`, `playwright/tests/catalog.spec.ts`, `playwright/tests/session.spec.ts`, `playwright/tests/network.spec.ts`, `playwright/tests/visual.spec.ts`, `playwright/tests/a11y.spec.ts`, `playwright/tests/api.spec.ts` | UI A | Pass |
+| NFR-UI-04 | The storefront works in real phone browsers: Chrome on Android and Safari on iOS (layout fits the screen, pictures load, registration with the on-screen keyboard, purchase, menu Log out and Exit) | `MobileWebTest#catalogOnAPhone`, `MobileWebTest#purchaseOnAPhone`, `MobileWebTest#menuLogoutAndExitOnAPhone`, `MobileWebTest#reallyAPhone` (Appium 3: Android emulator and iOS Simulator in CI) | UI | Pass |
 
 ## Coverage summary
 
@@ -153,5 +154,5 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 9 | 9 | - |
-| Non-functional | 15 | 15 | - |
-| **Total** | **82** | **82 (100 %)** | **0** |
+| Non-functional | 16 | 16 | - |
+| **Total** | **83** | **83 (100 %)** | **0** |

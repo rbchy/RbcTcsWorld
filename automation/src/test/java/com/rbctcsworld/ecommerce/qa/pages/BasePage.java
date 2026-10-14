@@ -49,7 +49,14 @@ public abstract class BasePage {
     }
 
     protected void click(String testId) {
-        wait.until(ExpectedConditions.elementToBeClickable(testId(testId))).click();
+        WebElement e = wait.until(ExpectedConditions.elementToBeClickable(testId(testId)));
+        if (com.rbctcsworld.ecommerce.qa.drivers.DriverFactory.isMobile()) {
+            // phones: close the on-screen keyboard and bring the button to the middle first - while the keyboard
+            // slides away the page moves, and a tap at the old position missed (Android emulator, several pages)
+            ((JavascriptExecutor) driver).executeScript(
+                    "if (document.activeElement) document.activeElement.blur(); arguments[0].scrollIntoView({block: 'center'});", e);
+        }
+        e.click();
     }
 
     /**

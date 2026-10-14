@@ -27,6 +27,7 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
   reporter: [
     ['list'],
+    ...(CI ? [['github'] as ['github']] : []),   // failed and flaky tests as annotations on the GitHub run
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['junit', { outputFile: 'junit.xml' }],
   ],

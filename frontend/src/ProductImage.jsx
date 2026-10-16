@@ -22,9 +22,11 @@ export default function ProductImage({ product, alt = '', className = 'thumb', t
   const [failed, setFailed] = useState(false);
   useEffect(() => { setSrc(wanted); setFailed(false); }, [wanted]);
   return (
-    <img className={className} src={src} alt={alt} width="400" height="300" loading={eager || failed ? 'eager' : 'lazy'}
+    // `loading` comes before `src` on purpose: React writes the attributes in this order. The replacement must
+    // already be eager when its address is set - WebKit did not always start a picture whose `src` changed while
+    // it was still lazy, even when `loading` turned eager right after (DEF-026, seen again in CI on 16 Oct).
+    <img className={className} loading={eager || failed ? 'eager' : 'lazy'} src={src} alt={alt} width="400" height="300"
          decoding="async" data-testid={testId} data-fallback={src === fallback}
-         // the replacement loads at once: Safari (WebKit) did not start a lazy picture that was already on screen
          onError={() => { if (src !== fallback) { setFailed(true); setSrc(fallback); } }} />
   );
 }

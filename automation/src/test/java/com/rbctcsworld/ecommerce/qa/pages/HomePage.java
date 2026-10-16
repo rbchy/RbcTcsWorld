@@ -29,8 +29,14 @@ public class HomePage extends BasePage {
         WebElement box = visible(SEARCH);
         box.clear();
         box.sendKeys(text);
-        // wait until every visible card matches the search (results are filtered by the API)
-        wait.until(d -> productNames().stream().allMatch(n -> n.toLowerCase().contains(text.toLowerCase())));
+        // wait until the API's answer for the full text is on the page: at least one card, and every card matches.
+        // "Every card matches" alone is also true for an empty grid, e.g. while the first catalog page of a slow
+        // browser is still loading - the search then returned before any result was there (DEF-027).
+        String wanted = text.toLowerCase();
+        wait.until(d -> {
+            List<String> names = productNames();
+            return !names.isEmpty() && names.stream().allMatch(n -> n.toLowerCase().contains(wanted));
+        });
         return this;
     }
 
@@ -69,10 +75,18 @@ public class HomePage extends BasePage {
 
     /** Clicks the heart on the card of the given SKU and waits for the confirmation message. */
     public HomePage addToWishlist(String sku) {
-        By card = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "']");
         String before = textOrEmpty("flash") + "|" + textOrEmpty("error-banner");
-        visible(card).findElement(testId("add-to-wishlist")).click();
-        wait.until(d -> !(textOrEmpty("flash") + "|" + textOrEmpty("error-banner")).equals(before));
+        By heart = By.cssSelector("[data-testid='product-card'][data-sku='" + sku + "'] [data-testid='add-to-wishlist']");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(heart)).click();
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                    .until(d -> !(textOrEmpty("flash") + "|" + textOrEmpty("error-banner")).equals(before));
+        } catch (org.openqa.selenium.TimeoutException lostClick) {
+            // Safari under load sometimes drops a click (DEF-027). Saving is idempotent on the server
+            // ("Already on your wishlist"), so one more click is safe and still shows a message.
+            driver.findElement(heart).click();
+            wait.until(d -> !(textOrEmpty("flash") + "|" + textOrEmpty("error-banner")).equals(before));
+        }
         return this;
     }
 

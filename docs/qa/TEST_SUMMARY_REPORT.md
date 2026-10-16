@@ -25,8 +25,8 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 | 5 | k6 flash sale | orders = stock, stock 0 | 15 / 15 (CI), 50 / 50 (local, 300 buyers) | ✅ |
 | 6 | OWASP ZAP | 0 Medium / High | **0** (Low only, informational) | ✅ |
 | 7 | OSV-Scanner | 0 unaccepted CVSS >= 9 | **0 open, 0 accepted** (was 21; both Spring CVEs fixed by the Boot 4 upgrade) | ✅ |
-| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.1 % lines, 93.4 % branches** | ✅ |
-| 9 | Mutation score (PIT, business logic) | >= 84 % | **91.9 %** (was 65.5 %); test strength 99.3 % | ✅ |
+| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.1 % lines, 93.9 % branches** | ✅ |
+| 9 | Mutation score (PIT, business logic) | >= 84 % | **92.2 %** (was 65.5 %); test strength 99.3 % | ✅ |
 | 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, OpenAPI unchanged (34 paths)** | ✅ |
 | 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **14/14 pages clean** (the first 8 all failed before DEF-018) | ✅ |
 | 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **35/35 Firefox 157, 35/35 Edge 154** (Chrome in criterion 1) | ✅ |

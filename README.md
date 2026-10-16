@@ -5,7 +5,7 @@
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 ![Tests](https://img.shields.io/badge/automated%20tests-910-brightgreen)
 [![Coverage](https://img.shields.io/badge/line%20coverage-98.1%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-91.9%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-92.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
 
 An Amazon-inspired online store (catalog, cart, checkout, Stripe or mock payment, shipping, returns, reviews,
@@ -50,8 +50,8 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 |---|---|---|---|---|
 | 1 | Backend unit + integration | 100 % pass | 469 / 469 | JUnit 5, Mockito, H2 + Flyway |
 | 2 | API, database, BDD, UI | 100 % pass | 328 / 328 | REST Assured, JDBC, Cucumber 7, Selenium 4 |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.1 % / 93.4 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 91.9 % (test strength 99.3 %) | PIT |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.1 % / 93.9 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 92.2 % (test strength 99.3 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 15 pages | axe-core, WCAG 2.1 A + AA |
@@ -78,7 +78,7 @@ tests that exist only to move a number.
 flowchart TB
   subgraph fast["Fast, every push (seconds)"]
     U["Unit + integration<br/>453 tests"]
-    M["Mutation testing<br/>484 mutants"]
+    M["Mutation testing<br/>486 mutants"]
   end
   subgraph service["Against the running app (PostgreSQL)"]
     A["API tests<br/>REST Assured clients"]
@@ -267,7 +267,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
 [Risks](docs/qa/RISK_REGISTER.md) · [Traceability (83 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
-[Defects (25)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
+[Defects (26)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.
 

@@ -34,7 +34,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-024](#def-024) | Safari: no UI test could type into a field (11 of 32 UI tests failed) | Test code (cross-browser) | High | P1 | First Safari runs on Jenkins (#38-#40) | Closed |
 | [DEF-025](#def-025) | Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed | Test infrastructure (reporting) | Medium | P2 | Reviewing build #41 | Closed |
 | [DEF-026](#def-026) | Safari: a failed product picture was replaced by an empty frame instead of the category picture | Product - storefront | Medium | P2 | Playwright WebKit project | Closed |
-| [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Fixed - Safari re-run pending |
+| [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -682,7 +682,8 @@ heart button, and the helper waited only for a message that never came.
 heart is clickable; if no message appears within 5 s it clicks once more. That is safe because saving is
 idempotent on the server ("Already on your wishlist").
 
-**Regression test:** the same two tests, in every browser on every push and in Safari on Jenkins.
+**Regression test:** the same two tests, in every browser on every push and in Safari on Jenkins. Verified:
+Jenkins build #59 (`BROWSER=safari`, commit 913deac) passed every gate, 326 / 328 with 2 skipped by design.
 
 **Lesson:** a wait condition that is true for "nothing on the page" is not a wait. Every "all items match" check
 needs "and there is at least one item".

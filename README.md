@@ -26,7 +26,7 @@ Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://githu
    [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/) ·
    [Playwright](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/playwright/)
-3. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 26 entries, each with
+3. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 27 entries, each with
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](docs/qa/TEST_STRATEGY.md) ·
    [Risk Register](docs/qa/RISK_REGISTER.md) · [Test Summary Report (GO / NO-GO)](docs/qa/TEST_SUMMARY_REPORT.md)
@@ -267,7 +267,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
 [Risks](docs/qa/RISK_REGISTER.md) · [Traceability (83 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
-[Defects (26)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
+[Defects (27)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.
 

@@ -34,6 +34,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-024](#def-024) | Safari: no UI test could type into a field (11 of 32 UI tests failed) | Test code (cross-browser) | High | P1 | First Safari runs on Jenkins (#38-#40) | Closed |
 | [DEF-025](#def-025) | Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed | Test infrastructure (reporting) | Medium | P2 | Reviewing build #41 | Closed |
 | [DEF-026](#def-026) | Safari: a failed product picture was replaced by an empty frame instead of the category picture | Product - storefront | Medium | P2 | Playwright WebKit project | Closed |
+| [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Fixed - Safari re-run pending |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -651,6 +652,40 @@ first try since the fix.
 
 **Lesson:** "it works in Chrome" is not "it works in Safari". Running WebKit on every push found a user-visible
 Safari bug that the real Safari run on the Mac (a manual Jenkins choice) had not run into yet.
+
+---
+
+## DEF-027
+**Safari on a busy Mac: the UI search helper returned before any result was on the page**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Medium / P2 - test defect: two UI tests failed for a reason that was not in the shop |
+| Component | `automation/.../pages/HomePage.java` (`search`, `addToWishlist`) |
+| Environment | Jenkins build #56 on the Mac, `BROWSER=safari`, commit 30915c8; the UI stage ran 692 s instead of ~180 s |
+
+**Steps to reproduce:**
+1. Run the UI suite in Safari while the Mac is busy (or throttle the browser), so the first catalog page loads slowly.
+2. `HomePageUiTest.searchFilters`: open the home page and search for "mouse" at once.
+
+**Expected result:** the search waits for the results, then finds at least one product.
+**Actual result:** `searchFilters` failed with "at least one result ==> expected: <false> but was: <true>", and
+`UiReviewWishlistTest.wishlistJourney` timed out waiting for the wishlist confirmation. The same commit passed
+every gate in Chrome (builds #50, #51, #54).
+
+**Root cause:** `search()` waited until "every product card matches the search text". For an empty grid that is
+always true. In a slow browser the grid was still empty (first page not loaded yet), so the wait ended at once and
+the test read an empty list. The wishlist failure came on the same slow run: Safari dropped the click on the
+heart button, and the helper waited only for a message that never came.
+
+**Fix:** `search()` now waits for at least one card and every card matching. `addToWishlist()` waits until the
+heart is clickable; if no message appears within 5 s it clicks once more. That is safe because saving is
+idempotent on the server ("Already on your wishlist").
+
+**Regression test:** the same two tests, in every browser on every push and in Safari on Jenkins.
+
+**Lesson:** a wait condition that is true for "nothing on the page" is not a wait. Every "all items match" check
+needs "and there is at least one item".
 
 ---
 

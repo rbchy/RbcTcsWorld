@@ -31,7 +31,19 @@ function refreshSession() {
   return refreshing;
 }
 
-api.interceptors.response.use(response => response, async error => {
+/** Every cart answer carries totalQuantity: tell the top bar, so the badge on the cart icon is always right. */
+function announceCart(response) {
+  const n = response?.data?.totalQuantity;
+  const url = response?.config?.url || '';
+  if (url.startsWith('/cart') && Number.isFinite(n)) {
+    window.dispatchEvent(new CustomEvent('cart-count', { detail: n }));
+  } else if (response?.config?.method === 'post' && (url === '/orders' || url.endsWith('/move-to-cart'))) {
+    window.dispatchEvent(new CustomEvent('cart-refresh'));          // the cart changed, but this answer has no count
+  }
+  return response;
+}
+
+api.interceptors.response.use(announceCart, async error => {
   const original = error.config;
   if (error.response?.status !== 401 || !original || original._retried || original.url?.startsWith('/auth/')) {
     throw error;

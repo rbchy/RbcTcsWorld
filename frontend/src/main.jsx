@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 import { useRoute, useSession } from './session';
-import { Sidebar, Topbar } from './Layout';
+import { Footer, Sidebar, Topbar } from './Layout';
+import { installButtonIcons } from './icons';
 import { useI18n } from './i18n';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -81,12 +82,16 @@ function App() {
       <div className="frame">
         <Sidebar route={route} session={session} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
         {menuOpen && <div className="scrim" aria-hidden="true" onClick={() => setMenuOpen(false)} />}
-        <main id="main" tabIndex={-1}>{page}</main>
+        <div className="content">
+          <main id="main" tabIndex={-1}>{page}</main>
+          <Footer session={session} />
+        </div>
       </div>
     </div>
   );
 }
 
+installButtonIcons();
 createRoot(document.getElementById('root')).render(<App />);
 
 // Desktop version: the service worker makes the storefront installable and shows an offline page when the

@@ -4,6 +4,7 @@ import { getSession, go } from '../session';
 import Stars from './Stars';
 import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
+import { Icon } from '../icons';
 
 const PAGE_SIZE = 20;
 
@@ -98,7 +99,7 @@ function ProductCard({ p, onAdd, onWish, t }) {
         <button data-testid="add-to-cart" disabled={p.stock < 1} onClick={() => onAdd(p.id, qty)}>
           {p.stock < 1 ? t('outOfStock') : t('addToCart')}
         </button>
-        <button className="ghost" data-testid="add-to-wishlist" title={t('saveWishlist')} aria-label={`${t('saveWishlist')}: ${p.name}`} onClick={() => onWish(p.id)}>♡</button>
+        <button className="ghost" data-testid="add-to-wishlist" title={t('saveWishlist')} aria-label={`${t('saveWishlist')}: ${p.name}`} onClick={() => onWish(p.id)}><Icon name="heart" /></button>
       </div>
     </article>
   );

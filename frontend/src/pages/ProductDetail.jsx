@@ -47,7 +47,7 @@ export default function ProductDetail({ id }) {
           <h1 data-testid="detail-name">{product.name}</h1>
           <p className="muted">{product.category} · SKU {product.sku}</p>
           <p><strong data-testid="detail-price">{money(product.price)}</strong> · Stock {product.stock}</p>
-          <button className="ghost" data-testid="detail-wishlist" onClick={wish}>♡ Save to wishlist</button>
+          <button className="ghost" data-testid="detail-wishlist" onClick={wish}>Save to wishlist</button>
         </div>
       </div>
       {notice && <p data-testid="review-notice" className="ok">{notice}</p>}

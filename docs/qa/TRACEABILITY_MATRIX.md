@@ -132,6 +132,11 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-UI-07 | Interface and help center in six languages (EN, BN, ES, FR, AR, ZH); Arabic is right-to-left; the choice is remembered | `UiShellTest#languages`, `UiShellTest#helpCenter` | UI | Pass |
 | REQ-UI-08 | Sidebar menu, top bar and login flow: a protected page asks for login and returns to it | `UiShellTest#sidebarNavigation`, `UiAuthTest#protectedRouteRedirect` | UI | Pass |
 | REQ-UI-09 | Log out and Exit are buttons in the top bar and in the menu. Exit logs out (server revokes the session), shows a goodbye page and asks the browser to close the window; it never stops the server | `UiAuthTest#exitEndsTheSessionAndSaysGoodbye`, `UiAuthTest#menuLogoutAndExit`, `UiAuthTest#logoutRevokesOnTheServer`, `AccessibilityTest#wcag21aa` | UI | Pass |
+| REQ-UI-10 | Coloured menu: every area of the store has its own colour and every entry an icon; the open page is marked (aria-current) | `UiShellTest#sidebarNavigation`, `playwright/tests/shell.spec.ts` | UI | Pass |
+| REQ-UI-11 | The cart icon in the top bar shows how many items are in the cart and updates on add, remove, move from wishlist and order; its accessible name says the count | `playwright/tests/shell.spec.ts` | UI | Pass |
+| REQ-UI-12 | Every page ends with a footer (shop, account and help links, the shipping and return promises from the real rules, Back to top) | `playwright/tests/shell.spec.ts`, `playwright/tests/a11y.spec.ts` | UI | Pass |
+| REQ-UI-13 | Date fields have a calendar: click or keyboard (arrows, PageUp/PageDown, Home/End, Enter, Esc), Today and Clear, days outside min/max cannot be picked, a coupon end date keeps 23:59; typing a date still works | `playwright/tests/shell.spec.ts`, `playwright/tests/admin-suite.spec.ts` | UI | Pass |
+| REQ-UI-14 | Action buttons carry icons (Search, Reset, Save, Cancel, Delete, Edit, Export ...) and validation messages an alert sign, never replacing the text; the dashboard shows money per day (14 days), orders by status and this month as a calendar, each with a text twin | `playwright/tests/shell.spec.ts` | UI | Pass |
 
 ## Audit trail
 
@@ -191,8 +196,8 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Fulfilment and returns | 6 | 6 | - |
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
-| Storefront UI | 9 | 9 | - |
+| Storefront UI | 14 | 14 | - |
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **109** | **109 (100 %)** | **0** |
+| **Total** | **114** | **114 (100 %)** | **0** |

@@ -106,8 +106,8 @@ class OrderServiceTest {
 
         InOrder seq = inOrder(orders, inventory, cartItems);
         seq.verify(orders).save(any(CustomerOrder.class));
-        seq.verify(inventory).reserve(mouse, 2, null);
-        seq.verify(inventory).reserve(keyboard, 1, null);
+        seq.verify(inventory).reserve(mouse, 2, null, "PA");          // the delivery state picks the warehouse
+        seq.verify(inventory).reserve(keyboard, 1, null, "PA");
         seq.verify(cartItems).deleteByUserId(7L);
         verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(null, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_PLACED));
     }
@@ -138,7 +138,7 @@ class OrderServiceTest {
     @Test
     void stockFailureLeavesCartUntouched() {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 2)));
-        doThrow(new ConflictException("Insufficient stock")).when(inventory).reserve(eq(mouse), anyInt(), any());
+        doThrow(new ConflictException("Insufficient stock")).when(inventory).reserve(eq(mouse), anyInt(), any(), any());
 
         assertThatThrownBy(() -> service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS)).isInstanceOf(ConflictException.class);
         verify(cartItems, never()).deleteByUserId(any());

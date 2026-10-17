@@ -45,6 +45,13 @@ export default function AdminOrders() {
   const [adv, setAdv] = useState(NO_FILTER);
   const [applied, setApplied] = useState(NO_FILTER);
   const [advErrors, setAdvErrors] = useState({});
+  const [shipsFrom, setShipsFrom] = useState({});          // order id -> allocations (shown on demand)
+
+  const toggleShipsFrom = async o => {
+    if (shipsFrom[o.id]) { const next = { ...shipsFrom }; delete next[o.id]; setShipsFrom(next); return; }
+    try { setShipsFrom({ ...shipsFrom, [o.id]: (await api.get(`/admin/orders/${o.id}/allocations`)).data }); }
+    catch (err) { setOk(''); setError(errorText(err)); }
+  };
 
   const load = () => api.get('/admin/orders').then(r => setRows(r.data)).catch(e => setError(errorText(e)));
   useEffect(() => { load(); }, []);
@@ -139,6 +146,14 @@ export default function AdminOrders() {
                   <td>#{o.customerId}
                     {o.shippingAddress && <div className="small muted" data-testid="aor-ship-to">{addressLine(o.shippingAddress)}</div>}</td>
                   <td><span className={`badge ${o.status}`} data-testid="aor-status">{o.status}</span>
+                    <div><button type="button" className="link small" onClick={() => toggleShipsFrom(o)} data-testid="aor-ships-from"
+                      aria-expanded={!!shipsFrom[o.id]}>{t('shipsFrom')}</button></div>
+                    {shipsFrom[o.id] && (
+                      <div className="small muted" data-testid="aor-allocations">
+                        {shipsFrom[o.id].length === 0 ? t('noRows')
+                          : shipsFrom[o.id].map(a => `${a.warehouseCode} ×${a.quantity}`).join(', ')}
+                      </div>
+                    )}
                     {o.trackingNumber && <div className="small muted">{o.carrier} {o.trackingNumber}</div>}</td>
                   <td className="num">{money(o.total)}</td>
                   <td className="actions">

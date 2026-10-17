@@ -119,7 +119,7 @@ class WarehouseServiceTest {
         verify(store).update(3L, "Newark", "Newark", "NJ", 15, true);
         verify(events).publishEvent(AuditEvent.of(List.of(
                 new AuditChange("WAREHOUSE", 3, "WAREHOUSE_UPDATED", "priority", "30", "15"))));
-        verify(store, never()).unitsIn(anyLong());
+        verify(store, never()).activeCount();               // still active: no switch-off checks
     }
 
     @Test

@@ -24,7 +24,7 @@ public class MailpitClient {
     public boolean isAvailable() {
         try {
             return given().baseUri(base).get("/api/v1/messages?limit=1").statusCode() == 200;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {   // also java.net.ConnectException, which REST Assured throws undeclared
             return false;
         }
     }

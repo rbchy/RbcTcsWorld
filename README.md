@@ -282,6 +282,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 | Login sessions: refresh tokens, Redis login lockout | [AUTH_SESSIONS_BN](docs/modules/AUTH_SESSIONS_BN.md) |
 | Forgot password: reset link by e-mail | [PASSWORD_RESET_BN](docs/modules/PASSWORD_RESET_BN.md) |
 | Audit trail (append-only, hash chain; inspired by Part 11 / ALCOA+) | [AUDIT_TRAIL_BN](docs/modules/AUDIT_TRAIL_BN.md) |
+| Store admin back office: banner, sub-menus, customers, coupons, reports, payments, advanced search | [ADMIN_BACK_OFFICE_BN](docs/modules/ADMIN_BACK_OFFICE_BN.md) |
 | Delivery address at checkout | [SHIPPING_ADDRESS_BN](docs/modules/SHIPPING_ADDRESS_BN.md) |
 | Stripe payments (3 test layers), order e-mails (transactional outbox, Mailpit) | [PAYMENTS_NOTIFICATIONS_BN](docs/modules/PAYMENTS_NOTIFICATIONS_BN.md) |
 | API contract and accessibility | [API_CONTRACT_A11Y_BN](docs/modules/API_CONTRACT_A11Y_BN.md) |

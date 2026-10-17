@@ -209,10 +209,10 @@ public class ReportService {
     /** What the stock on the shelves is worth, per category (products on sale). A snapshot: no dates. */
     ReportTable inventory() {
         List<List<Object>> rows = jdbc.query("""
-                select coalesce(category, '-') as cat, count(*) as product_count, sum(stock) as unit_count,
+                select coalesce(category, '(none)') as cat, count(*) as product_count, sum(stock) as unit_count,
                        sum(price * stock) as stock_value
                 from products where active = true
-                group by coalesce(category, '-') order by stock_value desc, cat""",
+                group by coalesce(category, '(none)') order by stock_value desc, cat""",
                 (rs, i) -> List.<Object>of(rs.getString("cat"), rs.getLong("product_count"), rs.getLong("unit_count"),
                         money(rs.getBigDecimal("stock_value"))));
         return new ReportTable("inventory", null, null, List.of("category", "products", "units", "value"), rows,

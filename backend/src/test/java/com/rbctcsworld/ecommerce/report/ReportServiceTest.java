@@ -203,7 +203,7 @@ class ReportServiceTest {
     @Test
     void inventoryValuePerCategory() {
         ReportTable t = service.run("inventory", Options.none());
-        assertThat(t.rows()).containsExactly(r("-", 1L, 50L, m("275.00")), r("home", 2L, 3L, m("30.00")),
+        assertThat(t.rows()).containsExactly(r("(none)", 1L, 50L, m("275.00")), r("home", 2L, 3L, m("30.00")),
                 r("office", 1L, 5L, m("6.25")));
         assertThat(t.totals()).isEqualTo(r("total", 4L, 58L, m("311.25")));
     }
@@ -212,7 +212,7 @@ class ReportServiceTest {
     void csvHasTheHeaderTheRowsAndTheTotals() {
         ReportTable t = service.run("inventory", Options.none());
         assertThat(service.csv(t)).isEqualTo("\"category\",\"products\",\"units\",\"value\"\r\n"
-                + "\"-\",1,50,275.00\r\n\"home\",2,3,30.00\r\n\"office\",1,5,6.25\r\n\"total\",4,58,311.25\r\n");
+                + "\"(none)\",1,50,275.00\r\n\"home\",2,3,30.00\r\n\"office\",1,5,6.25\r\n\"total\",4,58,311.25\r\n");
         assertThat(service.csv(service.run("low-stock", new Options(null, null, null, null, 0))))
                 .isEqualTo("\"sku\",\"name\",\"category\",\"stock\",\"price\"\r\n\"DESK\",\"Desk\",\"home\",0,60.00\r\n");
     }

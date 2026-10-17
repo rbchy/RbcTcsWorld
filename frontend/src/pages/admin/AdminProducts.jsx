@@ -5,7 +5,7 @@ import { Field, Notice, when } from './common';
 import ProductImage, { IMAGE_URL } from '../../ProductImage';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '' };
 
 /** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
  *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
@@ -19,6 +19,15 @@ export function validateProduct(f) {
   if (f.stock === '' || !/^\d+$/.test(String(f.stock).trim())) e.stock = 'vWhole';
   const img = (f.imageUrl ?? '').trim();
   if (img && (img.length > 500 || !IMAGE_URL.test(img))) e.imageUrl = 'vImage';
+  // variants (same rules as ProductService): a size or colour needs a group, a group needs a size or colour
+  const group = (f.variantGroup ?? '').trim();
+  const size = (f.size ?? '').trim();
+  const color = (f.color ?? '').trim();
+  if (group && !/^[A-Za-z0-9][A-Za-z0-9-]{1,39}$/.test(group)) e.variantGroup = 'vGroup';
+  if (size && !/^[\p{L}\p{N} ./-]{1,20}$/u.test(size)) e.size = 'vSize';
+  if (color && !/^[\p{L} -]{1,30}$/u.test(color)) e.color = 'vColor';
+  if (!group && (size || color)) e.variantGroup = 'vGroupNeeded';
+  if (group && !e.variantGroup && !size && !color) e.size = 'vSizeOrColor';
   return e;
 }
 
@@ -77,7 +86,8 @@ export default function AdminProducts() {
 
   const open = p => {
     setErrors({}); setOk(''); setError(''); setConfirm(null);
-    setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '' } : { ...EMPTY });
+    setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
+      variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '' } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -91,7 +101,8 @@ export default function AdminProducts() {
     setErrors(found);
     if (Object.keys(found).length) return;
     const body = { name: form.name.trim(), sku: form.sku.trim(), category: form.category.trim() || null,
-      price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl.trim() || null };
+      price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl.trim() || null,
+      variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -172,6 +183,21 @@ export default function AdminProducts() {
           <Field id="pf-stock" label={t('stock')} error={errors.stock}>
             <input value={form.stock} onChange={set('stock')} inputMode="numeric" data-testid="pf-stock" />
           </Field>
+          <fieldset className="variant-fields">
+            <legend>{t('variantLegend')}</legend>
+            <p className="hint">{t('variantHint')}</p>
+            <Field id="pf-group" label={t('variantGroup')} error={errors.variantGroup}>
+              <input value={form.variantGroup} onChange={set('variantGroup')} maxLength={40} placeholder="TEE-CLASSIC"
+                     autoCapitalize="characters" spellCheck={false} data-testid="pf-group" />
+            </Field>
+            <Field id="pf-size" label={t('sizeLabel')} error={errors.size}>
+              <input value={form.size} onChange={set('size')} maxLength={20} placeholder="M" list="pf-size-list" data-testid="pf-size" />
+            </Field>
+            <datalist id="pf-size-list">{['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(x => <option key={x} value={x} />)}</datalist>
+            <Field id="pf-color" label={t('colorLabel')} error={errors.color}>
+              <input value={form.color} onChange={set('color')} maxLength={30} placeholder="Navy" data-testid="pf-color" />
+            </Field>
+          </fieldset>
           <div className="image-field">
             <Field id="pf-image" label={t('picture')} error={errors.imageUrl} hint={t('pictureHint')}>
               <input value={form.imageUrl} onChange={set('imageUrl')} maxLength={500} inputMode="url" spellCheck={false}
@@ -198,7 +224,10 @@ export default function AdminProducts() {
                 <tr data-testid="admin-product-row" data-sku={p.sku}>
                   <td className="pic"><ProductImage product={p} className="row-thumb" testId="apr-image" /></td>
                   <td>{p.sku}</td>
-                  <td data-testid="apr-name">{p.name}</td>
+                  <td data-testid="apr-name">{p.name}
+                    {p.variantGroup && <span className="variant-tag" data-testid="apr-variant">
+                      {[p.color, p.size].filter(Boolean).join(' / ')}<span className="muted"> {p.variantGroup}</span></span>}
+                  </td>
                   <td>{p.category}</td>
                   <td className="num" data-testid="apr-price">{money(p.price)}</td>
                   <td className={`num${p.stock <= 5 ? ' low' : ''}`} data-testid="apr-stock">{p.stock}</td>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 /** Category pictures for products without their own (or whose own picture cannot be loaded). */
-const CATEGORY_PICTURES = { electronics: 'electronics', home: 'home', books: 'books' };
+const CATEGORY_PICTURES = { electronics: 'electronics', home: 'home', books: 'books', clothing: 'clothing' };
 
 /** Same rule as the backend ProductRequest.imageUrl: the shop's own picture or an https:// link. */
 export const IMAGE_URL = /^(\/products\/[a-z0-9][a-z0-9-]*\.(svg|png|jpg|webp)|https:\/\/[^\s"'<>]+)$/;

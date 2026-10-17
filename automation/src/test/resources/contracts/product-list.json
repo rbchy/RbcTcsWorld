@@ -64,6 +64,27 @@
         ],
         "maxLength": 500,
         "pattern": "^(/products/[a-z0-9][a-z0-9-]*\\.(svg|png|jpg|webp)|https://[^\\s\"'<>]+)$"
+      },
+      "variantGroup": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 40
+      },
+      "size": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 20
+      },
+      "color": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 30
       }
     }
   }

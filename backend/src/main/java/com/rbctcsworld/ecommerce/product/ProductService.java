@@ -38,7 +38,8 @@ public class ProductService {
     /** The product fields the audit trail follows (ratings change with every review and are not audited). */
     static Map<String, Object> audited(Product p) {
         return AuditChange.fields("name", p.getName(), "sku", p.getSku(), "category", p.getCategory(),
-                "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive());
+                "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive(),
+                "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor());
     }
 
     private void audit(Product p, String action, Map<String, Object> before) {
@@ -95,6 +96,14 @@ public class ProductService {
             if (f.minPrice() != null) where.add(cb.greaterThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.minPrice()));
             if (f.maxPrice() != null) where.add(cb.lessThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.maxPrice()));
             if (Boolean.TRUE.equals(f.inStock())) where.add(cb.greaterThan(root.<Integer>get("stock"), 0));
+            if (Boolean.TRUE.equals(f.grouped())) {
+                // one card per item: a single product, or the first variant (lowest id) on sale of its group
+                var first = query.subquery(Long.class);
+                var v = first.from(Product.class);
+                first.select(cb.min(v.<Long>get("id")))
+                        .where(cb.equal(v.get("variantGroup"), root.get("variantGroup")), cb.isTrue(v.<Boolean>get("active")));
+                where.add(cb.or(cb.isNull(root.get("variantGroup")), cb.equal(root.get("id"), first)));
+            }
             return cb.and(where.toArray(new Predicate[0]));
         };
     }
@@ -110,10 +119,75 @@ public class ProductService {
         int n = limit == null ? 4 : limit;
         if (n < 1 || n > MAX_SIMILAR) throw new BusinessRuleException("limit must be between 1 and " + MAX_SIMILAR);
         Product p = get(id);
-        PageRequest first = PageRequest.of(0, n);
-        return p.getCategory() == null || p.getCategory().isBlank()
+        // other sizes and colours of the same item are not "similar products" (the product page offers them)
+        int siblings = p.getVariantGroup() == null ? 0 : repo.variantsOf(p.getVariantGroup()).size();
+        PageRequest first = PageRequest.of(0, n + siblings);
+        List<Product> found = p.getCategory() == null || p.getCategory().isBlank()
                 ? repo.similarByPrice(p.getId(), p.getPrice(), first)
                 : repo.similarInCategory(p.getId(), p.getCategory(), p.getPrice(), first);
+        return found.stream()
+                .filter(o -> p.getVariantGroup() == null || !p.getVariantGroup().equals(o.getVariantGroup()))
+                .limit(n).toList();
+    }
+
+    /** Every size and colour of this product's item (itself included); a product without variants: just itself. */
+    @Transactional(readOnly = true)
+    public List<Product> variants(long id) {
+        Product p = get(id);
+        return p.getVariantGroup() == null ? List.of(p) : repo.variantsOf(p.getVariantGroup());
+    }
+
+    public static final int MAX_GROUPS = 100;
+
+    /** For catalog cards: per variant group, how many options, which colours and sizes, price range, units. */
+    @Transactional(readOnly = true)
+    public List<VariantSummary> variantSummaries(List<String> groups) {
+        List<String> wanted = groups == null ? List.of() : groups.stream()
+                .filter(g -> g != null && !g.isBlank()).map(g -> g.trim().toUpperCase(Locale.ROOT)).distinct().toList();
+        if (wanted.size() > MAX_GROUPS) throw new BusinessRuleException("at most " + MAX_GROUPS + " groups at a time");
+        if (wanted.isEmpty()) return List.of();
+        Map<String, List<Product>> byGroup = new java.util.LinkedHashMap<>();
+        wanted.forEach(g -> byGroup.put(g, new ArrayList<>()));
+        repo.variantsOfAll(wanted).forEach(p -> byGroup.get(p.getVariantGroup()).add(p));
+        return byGroup.entrySet().stream().filter(e -> !e.getValue().isEmpty())
+                .map(e -> VariantSummary.of(e.getKey(), e.getValue())).toList();
+    }
+
+    /**
+     * Normalises and checks the variant fields: group in upper case, blanks are null; size or colour need a group,
+     * a group needs a size or a colour (400); no two products on sale of one group with the same size and colour
+     * (409, ignoring case).
+     */
+    VariantKey variantOf(ProductRequest r, Long selfId) {
+        String group = blankToNull(r.variantGroup());
+        String size = blankToNull(r.size());
+        String color = blankToNull(r.color());
+        if (group == null) {
+            if (size != null || color != null) throw new BusinessRuleException("A size or colour needs a variant group");
+            return new VariantKey(null, null, null);
+        }
+        group = group.toUpperCase(Locale.ROOT);
+        if (size == null && color == null) throw new BusinessRuleException("A variant needs a size, a colour or both");
+        for (Product other : repo.variantsOf(group)) {
+            if (!other.getId().equals(selfId) && equalsIgnoreCase(other.getSize(), size) && equalsIgnoreCase(other.getColor(), color)) {
+                throw new ConflictException("Variant group " + group + " already has " + label(color, size) + " (SKU " + other.getSku() + ")");
+            }
+        }
+        return new VariantKey(group, size, color);
+    }
+
+    record VariantKey(String group, String size, String color) {}
+
+    private static String blankToNull(String v) {
+        return v == null || v.isBlank() ? null : v.trim().replaceAll("\\s+", " ");
+    }
+
+    private static boolean equalsIgnoreCase(String a, String b) {
+        return a == null ? b == null : a.equalsIgnoreCase(b);
+    }
+
+    private static String label(String color, String size) {
+        return java.util.stream.Stream.of(color, size).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.joining(" / "));
     }
 
     @Transactional(readOnly = true)
@@ -143,8 +217,10 @@ public class ProductService {
         if (repo.existsBySku(sku)) {
             throw new ConflictException("SKU already exists: " + sku);
         }
+        VariantKey variant = variantOf(r, null);
         Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());
+        p.changeVariant(variant.group(), variant.size(), variant.color());
         Product saved = repo.save(p);
         inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
@@ -157,10 +233,12 @@ public class ProductService {
         repo.findBySku(sku)
                 .filter(other -> !other.getId().equals(p.getId()))
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
+        VariantKey variant = variantOf(r, p.getId());
         Map<String, Object> before = audited(p);
         inventory.changeTotalFromProductForm(p.getId(), r.stock());        // atomic; the entity never writes stock
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());                                  // PUT replaces: no imageUrl = no picture
+        p.changeVariant(variant.group(), variant.size(), variant.color());  // ... and no variant fields = no variant
         Product saved = repo.save(p);
         audit(saved, "PRODUCT_UPDATED", before);
         return saved;

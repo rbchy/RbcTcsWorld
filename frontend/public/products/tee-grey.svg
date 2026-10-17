@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Classic Cotton T-Shirt, Heather Grey</title>
+<rect width="400" height="300" fill="#eef0f1"/>
+<circle cx="330" cy="70" r="86" fill="#e0e5e8"/>
+<ellipse cx="200" cy="266" rx="150" ry="10" fill="#12313f" opacity=".16"/>
+<path d="M146 52l30-12c8 16 40 16 48 0l30 12 52 40-26 34-24-15v117c0 8-6 13-14 13H158c-8 0-14-5-14-13V111l-24 15-26-34z" fill="#9aa7ae"/>
+<path d="M176 40c8 16 40 16 48 0" fill="none" stroke="#7d8b93" stroke-width="7" stroke-linecap="round"/>
+<path d="M120 126l24-15M280 126l-24-15" stroke="#7d8b93" stroke-width="5" stroke-linecap="round"/>
+<rect x="214" y="98" width="26" height="26" rx="6" fill="#b45309"/>
+<path d="M222 104v14M222 104h6a4 4 0 0 1 0 8h-6l9 6" fill="none" stroke="#fffdf6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 230h80" stroke="#7d8b93" stroke-width="4" stroke-linecap="round" stroke-dasharray="3 9"/>
+</svg>

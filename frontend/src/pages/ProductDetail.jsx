@@ -4,6 +4,7 @@ import { getSession, go } from '../session';
 import Stars from './Stars';
 import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
+import { compareSizes, pickVariant, slug, swatch, variantLabel } from '../variants';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
 export default function ProductDetail({ id }) {
@@ -13,7 +14,25 @@ export default function ProductDetail({ id }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [similar, setSimilar] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [qty, setQty] = useState('1');
+  const [cartMsg, setCartMsg] = useState('');
   const { t } = useI18n();
+
+  useEffect(() => {
+    setCartMsg(''); setQty('1');
+    api.get(`/products/${id}/variants`).then(r => setVariants(r.data)).catch(() => setVariants([]));
+  }, [id]);
+
+  const qtyError = !/^\d+$/.test(qty.trim()) || Number(qty) < 1 || Number(qty) > 10 ? t('vQty') : '';
+  const addToCart = async () => {
+    if (!getSession()) { go('/login'); return; }
+    if (qtyError) return;
+    try {
+      const r = await api.post('/cart/items', { productId: Number(id), quantity: Number(qty) });
+      setError(''); setCartMsg(t('addedToCart', { n: r.data.totalQuantity }));
+    } catch (e) { setCartMsg(''); setError(errorText(e)); }
+  };
 
   useEffect(() => {
     setSimilar([]);
@@ -45,9 +64,26 @@ export default function ProductDetail({ id }) {
         <ProductImage product={product} alt={product.name} className="detail-image" testId="detail-image" eager />
         <div>
           <h1 data-testid="detail-name">{product.name}</h1>
-          <p className="muted">{product.category} · SKU {product.sku}</p>
-          <p><strong data-testid="detail-price">{money(product.price)}</strong> · Stock {product.stock}</p>
-          <button className="ghost" data-testid="detail-wishlist" onClick={wish}>Save to wishlist</button>
+          <p className="muted">{product.category} · SKU <span data-testid="detail-sku">{product.sku}</span></p>
+          <p className="detail-price-row"><strong data-testid="detail-price">{money(product.price)}</strong>
+            <span className={`stock-note ${product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : 'in'}`} data-testid="detail-stock">
+              {product.stock === 0 ? t('outOfStock') : product.stock <= 5 ? t('onlyLeft', { n: product.stock }) : t('inStock')}
+            </span>
+          </p>
+          {variants.length > 1 && <VariantPicker product={product} variants={variants} t={t} />}
+          <div className="buy-box">
+            <div className="field qty-field">
+              <label htmlFor="detail-qty">{t('quantity')}</label>
+              <input id="detail-qty" className="qty" type="number" min="1" max="10" value={qty} onChange={e => setQty(e.target.value)}
+                     aria-invalid={!!qtyError} aria-describedby={qtyError ? 'detail-qty-error' : undefined} data-testid="detail-qty" />
+              {qtyError && <span className="field-error" id="detail-qty-error" data-testid="detail-qty-error">{qtyError}</span>}
+            </div>
+            <button data-testid="detail-add-to-cart" disabled={product.stock < 1 || !!qtyError} onClick={addToCart}>
+              {product.stock < 1 ? t('outOfStock') : t('addToCart')}
+            </button>
+            <button className="ghost" data-testid="detail-wishlist" onClick={wish}>Save to wishlist</button>
+          </div>
+          {cartMsg && <p className="ok" role="status" data-testid="detail-cart-notice">{cartMsg} <a href="#/cart">{t('navCart')}</a></p>}
         </div>
       </div>
       {notice && <p data-testid="review-notice" className="ok">{notice}</p>}
@@ -148,5 +184,57 @@ function ReviewForm({ productId, onDone, onError }) {
       <button data-testid="review-submit" type="submit">Submit review</button>
       <p className="muted small">Only customers who received this product can review it.</p>
     </form>
+  );
+}
+
+/**
+ * Colour swatches and size buttons. Each size and colour is its own product (own SKU, price, stock), so picking
+ * one opens that product: price, stock, picture and reviews follow. Sizes that do not exist in the chosen colour
+ * cannot be picked; sold-out ones can be looked at but not bought.
+ */
+function VariantPicker({ product, variants, t }) {
+  const colors = [...new Set(variants.map(v => v.color).filter(Boolean))];
+  const sizes = [...new Set(variants.map(v => v.size).filter(Boolean))].sort(compareSizes);
+  const open = v => { if (v && v.id !== product.id) go(`/products/${v.id}`); };
+  return (
+    <div className="variant-picker" data-testid="variant-picker">
+      <p className="picked" data-testid="variant-selected">{t('selectedOption')}: <strong>{variantLabel(product)}</strong></p>
+      {colors.length > 0 && (
+        <fieldset className="opt-group">
+          <legend>{t('colorLabel')}: <span>{product.color}</span></legend>
+          <div className="swatches">
+            {colors.map(c => {
+              const all = variants.filter(v => v.color === c);
+              const soldOut = all.every(v => v.stock === 0);
+              return (
+                <button key={c} type="button" className={`swatch${soldOut ? ' sold-out' : ''}`} aria-pressed={product.color === c}
+                        data-testid={`pick-color-${slug(c)}`} onClick={() => open(pickVariant(variants, product, { color: c }))}
+                        title={soldOut ? `${c}: ${t('soldOut')}` : c}>
+                  <span className="dot" style={{ background: swatch(c) }} aria-hidden="true" />
+                  <span>{c}</span>{soldOut && <span className="sr-only">, {t('soldOut')}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
+      {sizes.length > 0 && (
+        <fieldset className="opt-group">
+          <legend>{t('sizeLabel')}: <span>{product.size}</span></legend>
+          <div className="size-row">
+            {sizes.map(s => {
+              const v = variants.find(x => x.size === s && (x.color ?? null) === (product.color ?? null));
+              return (
+                <button key={s} type="button" className={`size-btn${v && v.stock === 0 ? ' sold-out' : ''}`} disabled={!v}
+                        aria-pressed={product.size === s} data-testid={`pick-size-${slug(s)}`} onClick={() => open(v)}
+                        title={!v ? t('notInColour') : v.stock === 0 ? t('soldOut') : s}>
+                  {s}{v && v.stock === 0 && <span className="sr-only">, {t('soldOut')}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
+    </div>
   );
 }

@@ -23,7 +23,10 @@ import java.util.List;
  *                           public           200 (JSON array = one page) | 400 bad page/size/sort
  *        headers: X-Total-Count, X-Total-Pages, X-Page, X-Page-Size, Link (rel="next"/"prev")
  *        The body stayed an array, so older clients keep working (backward-compatible fix of DEF-007).
+ *        &grouped=true: one card per variant group (the storefront)
  * GET    /api/products/{id} public           200 | 404
+ * GET    /api/products/{id}/variants   public  200 every size/colour of the item | 404
+ * GET    /api/products/variant-groups?names=A,B  public  200 option summary per group | 400 more than 100
  * POST   /api/products      ADMIN            201 | 400 | 401 | 403 | 409
  * PUT    /api/products/{id} ADMIN            200 | 400 | 401 | 403 | 404 | 409
  * DELETE /api/products/{id} ADMIN (soft)     204 | 401 | 403 | 404
@@ -48,8 +51,9 @@ public class ProductController {
                                              @RequestParam(required = false) String category,
                                              @RequestParam(required = false) java.math.BigDecimal minPrice,
                                              @RequestParam(required = false) java.math.BigDecimal maxPrice,
-                                             @RequestParam(required = false) Boolean inStock) {
-        Page<Product> result = service.page(q, page, size, sort, new ProductFilter(category, minPrice, maxPrice, inStock));
+                                             @RequestParam(required = false) Boolean inStock,
+                                             @RequestParam(required = false) Boolean grouped) {
+        Page<Product> result = service.page(q, page, size, sort, new ProductFilter(category, minPrice, maxPrice, inStock, grouped));
         ResponseEntity.BodyBuilder response = ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.getTotalElements()))
                 .header("X-Total-Pages", String.valueOf(result.getTotalPages()))
@@ -83,6 +87,18 @@ public class ProductController {
     @GetMapping("/{id}/similar")
     public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
         return service.similar(id, limit);
+    }
+
+    /** Every size and colour of the item this product belongs to (itself included), for the product page. */
+    @GetMapping("/{id}/variants")
+    public List<Product> variants(@PathVariable long id) {
+        return service.variants(id);
+    }
+
+    /** Option summaries for catalog cards, one request for a whole page of cards. */
+    @GetMapping("/variant-groups")
+    public List<VariantSummary> variantGroups(@RequestParam(required = false) List<String> names) {
+        return service.variantSummaries(names);
     }
 
     @GetMapping("/{id}")

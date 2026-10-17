@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="t"><title id="t">Clothing</title>
+<rect width="400" height="300" fill="#f3ece4"/>
+<circle cx="80" cy="70" r="70" fill="#eadfd2"/>
+<ellipse cx="200" cy="266" rx="150" ry="10" fill="#12313f" opacity=".16"/>
+<path d="M200 46a14 14 0 1 1 14 14c-8 0-14 5-14 12v10" fill="none" stroke="#12313f" stroke-width="7" stroke-linecap="round"/>
+<path d="M200 82L92 140h216z" fill="none" stroke="#12313f" stroke-width="8" stroke-linejoin="round"/>
+<path d="M120 148l26-8c6 12 30 12 36 0l26 8 34 26-18 22-16-10v62c0 6-4 10-10 10h-66c-6 0-10-4-10-10v-62l-16 10-18-22z" fill="#b45309" transform="translate(28 0)"/>
+<path d="M174 140c6 12 30 12 36 0" fill="none" stroke="#8f4207" stroke-width="5" stroke-linecap="round"/>
+</svg>

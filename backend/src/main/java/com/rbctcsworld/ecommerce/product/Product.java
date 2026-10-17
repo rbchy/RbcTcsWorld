@@ -49,6 +49,17 @@ public class Product {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    /** Products with the same variant group are options of one item (e.g. TEE-CLASSIC); null = a single product. */
+    @Column(name = "variant_group", length = 40)
+    private String variantGroup;
+
+    /** What tells the variants of a group apart (either may be null, not both). */
+    @Column(length = 20)
+    private String size;
+
+    @Column(length = 30)
+    private String color;
+
     protected Product() {
     }
 
@@ -79,6 +90,26 @@ public class Product {
     public BigDecimal getRatingAverage() { return ratingAverage; }
     public int getRatingCount() { return ratingCount; }
     public String getImageUrl() { return imageUrl; }
+    public String getVariantGroup() { return variantGroup; }
+    public String getSize() { return size; }
+    public String getColor() { return color; }
+
+    /** Already normalised by ProductService (group upper case; blank = null). */
+    public void changeVariant(String variantGroup, String size, String color) {
+        this.variantGroup = variantGroup;
+        this.size = variantGroup == null ? null : size;
+        this.color = variantGroup == null ? null : color;
+    }
+
+    /**
+     * The name on cart lines, orders, invoices and e-mails: "Classic Cotton T-Shirt (Navy, M)" for a variant, the
+     * plain name otherwise. Not a JSON property (no "get" prefix): clients build their own label from size/color.
+     */
+    public String displayName() {
+        String options = java.util.stream.Stream.of(color, size).filter(v -> v != null && !v.isBlank())
+                .collect(java.util.stream.Collectors.joining(", "));
+        return options.isEmpty() ? name : name + " (" + options + ")";
+    }
 
     /** null or blank = no own picture (the storefront shows the category picture). */
     public void changeImage(String imageUrl) {

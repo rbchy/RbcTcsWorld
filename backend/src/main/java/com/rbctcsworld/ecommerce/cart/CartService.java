@@ -116,7 +116,7 @@ public class CartService {
         Product p = i.getProduct();
         BigDecimal lineTotal = p.getPrice().multiply(BigDecimal.valueOf(i.getQuantity()));
         boolean available = p.isActive() && p.getStock() >= i.getQuantity();
-        return new CartLine(i.getId(), p.getId(), p.getSku(), p.getName(), p.getPrice(),
+        return new CartLine(i.getId(), p.getId(), p.getSku(), p.displayName(), p.getPrice(),
                 i.getQuantity(), lineTotal, available);
     }
 }

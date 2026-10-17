@@ -653,6 +653,12 @@ first try since the fix.
 **Lesson:** "it works in Chrome" is not "it works in Safari". Running WebKit on every push found a user-visible
 Safari bug that the real Safari run on the Mac (a manual Jenkins choice) had not run into yet.
 
+**Follow-up (16 Oct 2026):** `network.spec.ts › picture server down` failed once more in the `webkit` project
+(PR #28, both attempts), so the first fix was not complete. React 18 writes an element's attributes in the order
+they are written in JSX, and `src` came before `loading`: the new address was set while the picture was still
+lazy, and `loading="eager"` only arrived a moment later. `loading` is now written first, so the replacement is
+already eager when its address changes.
+
 ---
 
 ## DEF-027

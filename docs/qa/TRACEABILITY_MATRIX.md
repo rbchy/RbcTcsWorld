@@ -26,6 +26,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-AUTH-12 | "Forgot password" never reveals who has an account: the same 202 and words for every e-mail, an e-mail only to a customer, at most 3 links per account and hour | `PasswordResetServiceTest#anUnknownEmailSilentlyGetsNothing`, `PasswordResetServiceTest#theThirdLinkInAnHourIsTheLast`, `PasswordResetIntegrationTest#knownAndUnknownEmailsGetTheSameAnswerButOnlyACustomerGetsAnEmail`, `PasswordResetIntegrationTest#atMostThreeLinksPerHour`, `PasswordResetApiTest#sameAnswerForEveryone`, `PasswordResetApiTest#hourlyLimit`, `playwright/tests/password.spec.ts` | U I A UI S | Pass |
 | REQ-AUTH-13 | A reset link is 256 random bits stored only as a hash, works once, for 30 minutes, and a newer link replaces older ones; an unknown, used or expired link gets one 400 message | `PasswordResetServiceTest#aKnownEmailGetsOneLinkThatOnlyItsHashIsStoredFor`, `PasswordResetServiceTest#aLinkWorksUntilTheLastSecond`, `PasswordResetServiceTest#anExpiredLinkIsRefused`, `PasswordResetServiceTest#aUsedLinkIsRefused`, `PasswordResetServiceTest#aLinkUsedAtTheSameMomentByAnotherRequestIsRefused`, `PasswordResetIntegrationTest#aNewerLinkMakesTheOlderOneUseless`, `PasswordResetIntegrationTest#anExpiredOrUnknownLinkIsRefused`, `PasswordResetApiTest#onlyTheNewestLinkWorks`, `PasswordResetApiTest#validation` | U I A S | Pass |
 | REQ-AUTH-14 | A reset sets the new password (8-72), ends every session, lifts a login lockout and e-mails "your password was changed"; the delivered reset e-mail is removed from the database | `PasswordResetServiceTest#aValidLinkSetsTheNewPasswordAndEndsEverySession`, `PasswordResetIntegrationTest#aResetChangesThePasswordEndsEverySessionAndTheLinkWorksOnce`, `PasswordResetIntegrationTest#aResetLiftsALoginLockout`, `PasswordResetIntegrationTest#theDeliveredResetEmailNoLongerContainsTheLink`, `NotificationDeliveryServiceTest#aDeliveredResetLinkIsRemovedFromTheDatabase`, `PasswordResetApiTest#resetByEmail`, `UiPasswordResetTest#resetFromTheLoginPage`, `UiPasswordResetTest#mistakesOnTheResetPage` | U I A UI | Pass |
+| REQ-AUTH-15 | Guest checkout: a customer session from just an e-mail (random password nobody knows, guest flag in the answer); an e-mail with an account - full or guest - is refused (409) so nobody opens somebody else's orders; "Forgot password" turns a guest into a full account | `GuestCheckoutTest#aGuestGetsACustomerSessionWithAPasswordNobodyKnows`, `GuestCheckoutTest#twoGuestsNeverShareASecret`, `GuestCheckoutTest#anEmailWithAnAccountCannotCheckOutAsAGuest`, `GuestCheckoutTest#aSecondGuestCheckoutWithTheSameEmailIsToldToSetAPassword`, `GuestCheckoutTest#normalAccountsAreNotGuestsAndAClaimedGuestIsNoLongerOne`, `PasswordResetServiceTest#aGuestWhoSetsAPasswordNowHasAFullAccount`, `CheckoutExtrasIntegrationTest#aGuestShopsPaysAndLaterClaimsTheAccountWithForgotPassword`, `CheckoutExtrasIntegrationTest#anEmailWithAnAccountMustLogInInstead`, `CheckoutExtrasApiTest#guestCheckout`, `CheckoutExtrasApiTest#guestClaimsTheAccount`, `CheckoutExtrasApiTest#guestRules`, `bdd:A guest buys without a password`, `bdd:The same guest e-mail twice is sent to Forgot password`, `playwright/tests/checkout-extras.spec.ts` | U I A B UI | Pass |
 
 ## Catalog
 
@@ -86,6 +87,14 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-PAY-05 | With PAYMENT_PROVIDER=stripe, charges and refunds go through Stripe PaymentIntents / Refunds in cents; Stripe card errors give the same short reasons as the mock (402), anything else is 503; the provider's id is kept but never shown | `StripePaymentGatewayTest#approvedChargeKeepsThePaymentIntentId`, `StripePaymentGatewayTest#cardErrorsBecomeShortCustomerSafeReasons`, `StripePaymentGatewayTest#everythingThatIsNotAboutTheCardIs503`, `StripePaymentGatewayTest#amountsGoToStripeInCents`, `StripeClientTest#cardDeclineIsACardErrorWithItsCodesAndPaymentIntent`, `StripeClientTest#slowStripeTimesOutAsAConnectionError`, `PaymentServiceTest#providerOutageIsRecordedAndReportedAs503`, `PaymentServiceTest#successfulChargeKeepsTheProviderAndItsReference`, `StripeSandboxIntegrationTest#declinedAndInsufficientFundsCardsGiveTheSameReasonsAsTheMock` | U I | Pass |
 | REQ-PAY-06 | Consumer contract with Stripe: every request the shop sends is a valid Stripe API request (stripe-mock from Stripe's OpenAPI spec); dollar amounts, unknown parameters and missing keys are rejected | `StripeContractIntegrationTest#ourPaymentIntentRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#ourRefundRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#theWholeGatewayTalksToStripe`, `StripeContractIntegrationTest#stripeRejectsDollarAmounts`, `StripeContractIntegrationTest#stripeRejectsUnknownParameters`, `StripeClientTest#paymentIntentRequestIsExactlyWhatStripeExpects`, `StripeClientTest#refundRequestAndAnswer` | I | Pass |
 | REQ-PAY-07 | A retried charge or refund never moves money twice (idempotency key from order, amount and card / refund number); a live Stripe key cannot run outside the prod profile | `StripePaymentGatewayTest#sameOrderAmountAndCardGiveTheSameIdempotencyKeyAnotherCardADifferentOne`, `StripePaymentGatewayTest#refundSucceedsOrIsPending`, `PaymentServiceTest#refundUsesTheChargeReferenceAndCountsEarlierRefunds`, `PaymentGatewayConfigTest#aLiveKeyOnlyRunsWithTheProdProfile`, `PaymentGatewayConfigTest#stripeWithoutAKeyStopsTheStart`, `StripeSandboxIntegrationTest#aRetryWithTheSameKeyDoesNotChargeTwice` | U I | Pass |
+
+## Address book
+
+| ID | Requirement | Tests | Levels | Status |
+|---|---|---|---|---|
+| REQ-ADR-01 | A customer keeps up to 10 delivery addresses (same rules as an order's address, optional label); the first one is the default, makeDefault moves it, deleting the default makes the newest remaining one the default | `AddressServiceTest#theFirstAddressIsTheDefaultAndIsStoredTidy`, `AddressServiceTest#makeDefaultMovesTheDefaultSoThereIsAlwaysExactlyOne`, `AddressServiceTest#theBookHoldsTenAddresses`, `AddressServiceTest#deletingTheDefaultMakesTheNewestRemainingAddressTheDefault`, `CheckoutExtrasIntegrationTest#theAddressBookKeepsOneDefaultRefusesTwinsAndIsPrivate`, `CheckoutExtrasApiTest#addressBook`, `bdd:The first saved address is the default until another one is chosen`, `playwright/tests/checkout-extras.spec.ts` | U I A B UI | Pass |
+| REQ-ADR-02 | The same address twice is refused (409; compared without case, spaces, phone or label); somebody else's address does not exist for you (404); field errors name the field (address.zip) | `AddressServiceTest#theSameAddressTwiceIsRefusedWhateverTheCaseSpacesPhoneOrLabel`, `AddressServiceTest#anUpdateMayKeepItsOwnAddressButNotBecomeAnotherOne`, `AddressServiceTest#somebodyElsesAddressDoesNotExistForYou`, `AddressServiceTest#anUnknownUserIsNotFound`, `AddressServiceTest#theKeyIgnoresCaseSpacesPhoneAndAnEmptySecondLine`, `CheckoutExtrasIntegrationTest#theAddressBookKeepsOneDefaultRefusesTwinsAndIsPrivate`, `CheckoutExtrasApiTest#addressBook`, `bdd:The same address cannot be saved twice` | U I A B | Pass |
+| REQ-ADR-03 | Checkout starts with the default saved address, another saved one can be picked, a new one can be saved to the book; an order keeps its own copy of the address when the saved one changes | `CheckoutExtrasIntegrationTest#anOrderKeepsItsAddressWhenTheSavedOneChanges`, `playwright/tests/checkout-extras.spec.ts` | I UI | Pass |
 
 ## Fulfilment and returns
 
@@ -192,11 +201,12 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
-| Identity and access | 14 | 14 | - |
+| Identity and access | 15 | 15 | - |
 | Catalog | 10 | 10 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 15 | 15 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
+| Address book | 3 | 3 | - |
 | Fulfilment and returns | 6 | 6 | - |
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
@@ -204,4 +214,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **118** | **118 (100 %)** | **0** |
+| **Total** | **122** | **122 (100 %)** | **0** |

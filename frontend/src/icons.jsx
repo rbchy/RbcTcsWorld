@@ -105,6 +105,11 @@ export const BUTTON_ICONS = [
   ['sliders', [b('="adj-save"')]],
   ['chevronDown', [b('="load-more"')]],
   ['chevronLeft', [b('$="-prev"')]],
+  ['trash', [b('="address-delete"'), b('="address-delete-yes"')]],
+  ['x', [b('="address-delete-no"')]],
+  ['star', [b('="address-make-default"')]],
+  ['bag', [b('="guest-continue"')]],
+  ['cart', [b('="detail-add-to-cart"')]],
   ['chevronRight', [b('$="-next"')]],
   // not buttons: the same icons in front of messages
   ['alert', ['.field-error', 'p.error', '.error-text']],

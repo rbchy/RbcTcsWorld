@@ -559,3 +559,24 @@ button.size-btn:disabled { background: var(--bg); color: #6b7480; border-style: 
 .variant-fields legend { font-weight: 700; padding: 0 6px; }
 .variant-fields .hint { grid-column: 1 / -1; margin: 0 0 8px; }
 .variant-tag { display: block; font-size: 13px; color: var(--harbor-2); font-weight: 600; }
+
+/* ---------- guest checkout, address book ---------- */
+.guest-box { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.guest-box h2 { margin: 0 0 4px; font-size: 17px; }
+.role-badge.guest { background: #dbeafe; color: #1e3a8a; }
+.saved-addresses { display: grid; gap: 8px; }
+label.addr-choice { flex-direction: row; align-items: flex-start; gap: 10px; padding: 10px 12px; margin: 0; border: 2px solid var(--line);
+  border-radius: var(--radius); background: #fff; color: var(--ink); font-size: 15px; cursor: pointer; }
+label.addr-choice.on { border-color: var(--accent); background: #fff7ed; }
+label.addr-choice input { margin-top: 4px; width: auto; flex: none; }
+.with-icon { gap: 6px; }
+label.addr-choice > span { display: flex; flex-direction: column; gap: 2px; }
+label.addr-choice em { font-style: normal; margin-inline-start: 8px; }
+.address-cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.address-card { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.address-card.is-default { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.address-card h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; }
+.address-card h2 .icon { color: var(--accent); }
+.address-card address { font-style: normal; line-height: 1.5; }
+.address-form .field { margin-bottom: 12px; }
+@media (max-width: 860px) { .role-badge.guest { display: none; } }

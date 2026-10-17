@@ -23,6 +23,11 @@ public class AuthClient extends ApiClient {
         return anonymous().body(Map.of("email", email, "password", password)).post("/api/auth/login");
     }
 
+    /** Guest checkout: a customer session without a password of its own. */
+    public Response guest(String email) {
+        return anonymous().body(Map.of("email", email)).post("/api/auth/guest");
+    }
+
     public Response refresh(String refreshToken) {
         return anonymous().body(Map.of("refreshToken", refreshToken)).post("/api/auth/refresh");
     }

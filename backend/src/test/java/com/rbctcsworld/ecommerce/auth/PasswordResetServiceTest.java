@@ -160,6 +160,22 @@ class PasswordResetServiceTest {
     }
 
     @Test
+    void aGuestWhoSetsAPasswordNowHasAFullAccount() {
+        AppUser guest = AppUser.guest("guest@test.com", "random-hash");
+        org.springframework.test.util.ReflectionTestUtils.setField(guest, "id", 7L);
+        when(tokens.findByTokenHash(RefreshTokenService.hash("good"))).thenReturn(Optional.of(token(NOW.plusMinutes(1), null)));
+        when(tokens.useIfUnused(3L, NOW)).thenReturn(1);
+        when(users.findById(7L)).thenReturn(Optional.of(guest));
+        when(encoder.encode("NewPassword1!")).thenReturn("new-hash");
+
+        service.resetPassword("good", "NewPassword1!");
+
+        assertThat(guest.isGuest()).isFalse();
+        assertThat(guest.getPassword()).isEqualTo("new-hash");
+        verify(users).save(guest);
+    }
+
+    @Test
     void aLinkWorksUntilTheLastSecond() {
         when(tokens.findByTokenHash(any())).thenReturn(Optional.of(token(NOW.plusSeconds(1), null)));
         when(tokens.useIfUnused(3L, NOW)).thenReturn(1);

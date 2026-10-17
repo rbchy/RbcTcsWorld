@@ -108,6 +108,7 @@ export function Topbar({ session, onMenu, menuOpen }) {
             <span className="avatar" aria-hidden="true">{(session.email || '?').charAt(0).toUpperCase()}</span>
             <span className="who" data-testid="nav-user">{session.email}</span>
             {session.role === 'ADMIN' && <span className="role-badge" data-testid="nav-role">{t('adminBadge')}</span>}
+            {session.guest && <span className="role-badge guest" data-testid="nav-guest">{t('guestBadge')}</span>}
             <button className="top-btn" data-testid="nav-logout" onClick={signOut}>
               <Icon name="logout" /><span className="btn-label">{t('navLogout')}</span>
             </button>
@@ -172,6 +173,7 @@ export function Sidebar({ route, session, open, onNavigate }) {
           <Item route={route} href="#/wishlist" testId="nav-wishlist" icon="heart" onNavigate={onNavigate}>{t('navWishlist')}</Item>
           <Item route={route} href="#/cart" testId="nav-cart" icon="cart" onNavigate={onNavigate}>{t('navCart')}</Item>
           <Item route={route} href="#/orders" testId="nav-orders" icon="box" onNavigate={onNavigate}>{t('navOrders')}</Item>
+          <Item route={route} href="#/addresses" testId="nav-addresses" icon="pin" onNavigate={onNavigate}>{t('navAddresses')}</Item>
         </ul>
       </div>
       <div className="side-sec c-account">

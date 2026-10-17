@@ -38,6 +38,30 @@ public class AuthService {
         return result(user, refreshTokens.issue(user));
     }
 
+    public static final String GUEST_AGAIN = "You already checked out as a guest with this e-mail. "
+            + "Use \"Forgot password\" to set a password and see your orders.";
+    public static final String HAS_ACCOUNT = "This e-mail has an account. Please log in.";
+
+    /**
+     * Guest checkout: a customer account with a random password nobody knows. The guest can shop, pay and follow
+     * the order in this browser (the session works like any other); "Forgot password" turns it into a full
+     * account. An e-mail that already has an account - full or guest - is refused (409), so nobody can open
+     * somebody else's orders by typing their e-mail.
+     */
+    public AuthResult guest(String rawEmail) {
+        String email = normalize(rawEmail);
+        AppUser existing = repo.findByEmail(email).orElse(null);
+        if (existing != null) {
+            throw new ConflictException(existing.isGuest() ? GUEST_AGAIN : HAS_ACCOUNT);
+        }
+        byte[] secret = new byte[32];
+        RANDOM.nextBytes(secret);
+        AppUser user = repo.save(AppUser.guest(email, encoder.encode(java.util.Base64.getEncoder().encodeToString(secret))));
+        return result(user, refreshTokens.issue(user));
+    }
+
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
     /**
      * Attackers must not be able to discover which e-mails have accounts:
      *  - same 401 message for an unknown e-mail and a wrong password;
@@ -84,7 +108,7 @@ public class AuthService {
 
     private AuthResult result(AppUser user, String refreshToken) {
         return new AuthResult(jwt.generate(user.getEmail()), user.getEmail(), user.getRole(), refreshToken,
-                jwt.expiresInSeconds());
+                jwt.expiresInSeconds(), user.isGuest());
     }
 
     private String dummyHash() {
@@ -98,7 +122,10 @@ public class AuthService {
         return email == null ? null : email.trim().toLowerCase();
     }
 
-    /** token = access token (JWT, short); refreshToken = opaque, long; expiresIn = access token lifetime in seconds. */
-    public record AuthResult(String token, String email, String role, String refreshToken, long expiresIn) {
+    /**
+     * token = access token (JWT, short); refreshToken = opaque, long; expiresIn = access token lifetime in seconds;
+     * guest = a guest checkout account (no password of its own yet).
+     */
+    public record AuthResult(String token, String email, String role, String refreshToken, long expiresIn, boolean guest) {
     }
 }

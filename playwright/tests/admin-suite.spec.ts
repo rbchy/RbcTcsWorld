@@ -62,8 +62,10 @@ test.describe('Store admin back office', () => {
     await page.getByTestId('cf-save').click();
     await page.getByTestId('cs-q').fill(code);
     await page.getByTestId('cs-search').click();
-    const row = page.getByTestId('coupon-row');
+    // the row of this coupon (a late answer of the first, unfiltered load may still show every coupon for a moment)
+    const row = page.getByTestId('coupon-row').filter({ hasText: code });
     await expect(row).toHaveCount(1);
+    await expect(page.getByTestId('coupon-row')).toHaveCount(1);
 
     await row.getByTestId('coupon-edit').click();
     await expect(page.getByTestId('cf-code')).toHaveAttribute('readonly', '');

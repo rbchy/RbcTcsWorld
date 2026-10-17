@@ -30,8 +30,11 @@ a { color: var(--harbor-2); }
 .skip { position: absolute; inset-inline-start: 8px; top: -60px; background: #fff; color: var(--ink); padding: 8px 12px; border-radius: 6px; z-index: 50; }
 .skip:focus { top: 8px; }
 .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px; padding: 10px 20px;
-  background: linear-gradient(90deg, var(--harbor) 0%, var(--harbor-2) 55%, var(--harbor) 100%); color: var(--harbor-ink);
-  border-bottom: 4px solid transparent; border-image: var(--rainbow) 1; }
+  background: linear-gradient(90deg, var(--harbor) 0%, var(--harbor-2) 55%, var(--harbor) 100%); color: var(--harbor-ink); }
+/* the colour stripe sits inside the bar's bottom padding, so the bar is no taller than before */
+.topbar::after { content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 4px; background: var(--rainbow); pointer-events: none; }
+/* whatever the browser scrolls to (anchors, keyboard focus, test drivers) stops below the sticky top bar */
+html { scroll-padding-top: 84px; }
 .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; margin-inline-end: auto; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: var(--accent);
   color: #fff; font-weight: 800; font-size: 18px; }
@@ -403,6 +406,14 @@ tr.muted td { color: var(--muted); }
   box-shadow: 0 0 0 2px var(--harbor); }
 .avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff;
   font-weight: 800; font-size: 14px; flex: none; }
+
+/* cart on a phone: each line is a small card (no table wider than the screen, Remove always reachable) */
+@media (max-width: 600px) {
+  .cart-table thead { display: none; }
+  .cart-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .cart-table td { border: 0; padding: 2px 0; }
+  .cart-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
+}
 
 /* buttons with an icon (::before, see icons.jsx) line the icon up with the text */
 :where(button[data-testid]) { display: inline-flex; align-items: center; justify-content: center; }

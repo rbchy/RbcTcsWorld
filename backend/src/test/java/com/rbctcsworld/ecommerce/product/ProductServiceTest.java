@@ -34,6 +34,9 @@ class ProductServiceTest {
     @Mock
     ProductRepository repo;
 
+    @Mock
+    org.springframework.context.ApplicationEventPublisher events;
+
     @InjectMocks
     ProductService service;
 
@@ -58,6 +61,66 @@ class ProductServiceTest {
         assertThat(updated.getCategory()).isEqualTo("books");
         assertThat(updated.getPrice()).isEqualByComparingTo("12.50");
         assertThat(updated.getStock()).isEqualTo(9);
+    }
+
+    private static com.rbctcsworld.ecommerce.audit.AuditChange change(long id, String action, String field, String from, String to) {
+        return new com.rbctcsworld.ecommerce.audit.AuditChange("PRODUCT", id, action, field, from, to);
+    }
+
+    @Test
+    void anUpdateIsAuditedFieldByFieldWithOnlyWhatChanged() {
+        Product existing = product(1L, "SKU-1");
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(existing));
+        when(repo.findBySku("SKU-1")).thenReturn(Optional.of(existing));
+        when(repo.save(existing)).thenReturn(existing);
+
+        service.update(1L, new ProductRequest("Old name", "SKU-1", "old", new BigDecimal("12.50"), 9));
+
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.of(java.util.List.of(
+                change(1L, "PRODUCT_UPDATED", "price", "10.00", "12.50"),
+                change(1L, "PRODUCT_UPDATED", "stock", "5", "9"))));
+    }
+
+    @Test
+    void anUpdateThatChangesNothingHasNothingToAudit() {
+        Product existing = product(1L, "SKU-1");
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(existing));
+        when(repo.findBySku("SKU-1")).thenReturn(Optional.of(existing));
+        when(repo.save(existing)).thenReturn(existing);
+
+        service.update(1L, new ProductRequest("Old name", "SKU-1", "old", new BigDecimal("10.0"), 5));   // 10.0 == 10.00
+
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.of(java.util.List.of()));
+    }
+
+    @Test
+    void aNewProductIsAuditedWithEveryValue() {
+        when(repo.existsBySku("SKU-9")).thenReturn(false);
+        when(repo.save(any())).thenAnswer(inv -> {
+            Product p = inv.getArgument(0);
+            ReflectionTestUtils.setField(p, "id", 9L);
+            return p;
+        });
+
+        service.create(new ProductRequest("Lamp", "SKU-9", "home", new BigDecimal("20.00"), 3));
+
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.of(java.util.List.of(
+                change(9L, "PRODUCT_CREATED", "name", null, "Lamp"),
+                change(9L, "PRODUCT_CREATED", "sku", null, "SKU-9"),
+                change(9L, "PRODUCT_CREATED", "category", null, "home"),
+                change(9L, "PRODUCT_CREATED", "price", null, "20.00"),
+                change(9L, "PRODUCT_CREATED", "stock", null, "3"),
+                change(9L, "PRODUCT_CREATED", "active", null, "true"))));
+    }
+
+    @Test
+    void aDeletedProductIsAuditedAsNoLongerActive() {
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(product(1L, "SKU-1")));
+
+        service.delete(1L);
+
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.of(java.util.List.of(
+                change(1L, "PRODUCT_DELETED", "active", "true", "false"))));
     }
 
     @Test
@@ -169,7 +232,11 @@ class ProductServiceTest {
     @Test
     void createKeepsThePicture() {
         when(repo.existsBySku("SKU-P")).thenReturn(false);
-        when(repo.save(org.mockito.ArgumentMatchers.any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repo.save(org.mockito.ArgumentMatchers.any(Product.class))).thenAnswer(inv -> {
+            Product saved = inv.getArgument(0);
+            ReflectionTestUtils.setField(saved, "id", 11L);   // the database gives every new product an id
+            return saved;
+        });
 
         Product p = service.create(new ProductRequest("Lamp", "SKU-P", "home", new BigDecimal("9.99"), 3,
                 " https://cdn.example.com/lamp.png "));

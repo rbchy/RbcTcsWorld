@@ -11,6 +11,8 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+    # common migrations + the database-specific ones ({vendor} = postgresql | h2), e.g. the audit trigger
+    locations: classpath:db/migration,classpath:db/vendor/{vendor}
   # Spring Boot 4 uses Jackson 3. Keep the Jackson 2 defaults so the JSON contract of the API does not change
   # (e.g. property order, null handling for primitives); the automation suite checks that contract.
   jackson:

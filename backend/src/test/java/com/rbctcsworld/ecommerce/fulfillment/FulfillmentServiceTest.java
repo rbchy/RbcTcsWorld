@@ -47,6 +47,7 @@ class FulfillmentServiceTest {
         assertThat(r.trackingNumber()).matches(carrier + "-\\d{12}");
         assertThat(r.shippedAt()).isNotNull();
         org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(3L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_SHIPPED));
+        org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(3L, "PAID", "SHIPPED"));
     }
 
     @org.junit.jupiter.api.Test
@@ -54,6 +55,7 @@ class FulfillmentServiceTest {
         order(OrderStatus.SHIPPED);
         assertThat(service.deliver(3L).status()).isEqualTo(OrderStatus.DELIVERED);
         org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(3L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_DELIVERED));
+        org.mockito.Mockito.verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(3L, "SHIPPED", "DELIVERED"));
     }
 
     @org.junit.jupiter.api.Test

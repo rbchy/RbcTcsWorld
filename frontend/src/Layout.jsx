@@ -147,6 +147,7 @@ export function Sidebar({ route, session, open, onNavigate }) {
             <Item route={route} href="#/admin/returns" testId="nav-admin-returns" onNavigate={onNavigate}>{t('navReturns')}</Item>
             <Item route={route} href="#/admin/reviews" testId="nav-admin-reviews" onNavigate={onNavigate}>{t('navReviews')}</Item>
             <Item route={route} href="#/admin/notifications" testId="nav-admin-notifications" onNavigate={onNavigate}>{t('navNotifications')}</Item>
+            <Item route={route} href="#/admin/audit" testId="nav-admin-audit" onNavigate={onNavigate}>{t('navAudit')}</Item>
           </ul>
         </>
       )}

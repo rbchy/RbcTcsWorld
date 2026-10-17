@@ -23,11 +23,12 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminReturns from './pages/admin/AdminReturns';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminAudit from './pages/admin/AdminAudit';
 
 const ADMIN = {
   '/admin': AdminDashboard, '/admin/products': AdminProducts, '/admin/coupons': AdminCoupons,
   '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
-  '/admin/notifications': AdminNotifications,
+  '/admin/notifications': AdminNotifications, '/admin/audit': AdminAudit,
 };
 
 /** Public demo only (built with VITE_DEMO=true, see deploy/): says plainly that nothing here is real. */

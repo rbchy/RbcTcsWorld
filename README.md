@@ -3,7 +3,7 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-1213-brightgreen)
+![Tests](https://img.shields.io/badge/automated%20tests-1230-brightgreen)
 [![Coverage](https://img.shields.io/badge/line%20coverage-98.6%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
 [![Mutation](https://img.shields.io/badge/mutation%20score-93.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
@@ -23,7 +23,7 @@ Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://githu
 
 1. **Latest build:** the screenshot below (Jenkins build 54, all gates passed), or the
    [GitHub Actions runs](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions).
-2. **Live reports:** [Allure](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/) ·
+2. **Live reports:** [all reports](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/reports/) · [Allure](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/) · [Cucumber](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/cucumber/) ·
    [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/) ·
    [Playwright](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/playwright/)
@@ -50,7 +50,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
 | 1 | Backend unit + integration | 100 % pass | 663 / 663 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 381 / 381 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
+| 2 | API, database, BDD, UI | 100 % pass | 398 / 398 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
 | 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.6 % / 95.6 % | JaCoCo |
 | 4 | Mutation score | >= 84 % | 93.2 % (test strength 98.0 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
@@ -132,7 +132,7 @@ flowchart LR
   unit --> xb[UI in Firefox + Edge<br/>matrix]
   unit --> docker[Docker images<br/>44 smoke tests]
   unit --> sec[ZAP + OSV<br/>OpenAPI breaking-change gate]
-  e2e --> pages[GitHub Pages<br/>Allure, coverage, PIT]
+  e2e --> pages[GitHub Pages<br/>Allure, Cucumber, coverage, PIT]
   pit --> pages
 ```
 

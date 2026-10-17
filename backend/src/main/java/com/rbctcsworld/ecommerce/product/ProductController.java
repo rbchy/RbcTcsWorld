@@ -44,8 +44,12 @@ public class ProductController {
     public ResponseEntity<List<Product>> all(@RequestParam(required = false) String q,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "" + ProductService.DEFAULT_PAGE_SIZE) int size,
-                                             @RequestParam(defaultValue = "id") String sort) {
-        Page<Product> result = service.page(q, page, size, sort);
+                                             @RequestParam(defaultValue = "id") String sort,
+                                             @RequestParam(required = false) String category,
+                                             @RequestParam(required = false) java.math.BigDecimal minPrice,
+                                             @RequestParam(required = false) java.math.BigDecimal maxPrice,
+                                             @RequestParam(required = false) Boolean inStock) {
+        Page<Product> result = service.page(q, page, size, sort, new ProductFilter(category, minPrice, maxPrice, inStock));
         ResponseEntity.BodyBuilder response = ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.getTotalElements()))
                 .header("X-Total-Pages", String.valueOf(result.getTotalPages()))
@@ -67,6 +71,12 @@ public class ProductController {
     private static String link(int page, String rel) {
         String url = ServletUriComponentsBuilder.fromCurrentRequest().replaceQueryParam("page", page).build().toUriString();
         return "<" + url + ">; rel=\"" + rel + "\"";
+    }
+
+    /** The categories of the products on sale (for the category filter). */
+    @GetMapping("/categories")
+    public List<String> categories() {
+        return service.categories();
     }
 
     @GetMapping("/{id}")

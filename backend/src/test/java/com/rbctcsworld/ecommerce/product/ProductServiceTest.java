@@ -265,4 +265,67 @@ class ProductServiceTest {
         p.changeImage("   ");
         assertThat(p.getImageUrl()).isNull();
     }
+
+    // ---------------------------------------------------------------- advanced search
+
+    @Test
+    void withoutExtraFiltersTheCatalogQueryStaysTheSame() {
+        when(repo.findByActiveTrue(any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(org.springframework.data.domain.Page.empty());
+        service.page(null, 0, 20, "id", new ProductFilter(" ", null, null, false));
+        service.page(null, 0, 20, "id", null);
+        verify(repo, org.mockito.Mockito.times(2)).findByActiveTrue(any(org.springframework.data.domain.Pageable.class));
+        verify(repo, org.mockito.Mockito.never()).findAll(
+                any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class));
+    }
+
+    @Test
+    void anyExtraFilterUsesTheFilteredQueryWithTheSamePaging() {
+        when(repo.findAll(any(org.springframework.data.jpa.domain.Specification.class),
+                any(org.springframework.data.domain.Pageable.class))).thenReturn(org.springframework.data.domain.Page.empty());
+        for (ProductFilter f : List.of(new ProductFilter("home", null, null, null),
+                new ProductFilter(null, new BigDecimal("1"), null, null),
+                new ProductFilter(null, null, new BigDecimal("9"), null),
+                new ProductFilter(null, null, null, true))) {
+            service.page("lamp", 2, 5, "price_desc", f);
+        }
+        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> paging =
+                org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        verify(repo, org.mockito.Mockito.times(4)).findAll(
+                any(org.springframework.data.jpa.domain.Specification.class), paging.capture());
+        assertThat(paging.getValue().getPageNumber()).isEqualTo(2);
+        assertThat(paging.getValue().getPageSize()).isEqualTo(5);
+        assertThat(paging.getValue().getSort()).isEqualTo(ProductService.sortOf("price_desc"));
+    }
+
+    @Test
+    void thePriceRangeMustMakeSense() {
+        assertThatThrownBy(() -> service.page(null, 0, 20, "id", new ProductFilter(null, new BigDecimal("-0.01"), null, null)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage("minPrice cannot be negative");
+        assertThatThrownBy(() -> service.page(null, 0, 20, "id", new ProductFilter(null, null, new BigDecimal("-1"), null)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage("maxPrice cannot be negative");
+        assertThatThrownBy(() -> service.page(null, 0, 20, "id",
+                new ProductFilter(null, new BigDecimal("10"), new BigDecimal("9.99"), null)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage("maxPrice must not be below minPrice");
+        when(repo.findAll(any(org.springframework.data.jpa.domain.Specification.class),
+                any(org.springframework.data.domain.Pageable.class))).thenReturn(org.springframework.data.domain.Page.empty());
+        assertThat(service.page(null, 0, 20, "id",
+                new ProductFilter(null, new BigDecimal("0"), new BigDecimal("0"), null)).getContent()).isEmpty();
+    }
+
+    @Test
+    void theFilterKnowsWhenItIsEmpty() {
+        assertThat(ProductFilter.NONE.isEmpty()).isTrue();
+        assertThat(new ProductFilter("", null, null, Boolean.FALSE).isEmpty()).isTrue();
+        assertThat(new ProductFilter("x", null, null, null).isEmpty()).isFalse();
+        assertThat(new ProductFilter(null, BigDecimal.ONE, null, null).isEmpty()).isFalse();
+        assertThat(new ProductFilter(null, null, BigDecimal.ONE, null).isEmpty()).isFalse();
+        assertThat(new ProductFilter(null, null, null, Boolean.TRUE).isEmpty()).isFalse();
+    }
+
+    @Test
+    void categoriesComeFromTheProductsOnSale() {
+        when(repo.activeCategories()).thenReturn(List.of("books", "home"));
+        assertThat(service.categories()).containsExactly("books", "home");
+    }
 }

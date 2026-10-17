@@ -41,6 +41,15 @@ class ProductVariantTest {
         return p;
     }
 
+    private static long nextId = 100;
+
+    /** Like the database: a saved product gets an id (the inventory needs it for the first stock). */
+    private static Product withId(org.mockito.invocation.InvocationOnMock call) {
+        Product p = call.getArgument(0);
+        if (p.getId() == null) ReflectionTestUtils.setField(p, "id", nextId++);
+        return p;
+    }
+
     private static ProductRequest request(String sku, String group, String size, String color) {
         return new ProductRequest("Classic Tee", sku, "clothing", new BigDecimal("19.99"), 5, null, group, size, color);
     }
@@ -64,7 +73,7 @@ class ProductVariantTest {
     @Test
     void aProductWithoutVariantFieldsStaysASingleProduct() {
         when(repo.existsBySku("ONE")).thenReturn(false);
-        when(repo.save(any(Product.class))).thenAnswer(a -> a.getArgument(0));
+        when(repo.save(any(Product.class))).thenAnswer(ProductVariantTest::withId);
         Product saved = service.create(request("ONE", " ", "", null));
         assertThat(saved.getVariantGroup()).isNull();
         assertThat(saved.getSize()).isNull();
@@ -89,7 +98,7 @@ class ProductVariantTest {
     void onlyASizeOrOnlyAColourIsEnough() {
         when(repo.existsBySku(any())).thenReturn(false);
         when(repo.variantsOf("MUG")).thenReturn(List.of());
-        when(repo.save(any(Product.class))).thenAnswer(a -> a.getArgument(0));
+        when(repo.save(any(Product.class))).thenAnswer(ProductVariantTest::withId);
         Product sizeOnly = service.create(request("MUG-12", "mug", "12 oz", null));
         Product colourOnly = service.create(request("MUG-RED", "mug", null, "Red"));
         assertThat(sizeOnly.displayName()).isEqualTo("Classic Tee (12 oz)");
@@ -110,7 +119,7 @@ class ProductVariantTest {
         when(repo.existsBySku(any())).thenReturn(false);
         when(repo.variantsOf("TEE")).thenReturn(List.of(tee(1, "M", "Navy", "19.99", 3), tee(2, null, "Red", "19.99", 3),
                 tee(3, "L", null, "19.99", 3)));
-        when(repo.save(any(Product.class))).thenAnswer(a -> a.getArgument(0));
+        when(repo.save(any(Product.class))).thenAnswer(ProductVariantTest::withId);
         assertThat(service.create(request("X1", "TEE", "L", "Navy")).getSize()).isEqualTo("L");      // same colour, other size
         assertThat(service.create(request("X2", "TEE", "M", "Red")).getColor()).isEqualTo("Red");    // same size, other colour
         assertThat(service.create(request("X3", "TEE", "S", null)).getSize()).isEqualTo("S");        // size only, unused size

@@ -101,7 +101,8 @@ class AccessibilityTest {
             "Admin coupons,   /admin/coupons,   admin,    coupon-table",
             "Admin customers, /admin/customers, admin,    customer-table",
             "Admin payments,  /admin/payments,  admin,    payment-table",
-            "Admin reports,   /admin/reports,   admin,    report-table"})
+            "Admin reports,   /admin/reports,   admin,    report-table",
+            "Admin warehouses, /admin/warehouses, admin,  warehouse-table"})
     @DisplayName("Page meets WCAG 2.1 AA (no serious or critical axe violations)")
     void wcag21aa(String page, String route, String session, String readyTestId) {
         if ("customer".equals(session)) BasePage.loginWithToken(driver, me.token(), me.email());

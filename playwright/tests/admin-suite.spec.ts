@@ -90,4 +90,31 @@ test.describe('Store admin back office', () => {
     await page.getByTestId('ps-search').click();
     await expect(page.getByTestId('ps-max-error')).toHaveCount(0);
   });
+
+  test('stock is received, moved between warehouses and refused when a warehouse holds too little', async ({ page, api }) => {
+    const product = await api.createProduct({ stock: 4 });              // 4 units in the default warehouse (PIT)
+    await page.goto('/#/admin/warehouses');
+    await expect(page.getByTestId('warehouse-row').first()).toHaveAttribute('data-code', 'PIT');
+    await page.getByTestId('ss-q').fill(product.sku);
+    await page.getByTestId('ss-search').click();
+    await page.getByTestId('stock-pick').first().click();
+    await expect(page.getByTestId('stock-total')).toContainText('4');
+
+    // moving more than PIT holds is stopped in the form
+    await page.getByTestId('tr-from').selectOption({ label: 'PIT (4)' });
+    await page.getByTestId('tr-qty').fill('5');
+    await page.getByTestId('tr-save').click();
+    await expect(page.getByTestId('mv-quantity-error')).toHaveText('The warehouse does not hold that many.');
+
+    await page.getByTestId('tr-to').selectOption({ label: 'NWK (0)' });
+    await page.getByTestId('tr-qty').fill('3');
+    await page.getByTestId('tr-save').click();
+    await expect(page.getByTestId('admin-notice')).toHaveText('Stock moved');
+    await expect(page.locator('[data-testid="stock-row"][data-code="NWK"] [data-testid="stock-qty"]')).toHaveText('3');
+
+    await page.getByTestId('adj-reason').selectOption('DAMAGED');
+    await page.getByTestId('adj-delta').fill('2');
+    await page.getByTestId('adj-save').click();
+    await expect(page.getByTestId('mv-delta-error')).toHaveText('Damaged units are removed: use a negative number.');
+  });
 });

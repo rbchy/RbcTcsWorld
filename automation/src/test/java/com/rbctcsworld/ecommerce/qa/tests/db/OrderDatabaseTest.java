@@ -97,6 +97,17 @@ class OrderDatabaseTest {
     }
 
     @Test
+    @DisplayName("Warehouse invariant: for every product, the total equals the sum over its warehouses")
+    void warehousesHoldExactlyTheTotal() {
+        Object broken = DatabaseUtils.scalar("""
+                select count(*) from products p
+                where p.stock <> coalesce((select sum(ws.quantity) from warehouse_stock ws where ws.product_id = p.id), 0)""");
+        assertEquals(0, ((Number) broken).intValue(), "products whose warehouses do not add up to the total");
+        Object negative = DatabaseUtils.scalar("select count(*) from warehouse_stock where quantity < 0");
+        assertEquals(0, ((Number) negative).intValue(), "no warehouse below 0");
+    }
+
+    @Test
     @DisplayName("Inventory invariant: no product anywhere has negative stock")
     void noNegativeStock() {
         Object negatives = DatabaseUtils.scalar("select count(*) from products where stock < 0");

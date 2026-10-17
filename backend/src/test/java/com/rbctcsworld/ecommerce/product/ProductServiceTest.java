@@ -232,7 +232,11 @@ class ProductServiceTest {
     @Test
     void createKeepsThePicture() {
         when(repo.existsBySku("SKU-P")).thenReturn(false);
-        when(repo.save(org.mockito.ArgumentMatchers.any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repo.save(org.mockito.ArgumentMatchers.any(Product.class))).thenAnswer(inv -> {
+            Product saved = inv.getArgument(0);
+            ReflectionTestUtils.setField(saved, "id", 11L);   // the database gives every new product an id
+            return saved;
+        });
 
         Product p = service.create(new ProductRequest("Lamp", "SKU-P", "home", new BigDecimal("9.99"), 3,
                 " https://cdn.example.com/lamp.png "));

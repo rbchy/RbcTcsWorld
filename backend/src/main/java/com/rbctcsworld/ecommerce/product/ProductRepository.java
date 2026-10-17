@@ -4,6 +4,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+
+    /** The categories of the products on sale, for the catalog's category filter. */
+    @Query("select distinct p.category from Product p where p.active = true and p.category is not null order by p.category")
+    List<String> activeCategories();
+
 
     /** One page of the active catalog (DEF-007: the catalog is never returned in one piece). */
     Page<Product> findByActiveTrue(Pageable pageable);

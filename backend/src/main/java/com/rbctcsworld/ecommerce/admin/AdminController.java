@@ -2,6 +2,7 @@ package com.rbctcsworld.ecommerce.admin;
 
 import com.rbctcsworld.ecommerce.coupon.Coupon;
 import com.rbctcsworld.ecommerce.coupon.CouponDtos.CreateCouponRequest;
+import com.rbctcsworld.ecommerce.coupon.CouponDtos.UpdateCouponRequest;
 import com.rbctcsworld.ecommerce.coupon.CouponService;
 import com.rbctcsworld.ecommerce.inventory.StockMovement;
 import com.rbctcsworld.ecommerce.inventory.StockMovementRepository;
@@ -11,6 +12,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,9 +52,27 @@ public class AdminController {
         return coupons.create(r);
     }
 
+    /** ?q=part of the code &status=ACTIVE|SCHEDULED|EXPIRED|USED_UP|DISABLED (both optional) */
     @GetMapping("/coupons")
-    public List<Coupon> allCoupons() {
-        return coupons.all();
+    public List<Coupon> allCoupons(@RequestParam(required = false) String q,
+                                   @RequestParam(required = false) String status) {
+        return coupons.search(q, status);
+    }
+
+    /** 200 | 400 validation (PERCENT above 100, maxUses below the times used) | 404 */
+    @PutMapping("/coupons/{id}")
+    public Coupon updateCoupon(@PathVariable long id, @Valid @RequestBody UpdateCouponRequest r) {
+        return coupons.update(id, r);
+    }
+
+    @PostMapping("/coupons/{id}/disable")
+    public Coupon disableCoupon(@PathVariable long id) {
+        return coupons.setActive(id, false);
+    }
+
+    @PostMapping("/coupons/{id}/enable")
+    public Coupon enableCoupon(@PathVariable long id) {
+        return coupons.setActive(id, true);
     }
 
     @GetMapping("/products/{id}/stock-movements")

@@ -1,0 +1,93 @@
+import { test, expect, signIn } from '../support/fixtures';
+
+/** The store admin's back office in the browser (REQ-ADM-01..06). */
+test('the login page carries the RbcTcsWorld banner with its watermark @mobile', async ({ page }) => {
+  await page.goto('/#/login');
+  await expect(page.getByTestId('login-banner')).toBeVisible();
+  await expect(page.getByTestId('login-banner').getByTestId('watermark')).toHaveCount(1);
+  await expect(page.getByTestId('auth-card')).toBeVisible();
+});
+
+test.describe('Store admin back office', () => {
+  test.beforeEach(async ({ page, api }) => { await signIn(page, await api.admin()); });
+
+  test('the dashboard carries the banner and watermark; the admin menu has sub-menus that fold', async ({ page }) => {
+    await page.goto('/#/admin');
+    await expect(page.getByTestId('dashboard-banner')).toContainText('Store dashboard');
+    await expect(page.getByTestId('dashboard-banner').getByTestId('watermark')).toHaveCount(1);
+    for (const g of ['overview', 'catalog', 'sales', 'customers', 'control']) {
+      await expect(page.getByTestId(`admin-group-${g}`)).toBeVisible();
+    }
+    await page.getByTestId('admin-group-catalog').locator('summary').click();     // fold the sub-menu
+    await expect(page.getByTestId('nav-admin-products')).toBeHidden();
+    await page.getByTestId('dash-reports').click();
+    await expect(page.getByTestId('report-table')).toBeVisible();
+  });
+
+  test('a report runs for a chosen period, validates the dates and downloads as CSV', async ({ page }) => {
+    await page.goto('/#/admin/reports');
+    await expect(page.getByTestId('report-title')).toHaveText('Sales');
+    await page.getByTestId('rp-from').fill('2026-02-01');
+    await page.getByTestId('rp-to').fill('2026-01-01');
+    await page.getByTestId('report-run').click();
+    await expect(page.getByTestId('rp-to-error')).toHaveText('The end must not be before the start.');
+
+    await page.getByTestId('report-name').selectOption('inventory');
+    await expect(page.getByTestId('report-title')).toHaveText('Stock value');
+    await expect(page.getByTestId('report-totals')).toContainText('Total');
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('report-export').click()]);
+    expect(download.suggestedFilename()).toBe('report-inventory.csv');
+  });
+
+  test('a customer is found by e-mail, disabled after a confirmation and enabled again', async ({ page, api }) => {
+    const shopper = await api.register();
+    await page.goto('/#/admin/customers');
+    await page.getByTestId('cu-q').fill(shopper.email);
+    await page.getByTestId('cu-search').click();
+    await expect(page.getByTestId('customer-row')).toHaveCount(1);
+    await page.getByTestId('customer-view').click();
+    await page.getByTestId('customer-disable').click();
+    await expect(page.getByTestId('customer-confirm')).toContainText(shopper.email);
+    await page.getByTestId('customer-disable-yes').click();
+    await expect(page.getByTestId('customer-state')).toHaveText('Disabled');
+    await page.getByTestId('customer-enable').click();
+    await expect(page.getByTestId('customer-state')).toHaveText('Active');
+  });
+
+  test('a coupon is edited (its code stays) and switched off', async ({ page }) => {
+    const code = `PW${Date.now().toString(36).toUpperCase()}`;
+    await page.goto('/#/admin/coupons');
+    await page.getByTestId('cf-code').fill(code);
+    await page.getByTestId('cf-value').fill('10');
+    await page.getByTestId('cf-save').click();
+    await page.getByTestId('cs-q').fill(code);
+    await page.getByTestId('cs-search').click();
+    const row = page.getByTestId('coupon-row');
+    await expect(row).toHaveCount(1);
+
+    await row.getByTestId('coupon-edit').click();
+    await expect(page.getByTestId('cf-code')).toHaveAttribute('readonly', '');
+    await page.getByTestId('cf-value').fill('150');
+    await page.getByTestId('cf-save').click();
+    await expect(page.getByTestId('cf-value-error')).toHaveText('A percent discount must be 100 or less.');
+    await page.getByTestId('cf-value').fill('15');
+    await page.getByTestId('cf-save').click();
+    await expect(page.getByTestId('admin-notice')).toContainText(code);
+    await expect(row).toContainText('15%');
+
+    await row.getByTestId('coupon-toggle').click();
+    await expect(row.getByTestId('coupon-state')).toHaveText('Switched off');
+  });
+
+  test('advanced product search refuses a price range that makes no sense', async ({ page }) => {
+    await page.goto('/#/admin/products');
+    await page.getByTestId('ps-min').fill('20');
+    await page.getByTestId('ps-max').fill('5');
+    await page.getByTestId('ps-search').click();
+    await expect(page.getByTestId('ps-max-error')).toHaveText('The highest must not be below the lowest.');
+    await page.getByTestId('ps-max').fill('500');
+    await page.getByTestId('ps-instock').check();
+    await page.getByTestId('ps-search').click();
+    await expect(page.getByTestId('ps-max-error')).toHaveCount(0);
+  });
+});

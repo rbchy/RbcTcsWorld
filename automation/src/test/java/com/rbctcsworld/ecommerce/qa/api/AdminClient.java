@@ -64,4 +64,43 @@ public class AdminClient extends ApiClient {
         return as(token).queryParam("entityType", entityType).queryParam("entityId", entityId)
                 .get("/api/admin/audit/export");
     }
+
+    // ---- customers ----
+    public Response customers(String token, Map<String, ?> query) {
+        return as(token).queryParams(query).get("/api/admin/customers");
+    }
+
+    public Response customer(String token, long id) {
+        return as(token).get("/api/admin/customers/{id}", id);
+    }
+
+    public Response setCustomerActive(String token, long id, boolean active) {
+        return as(token).post("/api/admin/customers/{id}/" + (active ? "enable" : "disable"), id);
+    }
+
+    // ---- coupons ----
+    public Response coupons(String token, Map<String, ?> query) {
+        return as(token).queryParams(query).get("/api/admin/coupons");
+    }
+
+    public Response updateCoupon(String token, long id, Map<String, Object> body) {
+        return as(token).body(body).put("/api/admin/coupons/{id}", id);
+    }
+
+    public Response setCouponActive(String token, long id, boolean active) {
+        return as(token).post("/api/admin/coupons/{id}/" + (active ? "enable" : "disable"), id);
+    }
+
+    // ---- reports and payments ----
+    public Response report(String token, String name, Map<String, ?> query) {
+        return as(token).queryParams(query).get("/api/admin/reports/{name}", name);
+    }
+
+    public Response reportCsv(String token, String name, Map<String, ?> query) {
+        return as(token).queryParams(query).get("/api/admin/reports/{name}/export", name);
+    }
+
+    public Response payments(String token, Map<String, ?> query) {
+        return as(token).queryParams(query).get("/api/admin/payments");
+    }
 }

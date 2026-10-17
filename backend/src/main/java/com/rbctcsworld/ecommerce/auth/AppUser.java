@@ -24,6 +24,14 @@ public class AppUser {
     @Column(nullable = false)
     private String role = Role.CUSTOMER;
 
+    /** false = disabled by the store admin: no login, no refresh, the access token stops working. */
+    @Column(nullable = false)
+    private boolean active = true;
+
+    /** Set by the database when the account is created. */
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private java.time.LocalDateTime createdAt;
+
     protected AppUser() {
     }
 
@@ -46,4 +54,8 @@ public class AppUser {
     public String getEmail() { return email; }
     public String getPassword() { return password; }
     public String getRole() { return role; }
+    public boolean isActive() { return active; }
+    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
+
+    public void setActive(boolean active) { this.active = active; }
 }

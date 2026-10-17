@@ -13,6 +13,8 @@ public record AuditChange(String entityType, long entityId, String action, Strin
 
     public static final String PRODUCT = "PRODUCT";
     public static final String ORDER = "ORDER";
+    public static final String CUSTOMER = "CUSTOMER";
+    public static final String COUPON = "COUPON";
     public static final int MAX_VALUE = 500;
 
     /**

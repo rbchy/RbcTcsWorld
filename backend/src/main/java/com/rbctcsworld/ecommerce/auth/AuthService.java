@@ -1,12 +1,16 @@
 package com.rbctcsworld.ecommerce.auth;
 
 import com.rbctcsworld.ecommerce.common.exception.ConflictException;
+import com.rbctcsworld.ecommerce.common.exception.ForbiddenException;
 import com.rbctcsworld.ecommerce.common.exception.InvalidCredentialsException;
+import com.rbctcsworld.ecommerce.common.exception.InvalidRefreshTokenException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+
+    public static final String DISABLED = "This account is disabled. Please contact the store.";
 
     private final UserRepository repo;
     private final PasswordEncoder encoder;
@@ -57,12 +61,19 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
         attempts.loginSucceeded(email);
+        if (!user.isActive()) {
+            // only told after the right password, so it does not reveal which e-mails have accounts
+            throw new ForbiddenException(DISABLED);
+        }
         return result(user, refreshTokens.issue(user));
     }
 
     /** New access token + the next refresh token (the used one is spent). 401 for anything not valid. */
     public AuthResult refresh(String refreshToken) {
         RefreshTokenService.Rotated rotated = refreshTokens.rotate(refreshToken);
+        if (!rotated.user().isActive()) {
+            throw new InvalidRefreshTokenException();
+        }
         return result(rotated.user(), rotated.refreshToken());
     }
 

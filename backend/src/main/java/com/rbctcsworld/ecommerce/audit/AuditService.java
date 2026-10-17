@@ -135,9 +135,6 @@ public class AuditService {
      * (=, +, -, @, tab, carriage return at the start) gets a leading apostrophe - CSV injection (OWASP).
      */
     static String cell(String value) {
-        if (value == null) return "";
-        String v = value;
-        if (!v.isEmpty() && "=+-@\t\r".indexOf(v.charAt(0)) >= 0) v = "'" + v;
-        return "\"" + v.replace("\"", "\"\"") + "\"";
+        return com.rbctcsworld.ecommerce.common.Csv.cell(value);
     }
 }

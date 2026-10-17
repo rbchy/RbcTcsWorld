@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice, when } from './common';
+import Watermark from '../../Watermark';
+import { getSession } from '../../session';
 
 const PAID_LIKE = ['PAID', 'SHIPPED', 'DELIVERED', 'RETURN_REQUESTED'];
 
@@ -35,7 +37,19 @@ export default function AdminDashboard() {
 
   return (
     <section data-testid="admin-dashboard">
-      <header className="page-head"><h1>{t('dashTitle')}</h1></header>
+      <header className="dash-banner" data-testid="dashboard-banner">
+        <Watermark tone="dark" />
+        <div className="dash-banner-body">
+          <p className="dash-date">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <h1>{t('dashTitle')}</h1>
+          <p className="dash-who">{t('dashWelcome', { email: getSession()?.email || '' })}</p>
+        </div>
+        <nav className="dash-quick" aria-label={t('dashQuick')}>
+          <a href="#/admin/products" data-testid="dash-add-product">{t('dashAddProduct')}</a>
+          <a href="#/admin/orders" data-testid="dash-ship">{t('dashShipOrders', { n: toShip.length })}</a>
+          <a href="#/admin/reports" data-testid="dash-reports">{t('navReports')}</a>
+        </nav>
+      </header>
       <ul className="stats">
         {stats.map(([key, value, href, id]) => (
           <li key={key}><a href={href} data-testid={id}><strong>{value}</strong><span>{t(key)}</span></a></li>

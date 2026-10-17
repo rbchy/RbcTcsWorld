@@ -103,6 +103,26 @@ function Item({ route, href, testId, children, onNavigate }) {
   );
 }
 
+/** Admin menu: one sub-menu per area of the store (each can be folded away). */
+export const ADMIN_MENU = [
+  { key: 'overview', title: 'grpOverview', items: [
+    ['#/admin', 'nav-admin-dashboard', 'navDashboard'],
+    ['#/admin/reports', 'nav-admin-reports', 'navReports']] },
+  { key: 'catalog', title: 'grpCatalog', items: [
+    ['#/admin/products', 'nav-admin-products', 'navProducts'],
+    ['#/admin/coupons', 'nav-admin-coupons', 'navCoupons']] },
+  { key: 'sales', title: 'grpSales', items: [
+    ['#/admin/orders', 'nav-admin-orders', 'navAllOrders'],
+    ['#/admin/payments', 'nav-admin-payments', 'navPayments'],
+    ['#/admin/returns', 'nav-admin-returns', 'navReturns']] },
+  { key: 'customers', title: 'grpCustomers', items: [
+    ['#/admin/customers', 'nav-admin-customers', 'navCustomers'],
+    ['#/admin/reviews', 'nav-admin-reviews', 'navReviews'],
+    ['#/admin/notifications', 'nav-admin-notifications', 'navNotifications']] },
+  { key: 'control', title: 'grpControl', items: [
+    ['#/admin/audit', 'nav-admin-audit', 'navAudit']] },
+];
+
 export function Sidebar({ route, session, open, onNavigate }) {
   const { t } = useI18n();
   const isAdmin = session?.role === 'ADMIN';
@@ -137,19 +157,19 @@ export function Sidebar({ route, session, open, onNavigate }) {
         </li>
       </ul>
       {isAdmin && (
-        <>
+        <div className="admin-menu" data-testid="admin-menu">
           <p className="side-head" id="sec-admin">{t('secAdmin')}</p>
-          <ul aria-labelledby="sec-admin" data-testid="admin-menu">
-            <Item route={route} href="#/admin" testId="nav-admin-dashboard" onNavigate={onNavigate}>{t('navDashboard')}</Item>
-            <Item route={route} href="#/admin/products" testId="nav-admin-products" onNavigate={onNavigate}>{t('navProducts')}</Item>
-            <Item route={route} href="#/admin/coupons" testId="nav-admin-coupons" onNavigate={onNavigate}>{t('navCoupons')}</Item>
-            <Item route={route} href="#/admin/orders" testId="nav-admin-orders" onNavigate={onNavigate}>{t('navAllOrders')}</Item>
-            <Item route={route} href="#/admin/returns" testId="nav-admin-returns" onNavigate={onNavigate}>{t('navReturns')}</Item>
-            <Item route={route} href="#/admin/reviews" testId="nav-admin-reviews" onNavigate={onNavigate}>{t('navReviews')}</Item>
-            <Item route={route} href="#/admin/notifications" testId="nav-admin-notifications" onNavigate={onNavigate}>{t('navNotifications')}</Item>
-            <Item route={route} href="#/admin/audit" testId="nav-admin-audit" onNavigate={onNavigate}>{t('navAudit')}</Item>
-          </ul>
-        </>
+          {ADMIN_MENU.map(g => (
+            <details key={g.key} className="side-group" open data-testid={`admin-group-${g.key}`}>
+              <summary>{t(g.title)}</summary>
+              <ul aria-label={t(g.title)}>
+                {g.items.map(([href, testId, label]) => (
+                  <Item key={href} route={route} href={href} testId={testId} onNavigate={onNavigate}>{t(label)}</Item>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </div>
       )}
       <p className="side-head" id="sec-support">{t('secSupport')}</p>
       <ul aria-labelledby="sec-support">

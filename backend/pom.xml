@@ -69,6 +69,7 @@
 <param>com.rbctcsworld.ecommerce.notification.NotificationDeliveryService</param>
 <param>com.rbctcsworld.ecommerce.audit.AuditChain</param>
 <param>com.rbctcsworld.ecommerce.audit.AuditChange</param>
+<param>com.rbctcsworld.ecommerce.common.Csv</param>
 </targetClasses>
 <!-- fast unit tests only; the Spring integration tests would make every mutant start a Spring context -->
 <targetTests><param>com.rbctcsworld.ecommerce.*.*Test</param></targetTests>

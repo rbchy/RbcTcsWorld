@@ -1,5 +1,10 @@
 package com.rbctcsworld.ecommerce.product;
 
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
+import java.util.Locale;
+
 import com.rbctcsworld.ecommerce.common.exception.BusinessRuleException;
 import com.rbctcsworld.ecommerce.common.exception.ConflictException;
 import com.rbctcsworld.ecommerce.common.exception.NotFoundException;
@@ -47,14 +52,53 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> page(String q, int page, int size, String sort) {
+        return page(q, page, size, sort, ProductFilter.NONE);
+    }
+
+    /**
+     * Like {@link #page(String, int, int, String)} with the extra filters of {@link ProductFilter}.
+     * minPrice/maxPrice may not be negative and maxPrice may not be below minPrice (400).
+     */
+    @Transactional(readOnly = true)
+    public Page<Product> page(String q, int page, int size, String sort, ProductFilter filter) {
         if (page < 0) throw new BusinessRuleException("page must be 0 or greater");
         if (size < 1 || size > MAX_PAGE_SIZE) throw new BusinessRuleException("size must be between 1 and " + MAX_PAGE_SIZE);
         String s = sort == null || sort.isBlank() ? "id" : sort.trim().toLowerCase();
         if (!SORTS.contains(s)) throw new BusinessRuleException("sort must be one of " + SORTS);
         PageRequest request = PageRequest.of(page, size, sortOf(s));
+        ProductFilter f = filter == null ? ProductFilter.NONE : filter;
+        if (f.minPrice() != null && f.minPrice().signum() < 0) throw new BusinessRuleException("minPrice cannot be negative");
+        if (f.maxPrice() != null && f.maxPrice().signum() < 0) throw new BusinessRuleException("maxPrice cannot be negative");
+        if (f.minPrice() != null && f.maxPrice() != null && f.maxPrice().compareTo(f.minPrice()) < 0) {
+            throw new BusinessRuleException("maxPrice must not be below minPrice");
+        }
+        if (!f.isEmpty()) return repo.findAll(spec(q, f), request);
         return (q == null || q.isBlank())
                 ? repo.findByActiveTrue(request)
                 : repo.findByNameContainingIgnoreCaseAndActiveTrue(q.trim(), request);
+    }
+
+    /** active AND name contains q AND category = ... AND minPrice <= price <= maxPrice AND stock > 0 (each when given). */
+    static Specification<Product> spec(String q, ProductFilter f) {
+        return (root, query, cb) -> {
+            List<Predicate> where = new ArrayList<>();
+            where.add(cb.isTrue(root.<Boolean>get("active")));
+            if (q != null && !q.isBlank()) {
+                where.add(cb.like(cb.lower(root.<String>get("name")), "%" + q.trim().toLowerCase(Locale.ROOT) + "%"));
+            }
+            if (f.category() != null && !f.category().isBlank()) {
+                where.add(cb.equal(cb.lower(root.<String>get("category")), f.category().trim().toLowerCase(Locale.ROOT)));
+            }
+            if (f.minPrice() != null) where.add(cb.greaterThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.minPrice()));
+            if (f.maxPrice() != null) where.add(cb.lessThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.maxPrice()));
+            if (Boolean.TRUE.equals(f.inStock())) where.add(cb.greaterThan(root.<Integer>get("stock"), 0));
+            return cb.and(where.toArray(new Predicate[0]));
+        };
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> categories() {
+        return repo.activeCategories();
     }
 
     static Sort sortOf(String sort) {

@@ -26,4 +26,14 @@ public final class CouponDtos {
             LocalDateTime validFrom,
             LocalDateTime validUntil) {
     }
+
+    /** Edit of an existing coupon. The code never changes (customers and old orders refer to it). */
+    public record UpdateCouponRequest(
+            @NotBlank @Pattern(regexp = "PERCENT|FIXED", message = "must be PERCENT or FIXED") String type,
+            @NotNull @Positive @Digits(integer = 10, fraction = 2) BigDecimal value,
+            @DecimalMin("0.00") BigDecimal minOrderAmount,
+            @Min(1) Integer maxUses,
+            LocalDateTime validFrom,
+            LocalDateTime validUntil) {
+    }
 }

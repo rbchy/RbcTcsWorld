@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 @Service
 public class NotificationDeliveryService {
 
+    static final String REDACTED = "[password reset link removed after delivery]";
+
     private static final Logger log = LoggerFactory.getLogger(NotificationDeliveryService.class);
 
     static final int MAX_ATTEMPTS = 5;
@@ -59,6 +61,10 @@ public class NotificationDeliveryService {
             try {
                 channel.send(n.getRecipient(), n.getSubject(), n.getBody());
                 notifications.markSent(n.getId(), LocalDateTime.now(clock));
+                if (AccountEmailEvent.Type.PASSWORD_RESET.name().equals(n.getType())) {
+                    // the link would let anyone with database access take over the account until it expires
+                    notifications.redactBody(n.getId(), REDACTED);
+                }
                 sent++;
             } catch (RuntimeException e) {
                 failed(n, e);

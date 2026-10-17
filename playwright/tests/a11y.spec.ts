@@ -6,6 +6,7 @@ const PAGES = [
   { name: 'product', path: '/#/products/1', ready: 'detail-image' },
   { name: 'goodbye', path: '/#/goodbye', ready: 'goodbye' },
   { name: 'help', path: '/#/help', ready: 'help-topic' },
+  { name: 'forgot password', path: '/#/forgot-password', ready: 'forgot-email' },
 ];
 
 test.describe('Accessibility (WCAG 2.1 AA, axe-core)', () => {

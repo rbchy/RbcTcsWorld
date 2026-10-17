@@ -93,6 +93,9 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
           {mode === 'login' ? t('loginBtn') : t('registerBtn')}
         </button>
       </form>
+      {mode === 'login' && (
+        <button className="link" data-testid="forgot-link" onClick={() => go('/forgot-password')}>{t('forgotLink')}</button>
+      )}
       <button className="link" data-testid="auth-toggle" onClick={toggle}>
         {mode === 'login' ? t('toRegister') : t('toLogin')}
       </button>

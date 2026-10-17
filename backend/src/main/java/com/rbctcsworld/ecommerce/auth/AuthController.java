@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
  * POST /api/auth/login    -> 200 {token,email,role,refreshToken,expiresIn} | 400 | 401 bad credentials | 429 locked
  * POST /api/auth/refresh  -> 200 {token,email,role,refreshToken,expiresIn} | 400 | 401 invalid/expired/reused
  * POST /api/auth/logout   -> 204 (always, also for an unknown token)
+ * POST /api/auth/forgot-password {email}             -> 202 (always the same answer) | 400 validation
+ * POST /api/auth/reset-password  {token, newPassword} -> 204 | 400 invalid/used/expired link or weak password
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -30,10 +32,25 @@ public class AuthController {
     record LogoutRequest(@Size(max = 200) String refreshToken) {
     }
 
-    private final AuthService service;
+    record ForgotPasswordRequest(@Email @NotBlank @Size(max = 255) String email) {
+    }
 
-    public AuthController(AuthService service) {
+    record ResetPasswordRequest(@NotBlank @Size(max = 200) String token,
+                                @NotBlank @Size(min = 8, max = 72) String newPassword) {
+    }
+
+    /** The answer to every forgot-password request, whether or not the e-mail has an account. */
+    record Accepted(String message) {
+        static final Accepted RESET_REQUESTED = new Accepted(
+                "If an account exists for this e-mail, we have sent a link to reset the password.");
+    }
+
+    private final AuthService service;
+    private final PasswordResetService passwordReset;
+
+    public AuthController(AuthService service, PasswordResetService passwordReset) {
         this.service = service;
+        this.passwordReset = passwordReset;
     }
 
     @PostMapping("/register")
@@ -56,5 +73,18 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void logout(@Valid @RequestBody LogoutRequest r) {
         service.logout(r.refreshToken());
+    }
+
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    Accepted forgotPassword(@Valid @RequestBody ForgotPasswordRequest r) {
+        passwordReset.requestReset(r.email());
+        return Accepted.RESET_REQUESTED;
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void resetPassword(@Valid @RequestBody ResetPasswordRequest r) {
+        passwordReset.resetPassword(r.token(), r.newPassword());
     }
 }

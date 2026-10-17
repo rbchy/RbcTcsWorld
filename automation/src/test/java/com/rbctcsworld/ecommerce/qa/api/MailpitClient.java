@@ -24,7 +24,7 @@ public class MailpitClient {
     public boolean isAvailable() {
         try {
             return given().baseUri(base).get("/api/v1/messages?limit=1").statusCode() == 200;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {   // also java.net.ConnectException, which REST Assured throws undeclared
             return false;
         }
     }
@@ -56,5 +56,19 @@ public class MailpitClient {
     /** Plain-text body of one e-mail. */
     public String text(String id) {
         return given().baseUri(base).get("/api/v1/message/{id}", id).then().statusCode(200).extract().path("Text");
+    }
+
+    /** The token of the newest password reset e-mail to this address (waits for it). */
+    public String resetToken(String address, int expectedResetMails) {
+        List<Mail> resets = waitForInbox(address,
+                m -> m.stream().filter(x -> x.subject().startsWith("Reset your")).count() >= expectedResetMails)
+                .stream().filter(x -> x.subject().startsWith("Reset your")).toList();
+        if (resets.size() < expectedResetMails) {
+            throw new AssertionError("expected " + expectedResetMails + " reset e-mail(s) to " + address + ", got " + resets.size());
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("reset-password\\?token=([A-Za-z0-9_-]+)")
+                .matcher(text(resets.get(0).id()));     // newest first
+        if (!m.find()) throw new AssertionError("no reset link in the e-mail");
+        return m.group(1);
     }
 }

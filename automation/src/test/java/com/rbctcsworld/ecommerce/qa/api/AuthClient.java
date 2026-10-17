@@ -31,6 +31,14 @@ public class AuthClient extends ApiClient {
         return anonymous().body(Map.of("refreshToken", refreshToken)).post("/api/auth/logout");
     }
 
+    public Response forgotPassword(String email) {
+        return anonymous().body(Map.of("email", email)).post("/api/auth/forgot-password");
+    }
+
+    public Response resetPassword(String token, String newPassword) {
+        return anonymous().body(Map.of("token", token, "newPassword", newPassword)).post("/api/auth/reset-password");
+    }
+
     /** Registers a fresh customer and returns its JWT. */
     public String registerAndGetToken(String email, String password) {
         return register(email, password).then().statusCode(201).extract().path("token");

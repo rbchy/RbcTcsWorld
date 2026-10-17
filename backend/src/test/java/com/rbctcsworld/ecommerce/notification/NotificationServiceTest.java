@@ -84,6 +84,22 @@ class NotificationServiceTest {
     }
 
     @Test
+    void anAccountEmailIsQueuedWithoutAnOrder() {
+        service.on(new AccountEmailEvent("ada@test.com", AccountEmailEvent.Type.PASSWORD_RESET, "Reset", "link"));
+
+        ArgumentCaptor<Notification> saved = ArgumentCaptor.forClass(Notification.class);
+        verify(notifications).save(saved.capture());
+        Notification n = saved.getValue();
+        assertThat(n.getOrderId()).isNull();
+        assertThat(n.getRecipient()).isEqualTo("ada@test.com");
+        assertThat(n.getType()).isEqualTo("PASSWORD_RESET");
+        assertThat(n.getSubject()).isEqualTo("Reset");
+        assertThat(n.getBody()).isEqualTo("link");
+        assertThat(n.getStatus()).isEqualTo(Notification.PENDING);
+        verifyNoInteractions(orders, users);
+    }
+
+    @Test
     void paymentReceived() {
         NotificationService.Email m = mail(Type.PAYMENT_RECEIVED, null);
         assertThat(m.subject()).isEqualTo("Payment received for order ORD-20261012-ABCDEF");

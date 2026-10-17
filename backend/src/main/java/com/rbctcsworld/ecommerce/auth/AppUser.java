@@ -37,6 +37,11 @@ public class AppUser {
         this.role = role;
     }
 
+    /** Stores a new password hash (password reset). */
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }

@@ -51,4 +51,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findTop100ByStatusOrderByIdDesc(String status);
 
     List<Notification> findTop100ByOrderByIdDesc();
+
+    /** After a reset link was delivered, the database no longer needs it: the body is replaced. */
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("update Notification n set n.body = :text where n.id = :id")
+    int redactBody(@Param("id") Long id, @Param("text") String text);
 }

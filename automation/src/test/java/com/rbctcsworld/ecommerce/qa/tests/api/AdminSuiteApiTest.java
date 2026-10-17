@@ -129,7 +129,7 @@ class AdminSuiteApiTest {
                 .then().body("rows.collect { it[0] }", hasItem(sku));
         admin.report(Fixtures.adminToken(), "low-stock", Map.of("threshold", 1))
                 .then().body("rows.collect { it[0] }", hasItem(sku));
-        for (String name : List.of("sales", "top-products", "orders-by-status", "returns", "coupons", "low-stock", "inventory")) {
+        for (String name : List.of("sales", "top-products", "orders-by-status", "returns", "coupons", "low-stock", "inventory", "stock-by-warehouse")) {
             String csv = admin.reportCsv(Fixtures.adminToken(), name, Map.of()).then().statusCode(200)
                     .header("Content-Disposition", containsString("report-" + name)).extract().asString();
             assertTrue(csv.startsWith("\""), name + " starts with its header row");

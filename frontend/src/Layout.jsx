@@ -110,7 +110,8 @@ export const ADMIN_MENU = [
     ['#/admin/reports', 'nav-admin-reports', 'navReports']] },
   { key: 'catalog', title: 'grpCatalog', items: [
     ['#/admin/products', 'nav-admin-products', 'navProducts'],
-    ['#/admin/coupons', 'nav-admin-coupons', 'navCoupons']] },
+    ['#/admin/coupons', 'nav-admin-coupons', 'navCoupons'],
+    ['#/admin/warehouses', 'nav-admin-warehouses', 'navWarehouses']] },
   { key: 'sales', title: 'grpSales', items: [
     ['#/admin/orders', 'nav-admin-orders', 'navAllOrders'],
     ['#/admin/payments', 'nav-admin-payments', 'navPayments'],

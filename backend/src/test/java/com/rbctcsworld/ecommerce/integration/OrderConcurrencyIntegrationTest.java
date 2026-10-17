@@ -52,6 +52,11 @@ class OrderConcurrencyIntegrationTest {
     void lastUnitsCannotBeOversold() throws Exception {
         Product limited = products.save(new Product("Flash sale item",
                 "RACE-" + UUID.randomUUID().toString().substring(0, 8), "test", new BigDecimal("1.00"), STOCK));
+        // the 3 units sit in two warehouses: 2 in Pittsburgh, 1 in Newark (the race must not oversell either)
+        jdbc.update("insert into warehouse_stock (warehouse_id, product_id, quantity) "
+                + "select id, ?, ? from warehouses where code = 'PIT'", limited.getId(), STOCK - 1);
+        jdbc.update("insert into warehouse_stock (warehouse_id, product_id, quantity) "
+                + "select id, ?, 1 from warehouses where code = 'NWK'", limited.getId());
 
         List<String> emails = new ArrayList<>();
         for (int i = 0; i < CUSTOMERS; i++) {
@@ -93,5 +98,9 @@ class OrderConcurrencyIntegrationTest {
         assertThat(finalStock).as("stock never negative").isGreaterThanOrEqualTo(0);
         assertThat(finalStock).as("stock = start - sold").isEqualTo(STOCK - (int) successes);
         assertThat(reserved).as("stock movements match sold units").isEqualTo((int) successes);
+        assertThat(jdbc.queryForObject("select sum(quantity) from warehouse_stock where product_id = ?", Integer.class,
+                limited.getId())).as("warehouses hold exactly the total").isEqualTo(finalStock);
+        assertThat(jdbc.queryForObject("select coalesce(sum(quantity), 0) from order_allocations where product_id = ?",
+                Integer.class, limited.getId())).as("allocated = sold").isEqualTo((int) successes);
     }
 }

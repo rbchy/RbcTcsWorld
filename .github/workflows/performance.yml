@@ -57,6 +57,7 @@ jobs:
         run: |
           psql -h localhost -U ecommerce -d ecommerce -c "select count(*) as orders, sum(case when status='PAID' then 1 else 0 end) as paid from orders"
           psql -h localhost -U ecommerce -d ecommerce -c "select count(*) as negative_stock_products from products where stock < 0"
+          psql -h localhost -U ecommerce -d ecommerce -c "select count(*) as warehouses_not_adding_up from products p where p.stock <> coalesce((select sum(quantity) from warehouse_stock ws where ws.product_id = p.id), 0)"
       - uses: actions/upload-artifact@v6
         if: always()
         with:

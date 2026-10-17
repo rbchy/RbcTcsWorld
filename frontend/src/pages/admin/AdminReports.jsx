@@ -4,8 +4,8 @@ import { useI18n } from '../../i18n';
 import { Notice } from './common';
 import Watermark from '../../Watermark';
 
-export const REPORTS = ['sales', 'top-products', 'orders-by-status', 'returns', 'coupons', 'low-stock', 'inventory'];
-const SNAPSHOT = ['low-stock', 'inventory'];                        // stock as it is now: no dates
+export const REPORTS = ['sales', 'top-products', 'orders-by-status', 'returns', 'coupons', 'low-stock', 'inventory', 'stock-by-warehouse'];
+const SNAPSHOT = ['low-stock', 'inventory', 'stock-by-warehouse'];                        // stock as it is now: no dates
 const MONEY = ['subtotal', 'discount', 'shipping', 'tax', 'total', 'revenue', 'amount', 'refunded', 'value', 'orderTotal', 'price'];
 
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

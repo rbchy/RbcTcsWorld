@@ -112,7 +112,7 @@ public class OrderService {
         orders.save(order); // gets the id used by stock movements / redemption
 
         for (CartItem line : lines) {
-            inventory.reserve(line.getProduct(), line.getQuantity(), order.getId());
+            inventory.reserve(line.getProduct(), line.getQuantity(), order.getId(), address.state());
         }
         if (coupon != null) {
             coupons.redeem(coupon, user.getId(), order.getId());

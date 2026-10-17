@@ -18,6 +18,11 @@ public class StockMovement {
     public static final String ORDER_PLACED = "ORDER_PLACED";
     public static final String ORDER_CANCELLED = "ORDER_CANCELLED";
     public static final String RETURN_RESTOCK = "RETURN_RESTOCK";
+    public static final String RECEIVED = "RECEIVED";
+    public static final String COUNT_CORRECTION = "COUNT_CORRECTION";
+    public static final String DAMAGED = "DAMAGED";
+    public static final String TRANSFER_OUT = "TRANSFER_OUT";
+    public static final String TRANSFER_IN = "TRANSFER_IN";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +40,10 @@ public class StockMovement {
     @Column(nullable = false, length = 30)
     private String reason;
 
+    /** The warehouse the units left or entered (null for movements from before warehouses existed). */
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @Column(name = "stock_after", nullable = false)
     private int stockAfter;
 
@@ -45,6 +54,12 @@ public class StockMovement {
     }
 
     public StockMovement(Long productId, Long orderId, int changeQty, String reason, int stockAfter) {
+        this(productId, orderId, null, changeQty, reason, stockAfter);
+    }
+
+    /** stockAfter = the product's TOTAL stock (all warehouses) after this movement. */
+    public StockMovement(Long productId, Long orderId, Long warehouseId, int changeQty, String reason, int stockAfter) {
+        this.warehouseId = warehouseId;
         this.productId = productId;
         this.orderId = orderId;
         this.changeQty = changeQty;
@@ -63,5 +78,6 @@ public class StockMovement {
     public int getChangeQty() { return changeQty; }
     public String getReason() { return reason; }
     public int getStockAfter() { return stockAfter; }
+    public Long getWarehouseId() { return warehouseId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

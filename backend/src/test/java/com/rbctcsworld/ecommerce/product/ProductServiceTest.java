@@ -37,6 +37,9 @@ class ProductServiceTest {
     @Mock
     org.springframework.context.ApplicationEventPublisher events;
 
+    @Mock
+    com.rbctcsworld.ecommerce.inventory.InventoryService inventory;
+
     @InjectMocks
     ProductService service;
 
@@ -375,5 +378,33 @@ class ProductServiceTest {
         assertThatThrownBy(() -> service.similar(1L, 13)).isInstanceOf(BusinessRuleException.class);
         when(repo.findByIdAndActiveTrue(9L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.similar(9L, 1)).isInstanceOf(NotFoundException.class);
+    }
+
+    // ---------------------------------------------------------------- stock goes through the warehouses
+
+    @Test
+    void aNewProductsStockIsPlacedInTheDefaultWarehouse() {
+        when(repo.existsBySku("SKU-W")).thenReturn(false);
+        when(repo.save(any())).thenAnswer(inv -> {
+            Product p = inv.getArgument(0);
+            ReflectionTestUtils.setField(p, "id", 31L);
+            return p;
+        });
+        service.create(new ProductRequest("Desk", "SKU-W", "home", new BigDecimal("99.00"), 6));
+        verify(inventory).stockNewProduct(31L, 6);
+    }
+
+    @Test
+    void theProductFormsStockGoesThroughTheInventoryBeforeTheOtherFields() {
+        Product existing = product(1L, "SKU-1");
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(existing));
+        when(repo.findBySku("SKU-1")).thenReturn(Optional.of(existing));
+        when(repo.save(existing)).thenReturn(existing);
+
+        Product saved = service.update(1L, new ProductRequest("New", "SKU-1", "old", new BigDecimal("10.00"), 9));
+
+        verify(inventory).changeTotalFromProductForm(1L, 9);
+        assertThat(saved.getStock()).isEqualTo(9);
+        assertThat(saved.getName()).isEqualTo("New");
     }
 }

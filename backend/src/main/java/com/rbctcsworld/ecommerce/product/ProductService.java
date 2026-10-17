@@ -10,6 +10,7 @@ import com.rbctcsworld.ecommerce.common.exception.ConflictException;
 import com.rbctcsworld.ecommerce.common.exception.NotFoundException;
 import com.rbctcsworld.ecommerce.audit.AuditChange;
 import com.rbctcsworld.ecommerce.audit.AuditEvent;
+import com.rbctcsworld.ecommerce.inventory.InventoryService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +27,12 @@ public class ProductService {
 
     private final ProductRepository repo;
     private final ApplicationEventPublisher events;
+    private final InventoryService inventory;
 
-    public ProductService(ProductRepository repo, ApplicationEventPublisher events) {
+    public ProductService(ProductRepository repo, ApplicationEventPublisher events, InventoryService inventory) {
         this.repo = repo;
         this.events = events;
+        this.inventory = inventory;
     }
 
     /** The product fields the audit trail follows (ratings change with every review and are not audited). */
@@ -143,6 +146,7 @@ public class ProductService {
         Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());
         Product saved = repo.save(p);
+        inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
         return saved;
     }
@@ -154,6 +158,7 @@ public class ProductService {
                 .filter(other -> !other.getId().equals(p.getId()))
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
         Map<String, Object> before = audited(p);
+        inventory.changeTotalFromProductForm(p.getId(), r.stock());        // atomic; the entity never writes stock
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());                                  // PUT replaces: no imageUrl = no picture
         Product saved = repo.save(p);

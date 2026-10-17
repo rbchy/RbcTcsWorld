@@ -27,12 +27,13 @@ import AdminAudit from './pages/admin/AdminAudit';
 import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminReports from './pages/admin/AdminReports';
+import AdminWarehouses from './pages/admin/AdminWarehouses';
 
 const ADMIN = {
   '/admin': AdminDashboard, '/admin/products': AdminProducts, '/admin/coupons': AdminCoupons,
   '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
   '/admin/notifications': AdminNotifications, '/admin/audit': AdminAudit,
-  '/admin/customers': AdminCustomers, '/admin/payments': AdminPayments, '/admin/reports': AdminReports,
+  '/admin/customers': AdminCustomers, '/admin/payments': AdminPayments, '/admin/reports': AdminReports, '/admin/warehouses': AdminWarehouses,
 };
 
 /** Public demo only (built with VITE_DEMO=true, see deploy/): says plainly that nothing here is real. */

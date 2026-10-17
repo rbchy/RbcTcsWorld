@@ -103,4 +103,31 @@ public class AdminClient extends ApiClient {
     public Response payments(String token, Map<String, ?> query) {
         return as(token).queryParams(query).get("/api/admin/payments");
     }
+
+    // ---- warehouses ----
+    public Response warehouses(String token) {
+        return as(token).get("/api/admin/warehouses");
+    }
+
+    public Response createWarehouse(String token, Map<String, Object> body) {
+        return as(token).body(body).post("/api/admin/warehouses");
+    }
+
+    public Response productStock(String token, long productId) {
+        return as(token).get("/api/admin/products/{id}/stock", productId);
+    }
+
+    public Response adjustStock(String token, long productId, long warehouseId, int delta, String reason) {
+        return as(token).body(Map.of("productId", productId, "warehouseId", warehouseId, "delta", delta, "reason", reason))
+                .post("/api/admin/stock/adjust");
+    }
+
+    public Response transferStock(String token, long productId, long from, long to, int quantity) {
+        return as(token).body(Map.of("productId", productId, "fromWarehouseId", from, "toWarehouseId", to, "quantity", quantity))
+                .post("/api/admin/stock/transfer");
+    }
+
+    public Response allocations(String token, long orderId) {
+        return as(token).get("/api/admin/orders/{id}/allocations", orderId);
+    }
 }

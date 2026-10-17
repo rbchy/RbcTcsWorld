@@ -14,7 +14,8 @@ test.describe('Audit trail', () => {
     const rows = page.getByTestId('audit-row');
     await expect(rows).toHaveCount(6);                       // name, sku, category, price, stock, active
     await expect(page.getByTestId('audit-row-field')).toContainText(['PRODUCT_CREATED · active']);
-    await expect(page.getByTestId('audit-row-new').filter({ hasText: product.sku })).toHaveCount(1);
+    // the sku row holds exactly the sku (the name row contains it too: "PW lamp <sku>")
+    await expect(page.getByTestId('audit-row-new').getByText(product.sku, { exact: true })).toHaveCount(1);
 
     await page.getByTestId('audit-verify').click();
     await expect(page.getByTestId('audit-check')).toContainText('Intact');

@@ -86,6 +86,22 @@ public class LoginPage extends BasePage {
         return new HomePage(driver);
     }
 
+    /** Logs in and waits until the header shows the user. */
+    public HomePage login(String email, String password) {
+        if (!"login".equals(mode())) click("auth-toggle");
+        wait.until(d -> "login".equals(mode()));
+        submit(email, password);
+        wait.until(d -> isShown("nav-user") || isShown("auth-error"));
+        if (!isShown("nav-user")) throw new AssertionError("login failed: " + textOrEmpty("auth-error"));
+        return new HomePage(driver);
+    }
+
+    /** "Forgot your password?" under the login form. */
+    public PasswordResetPage forgotPassword() {
+        click("forgot-link");
+        return new PasswordResetPage(driver).waitForgotForm();
+    }
+
     public String error() {
         return text("auth-error");
     }

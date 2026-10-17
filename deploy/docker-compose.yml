@@ -59,6 +59,7 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@rbctcsworld.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in deploy/.env}
       DEMO_MODE: "true"
+      PUBLIC_URL: https://${DEMO_DOMAIN}
       PAYMENT_PROVIDER: mock          # test cards only; no Stripe key ever lives on the demo server
       API_DOCS_ENABLED: "false"
       LOGIN_STORE: redis

@@ -55,6 +55,14 @@ public class NotificationService {
                 email.body(), LocalDateTime.now(clock)));
     }
 
+    /** Account e-mails (no order): queued in the same transaction as the account change. */
+    @EventListener
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void on(AccountEmailEvent event) {
+        notifications.save(new Notification(null, event.recipient(), event.type().name(), event.subject(),
+                event.body(), LocalDateTime.now(clock)));
+    }
+
     /** Plain-text e-mails: readable in every mail client, nothing to render or sanitise. */
     static Email compose(OrderNotificationEvent event, CustomerOrder o) {
         String no = o.getOrderNumber();

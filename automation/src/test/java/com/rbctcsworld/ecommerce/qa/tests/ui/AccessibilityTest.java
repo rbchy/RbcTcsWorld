@@ -82,6 +82,8 @@ class AccessibilityTest {
     @CsvSource({
             "Login,           /login,           none,     auth-submit",
             "Registration,    /register,        none,     confirm-input",
+            "Forgot password, /forgot-password, none,     forgot-email",
+            "New password,    /reset-password?token=t, none, reset-password",
             "Help center,     /help,            none,     help-topic",
             "Goodbye (Exit),  /goodbye,         none,     goodbye",
             "Catalog,         /,                customer, product-card",

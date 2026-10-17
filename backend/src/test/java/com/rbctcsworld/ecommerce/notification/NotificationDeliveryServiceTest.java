@@ -67,6 +67,33 @@ class NotificationDeliveryServiceTest {
 
         verify(channel).send("buyer@test.com", "Order received", "Thanks");
         verify(notifications).markSent(1L, now);
+        verify(notifications, never()).redactBody(anyLong(), anyString());   // order e-mails keep their text
+    }
+
+    @Test
+    void aDeliveredResetLinkIsRemovedFromTheDatabase() {
+        Notification n = new Notification(null, "ada@test.com", "PASSWORD_RESET", "Reset", "link: abc", now.minusMinutes(1));
+        ReflectionTestUtils.setField(n, "id", 4L);
+        due(n);
+        when(notifications.claim(4L, n.getNextAttemptAt(), now.plus(NotificationDeliveryService.LEASE))).thenReturn(1);
+
+        service.sendDue();
+
+        verify(channel).send("ada@test.com", "Reset", "link: abc");
+        verify(notifications).redactBody(4L, "[password reset link removed after delivery]");
+    }
+
+    @Test
+    void anUndeliveredResetLinkIsNotRedactedYet() {
+        Notification n = new Notification(null, "ada@test.com", "PASSWORD_RESET", "Reset", "link: abc", now.minusMinutes(1));
+        ReflectionTestUtils.setField(n, "id", 4L);
+        due(n);
+        when(notifications.claim(anyLong(), any(), any())).thenReturn(1);
+        doThrow(new IllegalStateException("smtp down")).when(channel).send(anyString(), anyString(), anyString());
+
+        service.sendDue();
+
+        verify(notifications, never()).redactBody(anyLong(), anyString());
     }
 
     @Test

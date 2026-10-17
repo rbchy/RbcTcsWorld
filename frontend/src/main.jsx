@@ -6,6 +6,7 @@ import { Sidebar, Topbar } from './Layout';
 import { useI18n } from './i18n';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import { ForgotPassword, ResetPassword } from './pages/PasswordReset';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
@@ -53,6 +54,8 @@ function App() {
   if (needsLogin && !session) page = <Login redirect={route} />;
   else if (route === '/login') page = <Login redirect="/" />;
   else if (route === '/register') page = <Login redirect="/" initialMode="register" />;
+  else if (route === '/forgot-password') page = <ForgotPassword />;
+  else if (route.startsWith('/reset-password')) page = <ResetPassword token={new URLSearchParams(route.split('?')[1] || '').get('token')} />;
   else if (route === '/help' || route.startsWith('/help/')) page = <Help />;
   else if (route === '/goodbye') page = <Goodbye session={session} />;
   else if (ADMIN[route]) { const P = ADMIN[route]; page = <AdminOnly session={session}><P /></AdminOnly>; }

@@ -28,6 +28,7 @@ management:
         include: health,info
 
 app:
+  public-url: ${PUBLIC_URL:http://localhost:5173}   # storefront address, used in e-mailed links (password reset)
   jwt:
     secret: ${JWT_SECRET:change-this-development-secret-key-which-must-be-long-enough-123456789}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}   # access token: 15 minutes, renewed with the refresh token

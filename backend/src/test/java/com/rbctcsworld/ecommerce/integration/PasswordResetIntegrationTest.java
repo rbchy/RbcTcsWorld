@@ -77,6 +77,11 @@ class PasswordResetIntegrationTest {
         return m.group(1);
     }
 
+    private String status(String email) {
+        return jdbc.queryForObject("select status from notifications where recipient = ? and type = 'PASSWORD_RESET'",
+                String.class, email);
+    }
+
     @Test
     void knownAndUnknownEmailsGetTheSameAnswerButOnlyACustomerGetsAnEmail() throws Exception {
         String customer = email();
@@ -179,7 +184,11 @@ class PasswordResetIntegrationTest {
         forgot(email);
         String token = latestLink(email);
 
-        delivery.sendDue();
+        // other tests leave e-mails in the shared outbox too: deliver in rounds until this one went out
+        for (int round = 0; round < 50 && !"SENT".equals(status(email)); round++) {
+            delivery.sendDue();
+        }
+        assertThat(status(email)).isEqualTo("SENT");
 
         String stored = jdbc.queryForObject("select body from notifications where recipient = ? and type = 'PASSWORD_RESET'",
                 String.class, email);

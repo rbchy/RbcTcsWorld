@@ -29,10 +29,13 @@ def main(path):
     steps = {}
     with open(path, newline='') as f:
         for row in csv.DictReader(f):
-            s = steps.setdefault(row['label'], {'ms': [], 'errors': 0})
+            s = steps.setdefault(row['label'], {'ms': [], 'errors': 0, 'why': None})
             s['ms'].append(int(row['elapsed']))
             if row['success'].strip().lower() != 'true':
                 s['errors'] += 1
+                if s['why'] is None:      # the first failure, so a red run says what went wrong
+                    s['why'] = f"{row.get('responseCode', '')} {row.get('responseMessage', '')} " \
+                               f"{row.get('failureMessage', '')}".strip()[:200]
     if not steps:
         print('no samples in ' + path)
         return 1
@@ -48,7 +51,7 @@ def main(path):
         limit = SLO_P95_SEARCH_MS if 'search' in label else SLO_P95_MS
         ok = rate < SLO_ERROR_RATE and p95 < limit
         if not ok:
-            failed.append(label)
+            failed.append(label + (f" ({s['why']})" if s['why'] else ''))
         all_ms += s['ms']
         all_errors += s['errors']
         lines.append(f"| {label} | {n} | {rate:.2f} % | {percentile(s['ms'], 50)} | {p95} | {percentile(s['ms'], 99)} | "

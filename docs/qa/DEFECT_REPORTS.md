@@ -35,6 +35,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-025](#def-025) | Jenkins QA Reports showed k6 as "not run" although all k6 gates ran and passed | Test infrastructure (reporting) | Medium | P2 | Reviewing build #41 | Closed |
 | [DEF-026](#def-026) | Safari: a failed product picture was replaced by an empty frame instead of the category picture | Product - storefront | Medium | P2 | Playwright WebKit project | Closed |
 | [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Closed |
+| [DEF-028](#def-028) | Mail test helper crashed instead of skipping when no mail server runs | Test code | Low | P3 | CI, Firefox job (PR #31) | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -693,6 +694,33 @@ Jenkins build #59 (`BROWSER=safari`, commit 913deac) passed every gate, 326 / 32
 
 **Lesson:** a wait condition that is true for "nothing on the page" is not a wait. Every "all items match" check
 needs "and there is at least one item".
+
+---
+
+## DEF-028
+**The mail-server check in the tests crashed instead of skipping when no mail server was running**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Low / P3 - test defect: a test failed in a job that has no Mailpit, instead of being skipped |
+| Component | `automation/.../api/MailpitClient.java` (`isAvailable`) |
+| Environment | GitHub Actions, job "UI tests in firefox" (PR #31, the first UI test that reads e-mails) |
+
+**Steps to reproduce:** run `UiPasswordResetTest` where no Mailpit listens on `-DmailpitUrl`.
+
+**Expected result:** the class is skipped ("Mailpit is not running").
+**Actual result:** `java.net.ConnectException: Connection refused` from `MailpitClient.isAvailable`, so the test
+class errored.
+
+**Root cause:** `isAvailable()` caught only `RuntimeException`. REST Assured throws the checked
+`ConnectException` without declaring it, so it passed straight through. It never showed before because the only
+class that used it ran in the one job that has Mailpit.
+
+**Fix:** catch `Exception`. **Regression test:** `UiPasswordResetTest` in the Firefox and Edge jobs (skipped, not
+failed), and `PasswordResetApiTest` in the API job (runs).
+
+**Lesson:** a "skip if not available" check must survive every way of being unavailable. Test the unhappy path of
+the test helpers too.
 
 ---
 

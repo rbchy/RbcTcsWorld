@@ -22,6 +22,20 @@ export function validateProduct(f) {
   return e;
 }
 
+const NO_FILTER = { category: '', minPrice: '', maxPrice: '', inStock: false, sort: 'id' };
+
+/** Same rules as ProductService: prices are 0 or more with at most 2 decimals, max not below min. */
+export function validateProductSearch(f) {
+  const e = {};
+  const money = /^\d+(\.\d{1,2})?$/;
+  if (f.minPrice.trim() && !money.test(f.minPrice.trim())) e.minPrice = 'vMoney';
+  if (f.maxPrice.trim() && !money.test(f.maxPrice.trim())) e.maxPrice = 'vMoney';
+  if (!e.minPrice && !e.maxPrice && f.minPrice.trim() && f.maxPrice.trim() && Number(f.maxPrice) < Number(f.minPrice)) {
+    e.maxPrice = 'vMaxBelowMin';
+  }
+  return e;
+}
+
 export default function AdminProducts() {
   const { t } = useI18n();
   const [rows, setRows] = useState([]);
@@ -34,8 +48,16 @@ export default function AdminProducts() {
   const [history, setHistory] = useState(null);   // {product, rows}
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
+  const [adv, setAdv] = useState(NO_FILTER);            // advanced search being typed
+  const [applied, setApplied] = useState(NO_FILTER);    // advanced search in use
+  const [advErrors, setAdvErrors] = useState({});
+  const [categories, setCategories] = useState([]);
 
-  const load = (p = page) => api.get('/products', { params: { q: q || undefined, page: p, size: PAGE, sort: 'id' } })
+  useEffect(() => { api.get('/products/categories').then(r => setCategories(r.data)).catch(() => {}); }, []);
+
+  const load = (p = page) => api.get('/products', { params: { q: q || undefined, page: p, size: PAGE, sort: applied.sort,
+    category: applied.category || undefined, minPrice: applied.minPrice.trim() || undefined,
+    maxPrice: applied.maxPrice.trim() || undefined, inStock: applied.inStock || undefined } })
     .then(r => { setRows(r.data); setTotal(Number(r.headers['x-total-count'] ?? r.data.length)); setPage(p); })
     .catch(e => setError(errorText(e)));
 
@@ -43,7 +65,15 @@ export default function AdminProducts() {
     let current = true;
     const timer = setTimeout(() => current && load(0), q ? 250 : 0);
     return () => { current = false; clearTimeout(timer); };
-  }, [q]);
+  }, [q, applied]);
+
+  const setA = k => e => setAdv({ ...adv, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  const searchAdv = e => {
+    e.preventDefault();
+    const found = validateProductSearch(adv);
+    setAdvErrors(found);
+    if (!Object.keys(found).length) setApplied(adv);
+  };
 
   const open = p => {
     setErrors({}); setOk(''); setError(''); setConfirm(null);
@@ -92,6 +122,37 @@ export default function AdminProducts() {
         </div>
       </header>
       <Notice ok={ok} error={error} />
+
+      <form className="card filters" role="search" aria-label={t('advancedSearch')} onSubmit={searchAdv} noValidate
+            data-testid="product-adv-search">
+        <label className="field">{t('category')}
+          <select value={adv.category} onChange={setA('category')} data-testid="ps-category">
+            <option value="">{t('allCategories')}</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        {[['minPrice', 'ps-min', t('minPrice')], ['maxPrice', 'ps-max', t('maxPrice')]].map(([k, id, label]) => (
+          <div className="field" key={k}>
+            <label htmlFor={id}>{label}</label>
+            <input id={id} value={adv[k]} onChange={setA(k)} inputMode="decimal" data-testid={id} aria-invalid={!!advErrors[k]}
+                   aria-describedby={advErrors[k] ? `${id}-error` : undefined} />
+            {advErrors[k] && <span className="field-error" id={`${id}-error`} data-testid={`${id}-error`}>{t(advErrors[k])}</span>}
+          </div>
+        ))}
+        <label className="field">{t('sortBy')}
+          <select value={adv.sort} onChange={setA('sort')} data-testid="ps-sort">
+            {['id', 'name', 'price_asc', 'price_desc'].map(o => <option key={o} value={o}>{t(`psSort_${o}`)}</option>)}
+          </select>
+        </label>
+        <label className="check field-check">
+          <input type="checkbox" checked={adv.inStock} onChange={setA('inStock')} data-testid="ps-instock" />{t('inStockOnly')}
+        </label>
+        <div className="filter-actions">
+          <button type="submit" data-testid="ps-search">{t('search')}</button>
+          <button type="button" className="ghost" data-testid="ps-reset"
+                  onClick={() => { setAdv(NO_FILTER); setAdvErrors({}); setApplied(NO_FILTER); }}>{t('reset')}</button>
+        </div>
+      </form>
 
       {form && (
         <form className="card form-grid" onSubmit={save} noValidate data-testid="product-form" aria-labelledby="product-form-title">

@@ -3,6 +3,8 @@ import api, { errorText } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice, when } from './common';
 
+const TYPE_LABEL = { PRODUCT: 'auditProduct', ORDER: 'auditOrder', CUSTOMER: 'auditCustomer', COUPON: 'auditCoupon' };
+
 /**
  * The audit trail (read-only): who changed which product or order, when, from what to what.
  * Rows cannot be edited or deleted - not here, not in the API, not in the database.
@@ -72,6 +74,8 @@ export default function AdminAudit() {
             <option value="">{t('auditAllRecords')}</option>
             <option value="PRODUCT">{t('auditProduct')}</option>
             <option value="ORDER">{t('auditOrder')}</option>
+            <option value="CUSTOMER">{t('auditCustomer')}</option>
+            <option value="COUPON">{t('auditCoupon')}</option>
           </select>
         </label>
         <label className="field">{t('auditId')}
@@ -98,7 +102,7 @@ export default function AdminAudit() {
                   <td className="small" title={r.hash}>{r.seq}</td>
                   <td className="small">{when(r.occurredAt)}</td>
                   <td className="small" data-testid="audit-row-actor">{r.actor}</td>
-                  <td>{r.entityType === 'ORDER' ? t('auditOrder') : t('auditProduct')} #{r.entityId}</td>
+                  <td>{t(TYPE_LABEL[r.entityType] || 'auditProduct')} #{r.entityId}</td>
                   <td className="small" data-testid="audit-row-field">{r.action} · {r.field}</td>
                   <td data-testid="audit-row-old">{value(r.oldValue)}</td>
                   <td data-testid="audit-row-new">{value(r.newValue)}</td>

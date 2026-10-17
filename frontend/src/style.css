@@ -312,3 +312,58 @@ fieldset.address legend { font-weight: 700; padding: 0 6px; color: var(--ink); }
 .side-group ul { padding-inline-start: 10px !important; }
 .side-group a { font-size: 14px; padding: 6px 12px; }
 .auth .link { display: block; margin-top: 10px; }
+
+/* ---------- search panels (filters + Search / Reset) ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: flex-end; }
+.filters .field { margin-bottom: 8px; min-width: 150px; flex: 1 1 150px; max-width: 240px; }
+.filters .field input, .filters .field select { width: 100%; }
+.filters .field-check { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex: 0 0 auto; }
+.filter-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.form-actions { grid-column: 1 / -1; gap: 8px; }
+
+/* ---------- states: active / disabled / scheduled / expired / used up ---------- */
+.badge.state-active { background: #e7f5ec; color: var(--ok); }
+.badge.state-disabled, .badge.state-expired { background: #fdecea; color: var(--bad); }
+.badge.state-scheduled { background: #e3edf0; color: var(--harbor); }
+.badge.state-used_up { background: #fff4d6; color: #6b4a00; }
+button.ghost.danger-text { color: var(--bad); border-color: var(--bad); }
+td.actions { white-space: nowrap; }
+td.actions button + button { margin-inline-start: 6px; }
+
+/* ---------- customer detail + confirm ---------- */
+.detail-panel { border-inline-start: 6px solid var(--harbor); }
+.detail-panel h2 { margin-top: 0; }
+.detail-panel h3 { font-size: 16px; margin: 18px 0 6px; }
+.confirm { background: #fdecea; border: 1px solid #f2c4bf; border-radius: 8px; padding: 12px 14px; max-width: 560px; }
+.confirm p { margin: 0 0 10px; }
+.stats.compact strong { font-size: 22px; }
+.stats.compact span { display: flex; flex-direction: column; padding: 12px 14px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); font-size: 14px; color: var(--muted); }
+
+/* ---------- reports: a printable sheet ---------- */
+.report-sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 0 12px; overflow: hidden; }
+.report-sheet .table-wrap { padding: 0 18px; }
+.report-head { position: relative; overflow: hidden; padding: 18px 18px 12px; border-bottom: 3px solid var(--harbor); margin-bottom: 10px; }
+.report-head h2 { position: relative; margin: 2px 0; font-size: 22px; }
+.report-head p { position: relative; margin: 0; }
+.report-brand { font-weight: 800; letter-spacing: 0.06em; color: var(--accent-dark); font-size: 13px; }
+.report-sheet tfoot th { color: var(--ink); font-size: 15px; border-top: 2px solid var(--ink); }
+.chart { margin: 0 18px 12px; padding: 12px 14px; }
+.chart svg { display: block; width: 100%; height: 140px; }
+.chart .bar { fill: var(--harbor-2); }
+.chart .bar.empty { fill: var(--line); }
+.chart .bar:hover { fill: var(--accent); }
+
+@media print {
+  .topbar, .sidebar, .demo-ribbon, .no-print, .skip, .menu-btn { display: none !important; }
+  .frame { display: block; }
+  main { padding: 0; max-width: none; }
+  body { background: #fff; }
+  .report-sheet { border: 0; }
+  .report-sheet .table-wrap { overflow: visible; }
+  .watermark.light text { fill: rgba(18, 49, 63, 0.08); }
+}
+.filters label.field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; }
+.filters .field > label { font-size: 14px; font-weight: 600; }
+.filters label.field input, .filters label.field select { font-weight: 400; }
+.filters label.field { color: var(--ink); line-height: 1.5; }

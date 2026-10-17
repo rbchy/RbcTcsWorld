@@ -3,8 +3,36 @@ import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice, ORDER_STATUSES, when } from './common';
 import { addressLine } from '../../usStates';
+import { downloadText, toCsv } from '../../csv';
 
 const CARRIERS = ['UPS', 'FEDEX', 'USPS'];
+const NO_FILTER = { from: '', to: '', minTotal: '', maxTotal: '', carrier: '', coupon: '' };
+
+/** Date range in order, totals are money (2 decimals) and max not below min. */
+export function validateOrderSearch(f) {
+  const e = {};
+  const money = /^\d+(\.\d{1,2})?$/;
+  if (f.from && f.to && f.to < f.from) e.to = 'vEndBeforeStart';
+  if (f.minTotal.trim() && !money.test(f.minTotal.trim())) e.minTotal = 'vMoney';
+  if (f.maxTotal.trim() && !money.test(f.maxTotal.trim())) e.maxTotal = 'vMoney';
+  if (!e.minTotal && !e.maxTotal && f.minTotal.trim() && f.maxTotal.trim() && Number(f.maxTotal) < Number(f.minTotal)) {
+    e.maxTotal = 'vMaxBelowMin';
+  }
+  return e;
+}
+
+/** The order matches every filter that is filled in (dates are the day it was placed, local time). */
+export function matchesOrder(o, f) {
+  const day = o.createdAt ? o.createdAt.slice(0, 10) : '';
+  if (f.from && day < f.from) return false;
+  if (f.to && day > f.to) return false;
+  if (f.minTotal.trim() && Number(o.total) < Number(f.minTotal)) return false;
+  if (f.maxTotal.trim() && Number(o.total) > Number(f.maxTotal)) return false;
+  if (f.carrier && o.carrier !== f.carrier) return false;
+  if (f.coupon === 'yes' && !o.couponCode) return false;
+  if (f.coupon === 'no' && o.couponCode) return false;
+  return true;
+}
 
 export default function AdminOrders() {
   const { t } = useI18n();
@@ -14,6 +42,9 @@ export default function AdminOrders() {
   const [carrier, setCarrier] = useState({});
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
+  const [adv, setAdv] = useState(NO_FILTER);
+  const [applied, setApplied] = useState(NO_FILTER);
+  const [advErrors, setAdvErrors] = useState({});
 
   const load = () => api.get('/admin/orders').then(r => setRows(r.data)).catch(e => setError(errorText(e)));
   useEffect(() => { load(); }, []);
@@ -30,7 +61,28 @@ export default function AdminOrders() {
   const needle = q.trim().toLowerCase();
   const shown = (rows || []).slice().reverse()
     .filter(o => !status || o.status === status)
-    .filter(o => !needle || o.orderNumber.toLowerCase().includes(needle) || String(o.customerId) === needle);
+    .filter(o => !needle || o.orderNumber.toLowerCase().includes(needle) || String(o.customerId) === needle)
+    .filter(o => matchesOrder(o, applied));
+
+  const setA = k => e => setAdv({ ...adv, [k]: e.target.value });
+  const searchAdv = e => {
+    e.preventDefault();
+    const found = validateOrderSearch(adv);
+    setAdvErrors(found);
+    if (!Object.keys(found).length) setApplied(adv);
+  };
+  const exportShown = () => downloadText('orders.csv', toCsv(
+    ['order', 'placed', 'customerId', 'status', 'items', 'subtotal', 'discount', 'shipping', 'tax', 'total', 'coupon', 'carrier', 'tracking'],
+    shown.map(o => [o.orderNumber, o.createdAt, o.customerId, o.status, o.totalQuantity, Number(o.subtotal), Number(o.discount),
+      Number(o.shippingFee), Number(o.tax), Number(o.total), o.couponCode, o.carrier, o.trackingNumber])));
+  const field = (k, id, label, type = 'text') => (
+    <div className="field" key={k}>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} type={type} value={adv[k]} onChange={setA(k)} data-testid={id} aria-invalid={!!advErrors[k]}
+             inputMode={type === 'text' ? 'decimal' : undefined} aria-describedby={advErrors[k] ? `${id}-error` : undefined} />
+      {advErrors[k] && <span className="field-error" id={`${id}-error`} data-testid={`${id}-error`}>{t(advErrors[k])}</span>}
+    </div>
+  );
 
   return (
     <section data-testid="admin-orders">
@@ -46,6 +98,33 @@ export default function AdminOrders() {
         </div>
       </header>
       <Notice ok={ok} error={error} />
+      <form className="card filters" role="search" aria-label={t('advancedSearch')} onSubmit={searchAdv} noValidate
+            data-testid="order-adv-search">
+        {field('from', 'os-from', t('fromDate'), 'date')}
+        {field('to', 'os-to', t('toDate'), 'date')}
+        {field('minTotal', 'os-min', t('minTotal'))}
+        {field('maxTotal', 'os-max', t('maxTotal'))}
+        <label className="field">{t('carrier')}
+          <select value={adv.carrier} onChange={setA('carrier')} data-testid="os-carrier">
+            <option value="">{t('allCarriers')}</option>
+            {CARRIERS.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="field">{t('coupon')}
+          <select value={adv.coupon} onChange={setA('coupon')} data-testid="os-coupon">
+            <option value="">{t('any')}</option>
+            <option value="yes">{t('withCoupon')}</option>
+            <option value="no">{t('withoutCoupon')}</option>
+          </select>
+        </label>
+        <div className="filter-actions">
+          <button type="submit" data-testid="os-search">{t('search')}</button>
+          <button type="button" className="ghost" data-testid="os-reset"
+                  onClick={() => { setAdv(NO_FILTER); setAdvErrors({}); setApplied(NO_FILTER); }}>{t('reset')}</button>
+          <button type="button" className="ghost" onClick={exportShown} data-testid="os-export" disabled={!rows}>{t('auditExport')}</button>
+        </div>
+      </form>
+      {rows && <p className="small muted" data-testid="order-count">{t('ordersFound', { n: shown.length })}</p>}
       {!rows ? <p>{t('loading')}</p> : (
         <div className="table-wrap card">
           <table data-testid="admin-order-table">

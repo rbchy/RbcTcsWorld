@@ -21,7 +21,7 @@ public final class CustomerDtos {
     }
 
     /** The latest delivery address the customer used (null when they never ordered with one). */
-    public record LastAddress(String name, String line1, String line2, String city, String state, String zip,
+    public record LastAddress(String fullName, String line1, String line2, String city, String state, String zip,
                               String phone) {
     }
 

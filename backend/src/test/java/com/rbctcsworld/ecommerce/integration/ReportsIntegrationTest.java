@@ -87,7 +87,7 @@ class ReportsIntegrationTest {
 
     @Test
     void everyReportAnswersAndExportsAsCsv() throws Exception {
-        for (String name : new String[]{"sales", "top-products", "orders-by-status", "returns", "coupons", "low-stock", "inventory"}) {
+        for (String name : new String[]{"sales", "top-products", "orders-by-status", "returns", "coupons", "low-stock", "inventory", "stock-by-warehouse"}) {
             mvc.perform(as(get("/api/admin/reports/" + name), admin)).andExpect(status().isOk())
                     .andExpect(jsonPath("$.name").value(name));
         }
@@ -102,7 +102,7 @@ class ReportsIntegrationTest {
 
     @Test
     void wrongReportRequestsAreRefusedClearly() throws Exception {
-        mvc.perform(as(get("/api/admin/reports"), admin)).andExpect(jsonPath("$.length()").value(7));
+        mvc.perform(as(get("/api/admin/reports"), admin)).andExpect(jsonPath("$.length()").value(8));
         mvc.perform(as(get("/api/admin/reports/salary"), admin)).andExpect(status().isNotFound());
         mvc.perform(as(get("/api/admin/reports/sales?from=2026-02-01&to=2026-01-01"), admin)).andExpect(status().isBadRequest());
         mvc.perform(as(get("/api/admin/reports/sales?from=yesterday"), admin)).andExpect(status().isBadRequest());

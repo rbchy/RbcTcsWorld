@@ -29,7 +29,11 @@ public class Product {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
+    /**
+     * Total on hand in all warehouses. Never written by an entity update (only inserted): every change goes
+     * through an atomic SQL statement (InventoryService), so a stale entity can never overwrite it.
+     */
+    @Column(nullable = false, updatable = false)
     private int stock;
 
     @Column(nullable = false)

@@ -49,6 +49,9 @@ class ReportServiceTest {
                 + "discount_value numeric(12,2), active boolean)");
         jdbc.execute("create table products (id bigint primary key, sku varchar(100), name varchar(255), "
                 + "category varchar(100), stock int, price numeric(12,2), active boolean)");
+        jdbc.execute("create table warehouses (id bigint primary key, code varchar(10), city varchar(60), "
+                + "state varchar(2), priority int, active boolean)");
+        jdbc.execute("create table warehouse_stock (warehouse_id bigint, product_id bigint, quantity int)");
         service = new ReportService(jdbc, CLOCK);
 
         // id, status, items, subtotal, discount, shipping, tax, total, coupon, created, paid
@@ -70,6 +73,10 @@ class ReportServiceTest {
         jdbc.update("insert into products values (7, 'LAMP', 'Lamp', 'home', 3, 10.00, true), "
                 + "(8, 'DESK', 'Desk', 'home', 0, 60.00, true), (9, 'MUG', 'Mug', null, 50, 5.50, true), "
                 + "(10, 'GONE', 'Gone', 'home', 1, 99.00, false), (11, 'PEN', 'Pen', 'office', 5, 1.25, true)");
+        jdbc.update("insert into warehouses values (1, 'PIT', 'Pittsburgh', 'PA', 10, true), "
+                + "(2, 'NWK', 'Newark', 'NJ', 30, true), (3, 'OLD', 'Erie', 'PA', 5, false)");
+        // LAMP 3 = 2 PIT + 1 NWK; DESK 0 in PIT; MUG 50 in NWK; PEN 5 in PIT; GONE (not on sale) 1 in PIT
+        jdbc.update("insert into warehouse_stock values (1, 7, 2), (2, 7, 1), (1, 8, 0), (2, 9, 50), (1, 11, 5), (1, 10, 1)");
     }
 
     @AfterEach
@@ -222,5 +229,17 @@ class ReportServiceTest {
         for (String name : ReportService.NAMES) {
             assertThat(service.run(name, Options.none()).name()).isEqualTo(name);
         }
+    }
+
+    @Test
+    void stockByWarehouseShowsWhereTheUnitsAndTheirValueAre() {
+        ReportTable t = service.run("stock-by-warehouse", Options.none());
+        assertThat(t.from()).isNull();
+        assertThat(t.columns()).containsExactly("warehouse", "city", "usState", "state", "products", "units", "value");
+        assertThat(t.rows()).containsExactly(
+                r("OLD", "Erie", "PA", "DISABLED", 0L, 0L, m("0.00")),
+                r("PIT", "Pittsburgh", "PA", "ACTIVE", 2L, 7L, m("26.25")),     // LAMP 2 x 10.00 + PEN 5 x 1.25; DESK 0 not counted
+                r("NWK", "Newark", "NJ", "ACTIVE", 2L, 51L, m("285.00")));     // LAMP 1 x 10.00 + MUG 50 x 5.50
+        assertThat(t.totals()).isEqualTo(r("total", null, null, null, null, 58L, m("311.25")));
     }
 }

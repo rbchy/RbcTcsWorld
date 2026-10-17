@@ -33,7 +33,7 @@ import java.util.Map;
 public class ReportService {
 
     public static final List<String> NAMES = List.of("sales", "top-products", "orders-by-status", "returns",
-            "coupons", "low-stock", "inventory");
+            "coupons", "low-stock", "inventory", "stock-by-warehouse");
     public static final int MAX_DAYS = 366;
     static final String PAID = "'PAID', 'SHIPPED', 'DELIVERED', 'RETURN_REQUESTED'";
     static final List<String> STATUS_ORDER = List.of("PLACED", "PAID", "SHIPPED", "DELIVERED", "RETURN_REQUESTED",
@@ -64,6 +64,7 @@ public class ReportService {
             case "coupons" -> coupons(range(o));
             case "low-stock" -> lowStock(o.threshold());
             case "inventory" -> inventory();
+            case "stock-by-warehouse" -> stockByWarehouse();
             default -> throw new NotFoundException("No such report: " + name + " (reports: " + NAMES + ")");
         };
     }
@@ -217,6 +218,24 @@ public class ReportService {
                         money(rs.getBigDecimal("stock_value"))));
         return new ReportTable("inventory", null, null, List.of("category", "products", "units", "value"), rows,
                 totals(rows, 4, 1, 2, 3));
+    }
+
+    /** Where the stock is: units and their value per warehouse (products on sale). A snapshot: no dates. */
+    ReportTable stockByWarehouse() {
+        List<List<Object>> rows = jdbc.query("""
+                select w.code, w.city, w.state, w.active, coalesce(s.product_count, 0) as product_count,
+                       coalesce(s.unit_count, 0) as unit_count, coalesce(s.stock_value, 0) as stock_value
+                from warehouses w left join (
+                    select ws.warehouse_id, count(case when ws.quantity > 0 then 1 end) as product_count,
+                           sum(ws.quantity) as unit_count, sum(ws.quantity * p.price) as stock_value
+                    from warehouse_stock ws join products p on p.id = ws.product_id
+                    where p.active = true group by ws.warehouse_id) s on s.warehouse_id = w.id
+                order by w.priority, w.id""",
+                (rs, i) -> List.<Object>of(rs.getString("code"), rs.getString("city"), rs.getString("state"),
+                        rs.getBoolean("active") ? "ACTIVE" : "DISABLED", rs.getLong("product_count"),
+                        rs.getLong("unit_count"), money(rs.getBigDecimal("stock_value"))));
+        return new ReportTable("stock-by-warehouse", null, null,
+                List.of("warehouse", "city", "usState", "state", "products", "units", "value"), rows, totals(rows, 7, 5, 6));
     }
 
     // ------------------------------------------------------------------ helpers

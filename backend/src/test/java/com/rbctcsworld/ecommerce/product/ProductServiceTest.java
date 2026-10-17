@@ -328,4 +328,52 @@ class ProductServiceTest {
         when(repo.activeCategories()).thenReturn(List.of("books", "home"));
         assertThat(service.categories()).containsExactly("books", "home");
     }
+
+    // ---------------------------------------------------------------- similar products
+
+    private Product onSale(long id, String category, String price) {
+        Product p = new Product("P" + id, "SKU-" + id, category, new BigDecimal(price), 5);
+        ReflectionTestUtils.setField(p, "id", id);
+        return p;
+    }
+
+    @Test
+    void similarProductsComeFromTheSameCategoryNearestPriceFirst() {
+        Product lamp = onSale(1L, "home", "20.00");
+        Product mug = onSale(2L, "home", "18.00");
+        when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(lamp));
+        when(repo.similarInCategory(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq("home"),
+                org.mockito.ArgumentMatchers.eq(new BigDecimal("20.00")), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(List.of(mug));
+
+        assertThat(service.similar(1L, null)).containsExactly(mug);
+        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> page =
+                org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        verify(repo).similarInCategory(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq("home"),
+                org.mockito.ArgumentMatchers.eq(new BigDecimal("20.00")), page.capture());
+        assertThat(page.getValue().getPageNumber()).isZero();
+        assertThat(page.getValue().getPageSize()).isEqualTo(4);
+        verify(repo, org.mockito.Mockito.never()).similarByPrice(any(), any(), any());
+    }
+
+    @Test
+    void withoutACategorySimilarMeansTheClosestPrice() {
+        for (String none : new String[]{null, " "}) {
+            Product p = onSale(1L, none, "20.00");
+            when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(p));
+            when(repo.similarByPrice(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq(new BigDecimal("20.00")),
+                    any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of());
+            assertThat(service.similar(1L, 12)).isEmpty();
+        }
+        verify(repo, org.mockito.Mockito.never()).similarInCategory(any(), any(), any(), any());
+    }
+
+    @Test
+    void theNumberOfSimilarProductsIsLimitedAndTheProductMustBeOnSale() {
+        assertThatThrownBy(() -> service.similar(1L, 0)).isInstanceOf(BusinessRuleException.class)
+                .hasMessage("limit must be between 1 and 12");
+        assertThatThrownBy(() -> service.similar(1L, 13)).isInstanceOf(BusinessRuleException.class);
+        when(repo.findByIdAndActiveTrue(9L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.similar(9L, 1)).isInstanceOf(NotFoundException.class);
+    }
 }

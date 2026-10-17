@@ -79,6 +79,12 @@ public class ProductController {
         return service.categories();
     }
 
+    /** "Similar products" for the product page: same category, in stock first, closest price. */
+    @GetMapping("/{id}/similar")
+    public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
+        return service.similar(id, limit);
+    }
+
     @GetMapping("/{id}")
     public Product get(@PathVariable long id) {
         return service.get(id);

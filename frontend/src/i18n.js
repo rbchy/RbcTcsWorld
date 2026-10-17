@@ -350,6 +350,8 @@ const T = {
   vLimit100: ['Enter a whole number from 1 to 100.', '১ থেকে ১০০-এর মধ্যে পূর্ণ সংখ্যা দিন।', 'Introduce un número entero de 1 a 100.', 'Entrez un nombre entier de 1 à 100.', 'أدخل عددًا صحيحًا من 1 إلى 100.', '请输入 1 到 100 的整数。'],
   vThreshold: ['Enter a whole number from 0 to 1000.', '০ থেকে ১০০০-এর মধ্যে পূর্ণ সংখ্যা দিন।', 'Introduce un número entero de 0 a 1000.', 'Entrez un nombre entier de 0 à 1000.', 'أدخل عددًا صحيحًا من 0 إلى 1000.', '请输入 0 到 1000 的整数。'],
   vMaxBelowMin: ['The highest must not be below the lowest.', 'সর্বোচ্চ মান সর্বনিম্নের চেয়ে কম হতে পারে না।', 'El máximo no puede ser menor que el mínimo.', 'Le maximum ne peut pas être inférieur au minimum.', 'لا يمكن أن يقل الحد الأعلى عن الأدنى.', '最高值不能低于最低值。'],
+  similarTitle: ['Similar products', 'একই রকম পণ্য', 'Productos similares', 'Produits similaires', 'منتجات مشابهة', '相似商品'],
+  soldOut: ['sold out', 'স্টক শেষ', 'agotado', 'épuisé', 'نفد', '已售罄'],
   // ---- audit trail ----
   navAudit: ['Audit trail', 'অডিট ট্রেইল', 'Registro de auditoría', 'Piste d’audit', 'سجل التدقيق', '审计记录'],
   auditTitle: ['Audit trail', 'অডিট ট্রেইল', 'Registro de auditoría', 'Piste d’audit', 'سجل التدقيق', '审计记录'],

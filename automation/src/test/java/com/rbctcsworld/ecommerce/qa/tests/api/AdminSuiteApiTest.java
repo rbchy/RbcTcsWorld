@@ -168,4 +168,20 @@ class AdminSuiteApiTest {
         products.search(Map.of("minPrice", "10", "maxPrice", "5")).then().statusCode(400);
         products.categories().then().statusCode(200).body("$", hasItem(category));
     }
+
+    @Test
+    @DisplayName("Similar products: same category, in stock first, then the closest price; limit 1..12")
+    void similarProducts() {
+        String category = "sim-" + UUID.randomUUID().toString().substring(0, 8);
+        long[] ids = new long[3];
+        String[][] rows = {{"10.00", "5"}, {"12.00", "0"}, {"30.00", "2"}};
+        for (int i = 0; i < 3; i++) {
+            ids[i] = products.create(Fixtures.adminToken(), ProductClient.body("Sim " + i, TestData.uniqueSku(), category,
+                    new BigDecimal(rows[i][0]), Integer.parseInt(rows[i][1]))).then().statusCode(201).extract().<Integer>path("id");
+        }
+        products.similar(ids[0], null).then().statusCode(200)
+                .body("id", contains((int) ids[2], (int) ids[1]));        // 12.00 is closer but sold out
+        products.similar(ids[0], 13).then().statusCode(400);
+        products.similar(999_999_999L, null).then().statusCode(404);
+    }
 }

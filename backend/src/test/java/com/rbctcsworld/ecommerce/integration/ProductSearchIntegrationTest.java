@@ -64,6 +64,19 @@ class ProductSearchIntegrationTest {
     }
 
     @Test
+    void similarProductsAreFromTheSameCategoryInStockFirstThenClosestPrice() throws Exception {
+        long cheap = mapper.readTree(mvc.perform(get("/api/products?category=" + category + "&q=cheap"))
+                .andReturn().getResponse().getContentAsString()).get(0).get("id").asLong();
+        // dear (80.00) is in stock; middle (20.00) is closer in price but sold out, so it comes second
+        mvc.perform(get("/api/products/" + cheap + "/similar")).andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].name").value(contains("dear " + tag, "middle " + tag)));
+        mvc.perform(get("/api/products/" + cheap + "/similar?limit=1"))
+                .andExpect(jsonPath("$[*].name").value(contains("dear " + tag)));
+        mvc.perform(get("/api/products/" + cheap + "/similar?limit=13")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/products/999999/similar")).andExpect(status().isNotFound());
+    }
+
+    @Test
     void aPriceRangeThatMakesNoSenseIsRefused() throws Exception {
         mvc.perform(get("/api/products?minPrice=10&maxPrice=5")).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("maxPrice must not be below minPrice"));

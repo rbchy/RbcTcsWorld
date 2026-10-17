@@ -3,6 +3,7 @@ import api, { errorText, money } from '../api';
 import { getSession, go } from '../session';
 import Stars from './Stars';
 import ProductImage from '../ProductImage';
+import { useI18n } from '../i18n';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
 export default function ProductDetail({ id }) {
@@ -11,6 +12,13 @@ export default function ProductDetail({ id }) {
   const [sort, setSort] = useState('newest');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [similar, setSimilar] = useState([]);
+  const { t } = useI18n();
+
+  useEffect(() => {
+    setSimilar([]);
+    api.get(`/products/${id}/similar`, { params: { limit: 4 } }).then(r => setSimilar(r.data)).catch(() => setSimilar([]));
+  }, [id]);
 
   const load = async () => {
     try {
@@ -92,6 +100,23 @@ export default function ProductDetail({ id }) {
           </ul>
         </div>
       </div>
+      {similar.length > 0 && (
+        <section className="similar" aria-labelledby="similar-title" data-testid="similar-products">
+          <h2 id="similar-title">{t('similarTitle')}</h2>
+          <ul className="similar-grid">
+            {similar.map(sp => (
+              <li key={sp.id} data-testid="similar-product">
+                <a href={`#/products/${sp.id}`} className="similar-card">
+                  <ProductImage product={sp} alt="" className="similar-image" testId="similar-image" />
+                  <span className="similar-name">{sp.name}</span>
+                  <span className="similar-meta"><strong>{money(sp.price)}</strong>
+                    {sp.stock > 0 ? '' : <em className="muted"> · {t('soldOut')}</em>}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </section>
   );
 }

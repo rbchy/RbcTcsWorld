@@ -27,6 +27,15 @@ public class ProductClient extends ApiClient {
         return spec.get("/api/products");
     }
 
+    /** Catalog search with any query parameters (advanced search: category, minPrice, maxPrice, inStock ...). */
+    public Response search(Map<String, ?> query) {
+        return anonymous().queryParams(query).get("/api/products");
+    }
+
+    public Response categories() {
+        return anonymous().get("/api/products/categories");
+    }
+
     /** Raw GET for negative tests with malformed paths. */
     public Response anonymousGet(String path) {
         return anonymous().get(path);

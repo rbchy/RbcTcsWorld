@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.qa.api;
 
+import com.rbctcsworld.ecommerce.qa.testdata.TestData;
 import io.restassured.response.Response;
 
 import java.util.HashMap;
@@ -7,12 +8,18 @@ import java.util.Map;
 
 public class OrderClient extends ApiClient {
 
+    /** Places the cart as an order, delivered to TestData.ADDRESS. */
     public Response place(String token) {
-        return as(token).post("/api/orders");
+        return as(token).body(Map.of("shippingAddress", TestData.ADDRESS)).post("/api/orders");
     }
 
     public Response place(String token, String couponCode) {
-        return as(token).body(Map.of("couponCode", couponCode)).post("/api/orders");
+        return as(token).body(Map.of("couponCode", couponCode, "shippingAddress", TestData.ADDRESS)).post("/api/orders");
+    }
+
+    /** Any body, for the negative tests (no address, wrong fields). */
+    public Response placeWithBody(String token, Object body) {
+        return as(token).body(body).post("/api/orders");
     }
 
     public Response pay(String token, long orderId, String cardNumber, Integer expiryMonth, Integer expiryYear, String cvv) {

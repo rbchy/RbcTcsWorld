@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice, ORDER_STATUSES, when } from './common';
+import { addressLine } from '../../usStates';
 
 const CARRIERS = ['UPS', 'FEDEX', 'USPS'];
 
@@ -56,7 +57,8 @@ export default function AdminOrders() {
                 <tr key={o.id} data-testid="admin-order-row" data-order-id={o.id}>
                   <td>{o.orderNumber}</td>
                   <td className="small">{when(o.createdAt)}</td>
-                  <td>#{o.customerId}</td>
+                  <td>#{o.customerId}
+                    {o.shippingAddress && <div className="small muted" data-testid="aor-ship-to">{addressLine(o.shippingAddress)}</div>}</td>
                   <td><span className={`badge ${o.status}`} data-testid="aor-status">{o.status}</span>
                     {o.trackingNumber && <div className="small muted">{o.carrier} {o.trackingNumber}</div>}</td>
                   <td className="num">{money(o.total)}</td>

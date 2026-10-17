@@ -70,6 +70,18 @@ const T = {
   // ---- customer pages ----
   cartTitle: ['Your cart', 'আপনার কার্ট', 'Tu carrito', 'Votre panier', 'سلتك', '我的购物车'],
   checkoutTitle: ['Checkout', 'চেকআউট', 'Pago', 'Paiement', 'الدفع', '结账'],
+  shipToTitle: ['Delivery address', 'ডেলিভারির ঠিকানা', 'Dirección de entrega', 'Adresse de livraison', 'عنوان التوصيل', '收货地址'],
+  shipToLead: ['We ship inside the United States.', 'আমরা শুধু যুক্তরাষ্ট্রের ভেতরে পাঠাই।', 'Enviamos dentro de Estados Unidos.', 'Nous livrons aux États-Unis.', 'نشحن داخل الولايات المتحدة.', '我们仅在美国境内发货。'],
+  addrFullName: ['Full name', 'পুরো নাম', 'Nombre completo', 'Nom complet', 'الاسم الكامل', '姓名'],
+  addrLine1: ['Street address', 'রাস্তার ঠিকানা', 'Dirección', 'Adresse', 'عنوان الشارع', '街道地址'],
+  addrLine2: ['Apartment, suite (optional)', 'অ্যাপার্টমেন্ট, স্যুট (ঐচ্ছিক)', 'Apartamento, piso (opcional)', 'Appartement, étage (facultatif)', 'الشقة، الجناح (اختياري)', '公寓、单元（可选）'],
+  addrCity: ['City', 'শহর', 'Ciudad', 'Ville', 'المدينة', '城市'],
+  addrState: ['State', 'রাজ্য', 'Estado', 'État', 'الولاية', '州'],
+  addrZip: ['ZIP code', 'ZIP কোড', 'Código postal (ZIP)', 'Code postal (ZIP)', 'الرمز البريدي (ZIP)', '邮编 (ZIP)'],
+  addrPhone: ['Phone (optional)', 'ফোন (ঐচ্ছিক)', 'Teléfono (opcional)', 'Téléphone (facultatif)', 'الهاتف (اختياري)', '电话（可选）'],
+  addrChooseState: ['Choose a state', 'রাজ্য বেছে নিন', 'Elige un estado', 'Choisissez un État', 'اختر الولاية', '选择州'],
+  addrMissing: ['Please fill in this field', 'এই ঘরটা পূরণ করুন', 'Completa este campo', 'Veuillez remplir ce champ', 'يرجى ملء هذا الحقل', '请填写此项'],
+  shipsTo: ['Ships to', 'যেখানে যাবে', 'Se envía a', 'Livraison à', 'يُشحن إلى', '寄送至'],
   ordersTitle: ['Your orders', 'আপনার অর্ডার', 'Tus pedidos', 'Vos commandes', 'طلباتك', '我的订单'],
   wishlistTitle: ['Your wishlist', 'আপনার পছন্দের তালিকা', 'Tus favoritos', 'Votre liste d’envies', 'مفضلتك', '我的心愿单'],
   // ---- auth ----

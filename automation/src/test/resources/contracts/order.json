@@ -22,7 +22,8 @@
     "paidAt",
     "shippedAt",
     "deliveredAt",
-    "cancelledAt"
+    "cancelledAt",
+    "shippingAddress"
   ],
   "additionalProperties": false,
   "properties": {
@@ -169,6 +170,62 @@
         "null"
       ],
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}"
+    },
+    "shippingAddress": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Delivery address, a copy taken when the order was placed; null only for orders placed before addresses existed",
+      "required": [
+        "fullName",
+        "line1",
+        "line2",
+        "city",
+        "state",
+        "zip",
+        "phone"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "line1": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "line2": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "zip": {
+          "type": "string",
+          "pattern": "^\\d{5}(-\\d{4})?$"
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 20
+        }
+      }
     }
   }
 }

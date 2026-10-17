@@ -1,5 +1,6 @@
 import { test, expect } from '../support/fixtures';
 import { CatalogPage } from '../pages/catalog-page';
+import { ADDRESS, CheckoutPage } from '../pages/checkout-page';
 
 test.describe('Shopping journey', () => {
   test('customer buys with a coupon: a declined card first, then the test card @mobile', async ({ signedIn: page, api, customer }) => {
@@ -19,6 +20,10 @@ test.describe('Shopping journey', () => {
       await page.getByTestId('coupon-apply').click();
       await expect(page.getByTestId('price-discount')).toHaveText('-$6.00');
       await expect(page.getByTestId('price-shipping')).toHaveText('FREE');     // $54 after discount >= $50
+    });
+
+    await test.step('delivery address', async () => {
+      await new CheckoutPage(page).fillAddress(ADDRESS);
     });
 
     const total = await page.getByTestId('price-total').textContent();

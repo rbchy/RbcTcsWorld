@@ -69,7 +69,12 @@ export const addToCart = (token, productId, quantity, extra) =>
   post('/api/cart/items', { productId, quantity }, token, 'POST /api/cart/items', extra);
 export const clearCart = (token) => http.del(`${BASE_URL}/api/cart`, null, params(token, 'DELETE /api/cart'));
 export const quote = (token, couponCode) => post('/api/checkout/quote', couponCode ? { couponCode } : {}, token, 'POST /api/checkout/quote');
-export const placeOrder = (token, extra) => post('/api/orders', {}, token, 'POST /api/orders', extra);
+// every order needs a US delivery address (V12)
+export const SHIPPING_ADDRESS = {
+  fullName: 'K6 Buyer', line1: '1 Load Test Way', city: 'Pittsburgh', state: 'PA', zip: '15213',
+};
+export const placeOrder = (token, extra) =>
+  post('/api/orders', { shippingAddress: SHIPPING_ADDRESS }, token, 'POST /api/orders', extra);
 export const pay = (token, orderId) =>
   post(`/api/orders/${orderId}/pay`, { cardNumber: CARD_OK, expiryMonth: 12, expiryYear: 2035, cvv: '123' }, token, 'POST /api/orders/{id}/pay');
 export const myOrders = (token) => get('/api/orders', token, 'GET /api/orders');

@@ -67,7 +67,12 @@ class OrderDatabaseTest {
                 () -> assertEquals(-6, moves.stream().mapToInt(m -> ((Number) m.get("change_qty")).intValue()).sum()),
                 () -> assertEquals(3, OrderQueries.productStock(a)),
                 () -> assertEquals(6, OrderQueries.productStock(b)),
-                () -> assertEquals(0, OrderQueries.cartLineCount(c.email()), "cart emptied"));
+                () -> assertEquals(0, OrderQueries.cartLineCount(c.email()), "cart emptied"),
+                () -> assertEquals("Ada Lovelace", order.get("ship_name"), "delivery address stored on the order"),
+                () -> assertEquals("Apt 4", order.get("ship_line2")),
+                () -> assertEquals("PA", String.valueOf(order.get("ship_state")).trim()),
+                () -> assertEquals("15213", order.get("ship_zip")),
+                () -> assertEquals("412-555-0100", order.get("ship_phone")));
     }
 
     @Test

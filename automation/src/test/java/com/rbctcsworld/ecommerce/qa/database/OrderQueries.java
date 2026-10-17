@@ -11,7 +11,8 @@ public final class OrderQueries {
 
     public static Map<String, Object> order(long orderId) {
         List<Map<String, Object>> rows = DatabaseUtils.query(
-                "select id, order_number, status, total_items, subtotal, cancelled_at from orders where id = ?", orderId);
+                "select id, order_number, status, total_items, subtotal, cancelled_at, ship_name, ship_line1, ship_line2, ship_city,"
+                        + " ship_state, ship_zip, ship_phone from orders where id = ?", orderId);
         return rows.isEmpty() ? null : rows.get(0);
     }
 

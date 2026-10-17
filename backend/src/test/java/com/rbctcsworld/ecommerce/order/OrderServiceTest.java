@@ -188,6 +188,7 @@ class OrderServiceTest {
         verify(payments).refund(55L, new BigDecimal("27.19"));
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         verify(events).publishEvent(new com.rbctcsworld.ecommerce.notification.OrderNotificationEvent(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_CANCELLED, new BigDecimal("27.19")));
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(55L, "PAID", "CANCELLED"));
     }
 
     @Test
@@ -201,6 +202,7 @@ class OrderServiceTest {
 
         verify(payments, never()).refund(any(), any());
         verify(events).publishEvent(new com.rbctcsworld.ecommerce.notification.OrderNotificationEvent(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.ORDER_CANCELLED, null));   // no refund line in the e-mail
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(55L, "PLACED", "CANCELLED"));
     }
 
     @Test
@@ -288,6 +290,7 @@ class OrderServiceTest {
 
         verify(payments).charge(55L, new BigDecimal("27.19"), card);
         verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(55L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.PAYMENT_RECEIVED));
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(55L, "PLACED", "PAID"));
         assertThat(r.status()).isEqualTo(OrderStatus.PAID);
         assertThat(r.paidAt()).isNotNull();
         assertThat(r.createdAt()).isEqualTo(LocalDateTime.of(2026, 10, 1, 9, 30));

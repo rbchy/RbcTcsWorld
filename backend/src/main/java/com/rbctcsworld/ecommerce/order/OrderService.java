@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.order;
 
+import com.rbctcsworld.ecommerce.audit.AuditEvent;
 import com.rbctcsworld.ecommerce.auth.AppUser;
 import com.rbctcsworld.ecommerce.auth.UserRepository;
 import com.rbctcsworld.ecommerce.cart.CartItem;
@@ -130,7 +131,9 @@ public class OrderService {
         CustomerOrder order = owned(email, orderId);
         order.assertCanMoveTo(OrderStatus.PAID);                      // 409 before any money moves
         payments.charge(order.getId(), order.getTotal(), card);   // throws 400 / 402 on problems
+        String from = order.getStatus();
         order.markPaid();
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.PAYMENT_RECEIVED));
         return OrderResponse.from(order);
     }
@@ -168,7 +171,9 @@ public class OrderService {
             payments.refund(order.getId(), order.getTotal());
             refunded = order.getTotal();
         }
+        String from = order.getStatus();
         order.cancel();
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         events.publishEvent(new OrderNotificationEvent(order.getId(), OrderNotificationEvent.Type.ORDER_CANCELLED, refunded));
         return OrderResponse.from(order);
     }

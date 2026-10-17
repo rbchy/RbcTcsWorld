@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.returns;
 
+import com.rbctcsworld.ecommerce.audit.AuditEvent;
 import com.rbctcsworld.ecommerce.common.exception.BusinessRuleException;
 import com.rbctcsworld.ecommerce.common.exception.ConflictException;
 import com.rbctcsworld.ecommerce.common.exception.NotFoundException;
@@ -66,7 +67,9 @@ public class ReturnService {
             throw new BusinessRuleException("Return window of " + windowDays + " days has closed for order "
                     + order.getOrderNumber());
         }
+        String from = order.getStatus();
         order.transitionTo(OrderStatus.RETURN_REQUESTED, "Return requested: " + reason);
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         return returns.save(new ReturnRequest(order.getId(), reason, comment));
     }
 
@@ -83,7 +86,9 @@ public class ReturnService {
                             StockMovement.RETURN_RESTOCK));
         }
         payments.refund(order.getId(), refund);
+        String from = order.getStatus();
         order.transitionTo(OrderStatus.RETURNED, "Return approved, refunded " + refund);
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         r.approve(refund, restock, note);
         events.publishEvent(new OrderNotificationEvent(order.getId(), OrderNotificationEvent.Type.RETURN_APPROVED, refund));
         return r;
@@ -92,7 +97,9 @@ public class ReturnService {
     public ReturnRequest reject(Long returnId, String note) {
         ReturnRequest r = pending(returnId);
         CustomerOrder order = orders.findById(r.getOrderId()).orElseThrow();
+        String from = order.getStatus();
         order.transitionTo(OrderStatus.DELIVERED, "Return rejected" + (note == null ? "" : ": " + note));
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         r.reject(note);
         events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.RETURN_REJECTED));
         return r;

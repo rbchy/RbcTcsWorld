@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.fulfillment;
 
+import com.rbctcsworld.ecommerce.audit.AuditEvent;
 import com.rbctcsworld.ecommerce.common.exception.NotFoundException;
 import com.rbctcsworld.ecommerce.order.CustomerOrder;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
@@ -35,7 +36,9 @@ public class FulfillmentService {
     public OrderResponse ship(Long orderId, String carrier) {
         CustomerOrder order = order(orderId);
         order.assertCanMoveTo(OrderStatus.SHIPPED);
+        String from = order.getStatus();
         order.ship(carrier, newTrackingNumber(carrier));
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.ORDER_SHIPPED));
         return OrderResponse.from(order);
     }
@@ -43,7 +46,9 @@ public class FulfillmentService {
     /** 200 DELIVERED | 404 | 409 unless SHIPPED. */
     public OrderResponse deliver(Long orderId) {
         CustomerOrder order = order(orderId);
+        String from = order.getStatus();
         order.deliver();
+        events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.ORDER_DELIVERED));
         return OrderResponse.from(order);
     }

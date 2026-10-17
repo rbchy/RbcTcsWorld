@@ -78,6 +78,7 @@ class ReturnServiceTest {
 
         assertThat(r.getStatus()).isEqualTo(ReturnRequest.REQUESTED);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.RETURN_REQUESTED);
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(10L, "DELIVERED", "RETURN_REQUESTED"));
     }
 
     @Test
@@ -131,11 +132,15 @@ class ReturnServiceTest {
         assertThat(result.isRestocked()).isEqualTo(restock);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.RETURNED);
         verify(payments).refund(10L, new BigDecimal(refund));
-        org.mockito.ArgumentCaptor<com.rbctcsworld.ecommerce.notification.OrderNotificationEvent> event = org.mockito.ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.class);
-        verify(events).publishEvent(event.capture());
-        assertThat(event.getValue().orderId()).isEqualTo(10L);
-        assertThat(event.getValue().type()).isEqualTo(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_APPROVED);
-        assertThat(event.getValue().amount()).isEqualByComparingTo(refund);   // the e-mail states the refund
+        org.mockito.ArgumentCaptor<Object> published = org.mockito.ArgumentCaptor.forClass(Object.class);
+        verify(events, org.mockito.Mockito.times(2)).publishEvent(published.capture());
+        assertThat(published.getAllValues()).contains(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(10L, "RETURN_REQUESTED", "RETURNED"));
+        com.rbctcsworld.ecommerce.notification.OrderNotificationEvent event = published.getAllValues().stream()
+                .filter(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.class::isInstance)
+                .map(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.class::cast).findFirst().orElseThrow();
+        assertThat(event.orderId()).isEqualTo(10L);
+        assertThat(event.type()).isEqualTo(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_APPROVED);
+        assertThat(event.amount()).isEqualByComparingTo(refund);   // the e-mail states the refund
         if (restock) {
             verify(inventory).release(1L, 2, 10L, StockMovement.RETURN_RESTOCK);
         } else {
@@ -156,6 +161,7 @@ class ReturnServiceTest {
         assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
         verify(payments, never()).refund(any(), any());
         verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(10L, com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_REJECTED));
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.audit.AuditEvent.orderStatus(10L, "RETURN_REQUESTED", "DELIVERED"));
     }
 
     @Test

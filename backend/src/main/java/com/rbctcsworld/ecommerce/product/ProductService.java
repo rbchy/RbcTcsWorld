@@ -3,6 +3,9 @@ package com.rbctcsworld.ecommerce.product;
 import com.rbctcsworld.ecommerce.common.exception.BusinessRuleException;
 import com.rbctcsworld.ecommerce.common.exception.ConflictException;
 import com.rbctcsworld.ecommerce.common.exception.NotFoundException;
+import com.rbctcsworld.ecommerce.audit.AuditChange;
+import com.rbctcsworld.ecommerce.audit.AuditEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -10,15 +13,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
 public class ProductService {
 
     private final ProductRepository repo;
+    private final ApplicationEventPublisher events;
 
-    public ProductService(ProductRepository repo) {
+    public ProductService(ProductRepository repo, ApplicationEventPublisher events) {
         this.repo = repo;
+        this.events = events;
+    }
+
+    /** The product fields the audit trail follows (ratings change with every review and are not audited). */
+    static Map<String, Object> audited(Product p) {
+        return AuditChange.fields("name", p.getName(), "sku", p.getSku(), "category", p.getCategory(),
+                "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive());
+    }
+
+    private void audit(Product p, String action, Map<String, Object> before) {
+        events.publishEvent(AuditEvent.of(AuditChange.diff(AuditChange.PRODUCT, p.getId(), action, before, audited(p))));
     }
 
     public static final int DEFAULT_PAGE_SIZE = 20;
@@ -65,7 +81,9 @@ public class ProductService {
         }
         Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());
-        return repo.save(p);
+        Product saved = repo.save(p);
+        audit(saved, "PRODUCT_CREATED", null);
+        return saved;
     }
 
     public Product update(long id, ProductRequest r) {
@@ -74,15 +92,20 @@ public class ProductService {
         repo.findBySku(sku)
                 .filter(other -> !other.getId().equals(p.getId()))
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
+        Map<String, Object> before = audited(p);
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());                                  // PUT replaces: no imageUrl = no picture
-        return repo.save(p);
+        Product saved = repo.save(p);
+        audit(saved, "PRODUCT_UPDATED", before);
+        return saved;
     }
 
     /** Soft delete: keeps history for orders/audit, hides the product from customers. */
     public void delete(long id) {
         Product p = get(id);
+        Map<String, Object> before = audited(p);
         p.setActive(false);
         repo.save(p);
+        audit(p, "PRODUCT_DELETED", before);
     }
 }

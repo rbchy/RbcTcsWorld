@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { PriceTable } from './Checkout';
+import { addressLine } from '../usStates';
+import { useI18n } from '../i18n';
 
 /** One order: price breakdown, payment form, cancel, return request, payments and tracking timeline. */
 export default function OrderDetail({ id }) {
+  const { t } = useI18n();
   const [order, setOrder] = useState(null);
   const [tracking, setTracking] = useState(null);
   const [payments, setPayments] = useState([]);
@@ -46,6 +49,9 @@ export default function OrderDetail({ id }) {
             {order.items.map(i => <li key={i.productId} data-testid="order-item">{i.quantity} × {i.name} — {money(i.lineTotal)}</li>)}
           </ul>
           <PriceTable q={order} />
+          {order.shippingAddress && (
+            <p data-testid="order-ship-to"><strong>{t('shipsTo')}:</strong> {addressLine(order.shippingAddress)}</p>
+          )}
         </div>
         <div>
           {s === 'PLACED' && <PayForm onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')} />}

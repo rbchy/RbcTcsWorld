@@ -52,6 +52,13 @@ export class ShopApi {
     return r.json();
   }
 
+  async addToCart(token: string, productId: number, quantity = 1) {
+    const r = await this.request.post('/api/cart/items', {
+      headers: { Authorization: `Bearer ${token}` }, data: { productId, quantity },
+    });
+    expect(r.status(), await r.text()).toBe(201);
+  }
+
   async order(token: string, id: number): Promise<{ id: number; status: string; total: number }> {
     const r = await this.request.get(`/api/orders/${id}`, { headers: { Authorization: `Bearer ${token}` } });
     expect(r.ok()).toBeTruthy();

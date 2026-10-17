@@ -28,6 +28,11 @@ public class OrderPage extends BasePage {
         return text("order-status");
     }
 
+    /** "Ships to: Ada Lovelace, 12 Main St, ..." - the delivery address line. */
+    public String shipsTo() {
+        return text("order-ship-to");
+    }
+
     public String orderNumber() {
         return text("order-number");
     }

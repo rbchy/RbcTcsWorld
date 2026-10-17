@@ -64,6 +64,20 @@ class NotificationServiceTest {
     }
 
     @Test
+    void orderPlacedSaysWhereItShipsButNotThePhoneNumber() {
+        order.shipTo(new com.rbctcsworld.ecommerce.order.ShippingAddress("Ada Lovelace", "12 Main St", null,
+                "Pittsburgh", "PA", "15213", "412-555-0100"));
+        assertThat(mail(Type.ORDER_PLACED, null).body())
+                .contains("Ships to: Ada Lovelace, 12 Main St, Pittsburgh, PA 15213\n")
+                .doesNotContain("412-555-0100");
+    }
+
+    @Test
+    void anOrderFromBeforeAddressesHasNoShipsToLine() {
+        assertThat(mail(Type.ORDER_PLACED, null).body()).doesNotContain("Ships to");
+    }
+
+    @Test
     void noDiscountLineWithoutACoupon() {
         order.applyPricing(BigDecimal.ZERO, new BigDecimal("5.99"), new BigDecimal("1.50"), new BigDecimal("32.49"), null);
         assertThat(mail(Type.ORDER_PLACED, null).body()).doesNotContain("Discount").contains("Total $32.49");

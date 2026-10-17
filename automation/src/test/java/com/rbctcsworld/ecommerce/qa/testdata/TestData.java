@@ -24,6 +24,11 @@ public final class TestData {
     public static final String CARD_NO_FUNDS = "4000000000009995";
     public static final String CARD_BAD_LUHN = "4242424242424241";
 
+    /** A valid US delivery address (every order needs one). Pittsburgh, PA: 6 % sales tax like the shop. */
+    public static final java.util.Map<String, String> ADDRESS = java.util.Map.of(
+            "fullName", "Ada Lovelace", "line1", "12 Main St", "line2", "Apt 4", "city", "Pittsburgh",
+            "state", "PA", "zip", "15213", "phone", "412-555-0100");
+
     private TestData() {
     }
 

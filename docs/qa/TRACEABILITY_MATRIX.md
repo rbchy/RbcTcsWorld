@@ -52,6 +52,10 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-ORD-04 | Cancel restores stock exactly once (second cancel 409) and refunds a paid order | `OrderServiceTest#cancellingTwiceIsConflict`, `OrderServiceTest#cancellingAPaidOrderRefundsTheTotal`, `OrderIntegrationTest#cancelRestoresStockOnceAndRecordsMovement`, `OrderApiTest#cancelRestoresStockOnce`, `OrderDatabaseTest#cancelPersistsEverything`, `UiShoppingJourneyTest#cancelOrder`, `bdd:Cancelling an order gives the stock back`, `bdd:An order cannot be cancelled twice` | U I A B D UI | Pass |
 | REQ-ORD-05 | Order state machine allows only defined transitions; every change is on the timeline | `OrderStateMachineTest#transitionTable`, `OrderStateMachineTest#terminalStatesHaveNoExit`, `FulfillmentApiTest#stateRules`, `LifecycleDatabaseTest#timelineMatchesStatus`, `bdd:A shipped order can no longer be cancelled` | U A B D | Pass |
 | REQ-ORD-06 | Orders are private (IDOR 404) and need login | `OrderServiceTest#anotherCustomersOrderIsNotFound`, `OrderIntegrationTest#customerCannotSeeOrCancelSomeoneElsesOrder_IDOR`, `OrderApiTest#idor`, `OrderApiTest#requiresLogin` | U I A | Pass |
+| REQ-ORD-07 | Every order needs a US delivery address; without one -> 400 "Shipping address is required" and nothing is saved, reserved or removed from the cart | `OrderServiceTest#anOrderWithoutAnAddressIsRejectedBeforeAnythingIsSaved`, `OrderIntegrationTest#anOrderNeedsADeliveryAddressAndTheCartStaysAsItWas`, `ShippingAddressApiTest#anOrderNeedsAnAddress`, `UiCheckoutAddressTest#requiredFieldsAreNamed`, `playwright/tests/checkout.spec.ts` | U I A UI | Pass |
+| REQ-ORD-08 | Address rules: name 1-80, street 1-100, line 2 up to 100, city 1-60, a US state code (or DC), ZIP 12345 or 12345-6789, optional phone; each wrong field is named (400, fieldErrors) | `ShippingAddressTest#aZipMustBeFiveDigitsOrZipPlusFour`, `ShippingAddressTest#theStateMustBeAUsStateCode`, `ShippingAddressTest#aPhoneNumberThatIsGivenMustLookLikeOne`, `ShippingAddressTest#requiredFieldsAndLengthLimits`, `OrderIntegrationTest#anInvalidAddressNamesEveryWrongField`, `ShippingAddressApiTest#invalidFieldsAreNamed`, `ShippingAddressApiTest#acceptedEdgeCases`, `ShippingAddressApiTest#nameOverTheLimit`, `UiCheckoutAddressTest#serverMessageUnderTheField` | U I A UI | Pass |
+| REQ-ORD-09 | The address is stored on the order as typed but trimmed, the state in capitals; the order page and the order e-mail say where it ships (no phone number in the e-mail); the next checkout fills in the last address | `ShippingAddressTest#normalizedTrimsCapitalisesTheStateAndDropsEmptyOptionalFields`, `OrderServiceTest#theAddressIsStoredTrimmedWithTheStateInCapitals`, `NotificationServiceTest#orderPlacedSaysWhereItShipsButNotThePhoneNumber`, `OrderDatabaseTest#placeOrderPersistsEverything`, `UiCheckoutAddressTest#addressOnTheOrderAndRememberedForNextTime`, `playwright/tests/checkout.spec.ts` | U I A D UI | Pass |
+| REQ-ORD-10 | Privacy: only the customer and the store admin see an order's address; another customer gets 404 and the public tracking page never shows it | `OrderIntegrationTest#theAddressIsSavedWithTheOrderAndOnlyItsOwnerAndTheAdminSeeIt`, `FulfillmentReturnIntegrationTest#fullLifecycleWithTimelineAndPublicTracking`, `ShippingAddressApiTest#whoSeesTheAddress`, `ShippingAddressApiTest#htmlIsJustText` | I A S | Pass |
 
 ## Pricing, coupons, payments
 
@@ -148,11 +152,11 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | Identity and access | 11 | 11 | - |
 | Catalog | 5 | 5 | - |
 | Cart | 3 | 3 | - |
-| Orders and inventory | 6 | 6 | - |
+| Orders and inventory | 10 | 10 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
 | Fulfilment and returns | 6 | 6 | - |
 | Customer e-mails | 4 | 4 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 9 | 9 | - |
 | Non-functional | 16 | 16 | - |
-| **Total** | **83** | **83 (100 %)** | **0** |
+| **Total** | **87** | **87 (100 %)** | **0** |

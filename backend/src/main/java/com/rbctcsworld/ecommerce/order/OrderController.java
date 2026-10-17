@@ -20,7 +20,8 @@ import java.util.List;
 
 /**
  * Customer order API (JWT required).
- * POST /api/orders {couponCode?}    201 | 400 empty cart / coupon rule | 409 stock, coupon used
+ * POST /api/orders {couponCode?, shippingAddress}
+ *                                   201 | 400 empty cart / no or invalid address / coupon rule | 409 stock, coupon used
  * GET  /api/orders                  200 my orders (newest first)
  * GET  /api/orders/{id}             200 | 404 (missing or not mine)
  * POST /api/orders/{id}/pay {card}  200 PAID | 400 bad/expired card | 402 declined | 404 | 409 not payable
@@ -41,7 +42,8 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse place(Authentication auth, @Valid @RequestBody(required = false) CheckoutRequest body) {
-        return service.placeOrder(auth.getName(), body == null ? null : body.couponCode());
+        return service.placeOrder(auth.getName(), body == null ? null : body.couponCode(),
+                body == null ? null : body.shippingAddress());
     }
 
     @GetMapping

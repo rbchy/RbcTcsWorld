@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText } from '../api';
 import { go, saveSession } from '../session';
 import { useI18n } from '../i18n';
+import Watermark from '../Watermark';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -58,7 +59,22 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
   );
 
   return (
-    <section className="card narrow auth" data-mode={mode} data-testid="auth-card">
+    <div className="auth-page">
+    <aside className="auth-hero" data-testid="login-banner" aria-labelledby="auth-hero-title">
+      <Watermark tone="dark" />
+      <div className="hero-body">
+        <p className="hero-mark" aria-hidden="true">R</p>
+        <h2 id="auth-hero-title">{t('heroTitle')}</h2>
+        <p className="hero-lead">{t('heroLead')}</p>
+        <ul className="hero-points">
+          <li>{t('heroTrack')}</li>
+          <li>{t('heroPay')}</li>
+          <li>{t('heroReturn')}</li>
+        </ul>
+        <p className="hero-tag">RbcTcsWorld</p>
+      </div>
+    </aside>
+    <section className="card auth" data-mode={mode} data-testid="auth-card">
       <h1 data-testid="auth-title">{mode === 'login' ? t('loginTitle') : t('registerTitle')}</h1>
       <p className="muted">{mode === 'login' ? t('loginLead') : t('registerLead')}</p>
       <form onSubmit={submit} noValidate>
@@ -100,5 +116,6 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
         {mode === 'login' ? t('toRegister') : t('toLogin')}
       </button>
     </section>
+    </div>
   );
 }

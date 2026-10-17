@@ -63,7 +63,7 @@ class NotificationIntegrationTest {
         long productId = mapper.readTree(product).get("id").asLong();
         mvc.perform(as(post("/api/cart/items"), customer).content("{\"productId\":" + productId + ",\"quantity\":2}"))
                 .andExpect(status().isCreated());
-        String order = mvc.perform(as(post("/api/orders"), customer).content("{}"))
+        String order = mvc.perform(as(post("/api/orders"), customer).content(com.rbctcsworld.ecommerce.TestAddresses.ORDER_BODY))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         return mapper.readTree(order).get("id").asLong();
     }

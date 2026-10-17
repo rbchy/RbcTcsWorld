@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.order;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -11,8 +12,11 @@ public final class OrderDtos {
     private OrderDtos() {
     }
 
-    /** Optional body for POST /api/orders and POST /api/checkout/quote. */
-    public record CheckoutRequest(@Size(max = 40) String couponCode) {
+    /**
+     * Body of POST /api/orders and POST /api/checkout/quote. The quote ignores the address; placing an order
+     * needs one (400 "Shipping address is required" otherwise).
+     */
+    public record CheckoutRequest(@Size(max = 40) String couponCode, @Valid ShippingAddress shippingAddress) {
     }
 
     public record OrderLine(Long productId, String sku, String name, BigDecimal unitPrice,
@@ -29,7 +33,8 @@ public final class OrderDtos {
                                 String couponCode, BigDecimal discount, BigDecimal shippingFee,
                                 BigDecimal tax, BigDecimal total, String carrier, String trackingNumber,
                                 LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime shippedAt,
-                                LocalDateTime deliveredAt, LocalDateTime cancelledAt) {
+                                LocalDateTime deliveredAt, LocalDateTime cancelledAt,
+                                ShippingAddress shippingAddress) {
 
         public static OrderResponse from(CustomerOrder o) {
             List<OrderLine> lines = o.getItems().stream()
@@ -39,7 +44,7 @@ public final class OrderDtos {
             return new OrderResponse(o.getId(), o.getOrderNumber(), o.getUserId(), o.getStatus(), lines,
                     o.getTotalItems(), o.getSubtotal(), o.getCouponCode(), o.getDiscount(), o.getShippingFee(),
                     o.getTax(), o.getTotal(), o.getCarrier(), o.getTrackingNumber(), o.getCreatedAt(),
-                    o.getPaidAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt());
+                    o.getPaidAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt(), o.getShippingAddress());
         }
     }
 
@@ -47,7 +52,7 @@ public final class OrderDtos {
     }
 
     /**
-     * Tracking view. Deliberately contains NO customer id, email, prices or items, because the same shape
+     * Tracking view. Deliberately contains NO customer id, email, address, prices or items, because the same shape
      * is served by the PUBLIC endpoint GET /api/tracking/{trackingNumber}.
      */
     public record TrackingResponse(String orderNumber, String status, String carrier, String trackingNumber,

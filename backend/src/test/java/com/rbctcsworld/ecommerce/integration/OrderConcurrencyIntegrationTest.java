@@ -68,7 +68,7 @@ class OrderConcurrencyIntegrationTest {
             results.add(pool.submit(() -> {
                 start.await();                 // all threads fire together
                 try {
-                    orderService.placeOrder(email, null);
+                    orderService.placeOrder(email, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
                     return true;
                 } catch (RuntimeException rejected) {
                     return false;

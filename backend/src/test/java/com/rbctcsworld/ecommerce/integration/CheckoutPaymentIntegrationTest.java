@@ -79,8 +79,7 @@ class CheckoutPaymentIntegrationTest {
     }
 
     private ResultActions order(String token, String coupon) throws Exception {
-        return mvc.perform(as(post("/api/orders"), token)
-                .content(coupon == null ? "{}" : "{\"couponCode\":\"" + coupon + "\"}"));
+        return mvc.perform(as(post("/api/orders"), token).content(com.rbctcsworld.ecommerce.TestAddresses.orderBody(coupon)));
     }
 
     private long orderId(ResultActions r) throws Exception {

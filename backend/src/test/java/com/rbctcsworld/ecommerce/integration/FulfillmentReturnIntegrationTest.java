@@ -65,7 +65,7 @@ class FulfillmentReturnIntegrationTest {
     private long placed() throws Exception {
         mvc.perform(as(post("/api/cart/items"), customer).content("{\"productId\":" + productId + ",\"quantity\":2}"))
                 .andExpect(status().isCreated());
-        return json(mvc.perform(as(post("/api/orders"), customer)).andExpect(status().isCreated())).get("id").asLong();
+        return json(mvc.perform(as(post("/api/orders"), customer).content(com.rbctcsworld.ecommerce.TestAddresses.ORDER_BODY)).andExpect(status().isCreated())).get("id").asLong();
     }
 
     private long paid() throws Exception {
@@ -119,6 +119,8 @@ class FulfillmentReturnIntegrationTest {
                 .andExpect(jsonPath("$.status").value("DELIVERED"))
                 .andReturn().getResponse().getContentAsString();
         assertThat(publicBody).doesNotContain("customerId", "email", "total", "price", "@");
+        // ... and not the delivery address: a tracking number is printed on the parcel for anyone to see
+        assertThat(publicBody).doesNotContain("shippingAddress", "Lovelace", "Main St", "15213", "412-555");
 
         assertThat(jdbc.queryForObject("select count(*) from order_events where order_id = ?", Integer.class, id)).isEqualTo(4);
     }

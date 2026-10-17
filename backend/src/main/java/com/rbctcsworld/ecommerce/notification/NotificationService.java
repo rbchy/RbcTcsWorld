@@ -61,7 +61,8 @@ public class NotificationService {
         return switch (event.type()) {
             case ORDER_PLACED -> new Email("Order " + no + " received - " + money(o.getTotal()),
                     "Thank you for your order " + no + ".\n\n" + lines(o.getItems())
-                            + "\n" + totals(o) + "\nNext step: pay the order in My orders. We reserve the items for you.");
+                            + "\n" + totals(o) + shipsTo(o)
+                            + "\nNext step: pay the order in My orders. We reserve the items for you.");
             case PAYMENT_RECEIVED -> new Email("Payment received for order " + no,
                     "We received your payment of " + money(o.getTotal()) + " for order " + no
                             + ".\nWe will e-mail you again when it ships.");
@@ -90,6 +91,11 @@ public class NotificationService {
         return items.stream()
                 .map(i -> "  " + i.getQuantity() + " x " + i.getProductName() + "  " + money(i.getLineTotal()))
                 .collect(Collectors.joining("\n")) + "\n";
+    }
+
+    /** "Ships to: ..." - no phone number in an e-mail; empty for orders placed before addresses existed. */
+    private static String shipsTo(CustomerOrder o) {
+        return o.getShippingAddress() == null ? "" : "Ships to: " + o.getShippingAddress().oneLine() + "\n";
     }
 
     private static String totals(CustomerOrder o) {

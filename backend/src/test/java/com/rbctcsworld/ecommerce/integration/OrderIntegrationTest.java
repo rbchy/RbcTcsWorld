@@ -76,7 +76,7 @@ class OrderIntegrationTest {
     }
 
     private ResultActions placeOrder(String token) throws Exception {
-        return mvc.perform(as(post("/api/orders"), token));
+        return mvc.perform(as(post("/api/orders"), token).content(com.rbctcsworld.ecommerce.TestAddresses.ORDER_BODY));
     }
 
     private int dbStock(long productId) {
@@ -193,6 +193,53 @@ class OrderIntegrationTest {
         mvc.perform(as(get("/api/orders/" + orderId), intruder)).andExpect(status().isNotFound());
         mvc.perform(as(post("/api/orders/" + orderId + "/cancel"), intruder)).andExpect(status().isNotFound());
         assertThat(dbStock(p)).isEqualTo(4);
+    }
+
+    @Test
+    void anOrderNeedsADeliveryAddressAndTheCartStaysAsItWas() throws Exception {
+        long p = product("10.00", 5);
+        addToCart(customer, p, 1);
+
+        mvc.perform(as(post("/api/orders"), customer).content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Shipping address is required"));
+        mvc.perform(as(get("/api/cart"), customer)).andExpect(jsonPath("$.items.length()").value(1));
+        assertThat(dbStock(p)).isEqualTo(5);
+    }
+
+    @Test
+    void anInvalidAddressNamesEveryWrongField() throws Exception {
+        addToCart(customer, product("10.00", 5), 1);
+        String body = "{\"shippingAddress\":{\"fullName\":\"\",\"line1\":\"12 Main St\",\"city\":\"Pittsburgh\","
+                + "\"state\":\"ZZ\",\"zip\":\"ABCDE\",\"phone\":\"call me\"}}";
+
+        mvc.perform(as(post("/api/orders"), customer).content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.fieldErrors['shippingAddress.fullName']").exists())
+                .andExpect(jsonPath("$.fieldErrors['shippingAddress.state']").value("must be a US state code such as PA"))
+                .andExpect(jsonPath("$.fieldErrors['shippingAddress.zip']").value("must be a US ZIP code: 12345 or 12345-6789"))
+                .andExpect(jsonPath("$.fieldErrors['shippingAddress.phone']").exists());
+    }
+
+    @Test
+    void theAddressIsSavedWithTheOrderAndOnlyItsOwnerAndTheAdminSeeIt() throws Exception {
+        addToCart(customer, product("10.00", 5), 1);
+        String typed = "{\"shippingAddress\":{\"fullName\":\" Ada Lovelace \",\"line1\":\"12 Main St\","
+                + "\"city\":\"Pittsburgh\",\"state\":\"pa\",\"zip\":\"15213-0001\"}}";
+        long orderId = mapper.readTree(mvc.perform(as(post("/api/orders"), customer).content(typed))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.shippingAddress.fullName").value("Ada Lovelace"))
+                .andExpect(jsonPath("$.shippingAddress.state").value("PA"))
+                .andExpect(jsonPath("$.shippingAddress.line2").value(org.hamcrest.Matchers.nullValue()))
+                .andReturn().getResponse().getContentAsString()).get("id").asLong();
+
+        assertThat(jdbc.queryForObject("select ship_state || ' ' || ship_zip from orders where id = ?", String.class, orderId))
+                .isEqualTo("PA 15213-0001");
+        mvc.perform(as(get("/api/orders/" + orderId), customer)).andExpect(jsonPath("$.shippingAddress.city").value("Pittsburgh"));
+        mvc.perform(as(get("/api/orders/" + orderId), register())).andExpect(status().isNotFound());
+        mvc.perform(as(get("/api/admin/orders"), admin))
+                .andExpect(jsonPath("$[?(@.id == " + orderId + ")].shippingAddress.zip").value(org.hamcrest.Matchers.contains("15213-0001")));
     }
 
     @Test

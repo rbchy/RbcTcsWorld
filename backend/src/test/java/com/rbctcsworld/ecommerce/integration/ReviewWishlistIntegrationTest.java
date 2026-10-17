@@ -237,7 +237,7 @@ class ReviewWishlistIntegrationTest {
     private long placeAndPay(String token, long product) throws Exception {
         mvc.perform(as(post("/api/cart/items"), token).content("{\"productId\":" + product + ",\"quantity\":1}"))
                 .andExpect(status().isCreated());
-        long id = json(mvc.perform(as(post("/api/orders"), token)).andExpect(status().isCreated())).get("id").asLong();
+        long id = json(mvc.perform(as(post("/api/orders"), token).content(com.rbctcsworld.ecommerce.TestAddresses.ORDER_BODY)).andExpect(status().isCreated())).get("id").asLong();
         mvc.perform(as(post("/api/orders/" + id + "/pay"), token)
                         .content("{\"cardNumber\":\"4242424242424242\",\"expiryMonth\":12,\"expiryYear\":2035,\"cvv\":\"123\"}"))
                 .andExpect(status().isOk());

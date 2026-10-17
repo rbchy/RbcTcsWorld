@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Place order = ONE database transaction:
- *   1. read the customer's cart (400 if empty)
+ *   1. read the customer's cart (400 if empty) and check that there is a delivery address (400 if not)
  *   2. validate the optional coupon and calculate discount, shipping, tax, total
  *   3. for every line (sorted by product id to avoid deadlocks) reserve stock atomically (409 if not possible)
  *   4. save order + items + stock movements + coupon redemption
@@ -89,11 +89,15 @@ public class OrderService {
                 p.discount(), p.shippingFee(), p.tax(), p.total());
     }
 
-    public OrderResponse placeOrder(String email, String couponCode) {
+    public OrderResponse placeOrder(String email, String couponCode, ShippingAddress address) {
         AppUser user = user(email);
         List<CartItem> lines = cartLines(user);
+        if (address == null) {
+            throw new BusinessRuleException("Shipping address is required");
+        }
 
         CustomerOrder order = new CustomerOrder(newOrderNumber(), user.getId());
+        order.shipTo(address.normalized());
         for (CartItem line : lines) {
             Product p = line.getProduct();
             order.addItem(new OrderItem(p.getId(), p.getSku(), p.getName(), p.getPrice(), line.getQuantity()));

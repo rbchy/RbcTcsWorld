@@ -82,7 +82,7 @@ class OrderServiceTest {
     void emptyCartCannotBeOrdered() {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.placeOrder(EMAIL, null))
+        assertThatThrownBy(() -> service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS))
                 .isInstanceOf(BusinessRuleException.class).hasMessage("Cart is empty");
         verify(orders, never()).save(any());
     }
@@ -93,7 +93,7 @@ class OrderServiceTest {
         when(cartItems.findByUserIdOrderByIdAsc(7L))
                 .thenReturn(List.of(new CartItem(7L, keyboard, 1), new CartItem(7L, mouse, 2)));
 
-        OrderResponse r = service.placeOrder(EMAIL, null);
+        OrderResponse r = service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
 
         assertThat(r.status()).isEqualTo(OrderStatus.PLACED);
         assertThat(r.orderNumber()).matches("ORD-\\d{8}-[A-HJ-NP-Z2-9]{6}");
@@ -113,11 +113,34 @@ class OrderServiceTest {
     }
 
     @Test
+    void anOrderWithoutAnAddressIsRejectedBeforeAnythingIsSaved() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+
+        assertThatThrownBy(() -> service.placeOrder(EMAIL, null, null))
+                .isInstanceOf(BusinessRuleException.class).hasMessage("Shipping address is required");
+        verify(orders, never()).save(any());
+        verifyNoInteractions(inventory, coupons);
+        verify(cartItems, never()).deleteByUserId(any());
+    }
+
+    @Test
+    void theAddressIsStoredTrimmedWithTheStateInCapitals() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+        ShippingAddress typed = new ShippingAddress("  Ada Lovelace ", " 12 Main St ", "   ", " Pittsburgh ", " pa ",
+                " 15213-0001 ", "  ");
+
+        OrderResponse r = service.placeOrder(EMAIL, null, typed);
+
+        assertThat(r.shippingAddress()).isEqualTo(
+                new ShippingAddress("Ada Lovelace", "12 Main St", null, "Pittsburgh", "PA", "15213-0001", null));
+    }
+
+    @Test
     void stockFailureLeavesCartUntouched() {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 2)));
         doThrow(new ConflictException("Insufficient stock")).when(inventory).reserve(eq(mouse), anyInt(), any());
 
-        assertThatThrownBy(() -> service.placeOrder(EMAIL, null)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS)).isInstanceOf(ConflictException.class);
         verify(cartItems, never()).deleteByUserId(any());
     }
 
@@ -215,7 +238,7 @@ class OrderServiceTest {
     void blankCouponCodeMeansNoCoupon() {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
 
-        OrderResponse r = service.placeOrder(EMAIL, "   ");
+        OrderResponse r = service.placeOrder(EMAIL, "   ", com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
 
         assertThat(r.couponCode()).isNull();
         assertThat(r.discount()).isEqualByComparingTo("0.00");
@@ -229,7 +252,7 @@ class OrderServiceTest {
         Coupon save10 = new Coupon("SAVE10", Coupon.PERCENT, new BigDecimal("10"), null, null, null, null);
         when(coupons.validate(eq("save10"), eq(7L), any())).thenReturn(save10);
 
-        OrderResponse r = service.placeOrder(EMAIL, "save10");
+        OrderResponse r = service.placeOrder(EMAIL, "save10", com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
 
         assertThat(r.couponCode()).isEqualTo("SAVE10");
         assertThat(r.discount()).isEqualByComparingTo("5.00");
@@ -244,7 +267,7 @@ class OrderServiceTest {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
         ArgumentCaptor<CustomerOrder> saved = ArgumentCaptor.forClass(CustomerOrder.class);
 
-        service.placeOrder(EMAIL, null);
+        service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
 
         verify(orders).save(saved.capture());
         assertThat(saved.getValue().getItems()).allSatisfy(item ->

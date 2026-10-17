@@ -77,6 +77,28 @@ public class CustomerOrder {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    // delivery address: a copy taken when the order is placed (V12); null for orders placed before
+    @Column(name = "ship_name", length = 80)
+    private String shipName;
+
+    @Column(name = "ship_line1", length = 100)
+    private String shipLine1;
+
+    @Column(name = "ship_line2", length = 100)
+    private String shipLine2;
+
+    @Column(name = "ship_city", length = 60)
+    private String shipCity;
+
+    @Column(name = "ship_state", length = 2)
+    private String shipState;
+
+    @Column(name = "ship_zip", length = 10)
+    private String shipZip;
+
+    @Column(name = "ship_phone", length = 20)
+    private String shipPhone;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     private List<OrderItem> items = new ArrayList<>();
@@ -114,6 +136,23 @@ public class CustomerOrder {
         this.tax = tax;
         this.total = total;
         this.couponCode = couponCode;
+    }
+
+    /** Stores where the order goes (expects a normalized address). */
+    public void shipTo(ShippingAddress a) {
+        this.shipName = a.fullName();
+        this.shipLine1 = a.line1();
+        this.shipLine2 = a.line2();
+        this.shipCity = a.city();
+        this.shipState = a.state();
+        this.shipZip = a.zip();
+        this.shipPhone = a.phone();
+    }
+
+    /** The delivery address, or null for an order placed before addresses existed. */
+    public ShippingAddress getShippingAddress() {
+        return shipName == null ? null
+                : new ShippingAddress(shipName, shipLine1, shipLine2, shipCity, shipState, shipZip, shipPhone);
     }
 
     // ------------------------------------------------------------ state machine

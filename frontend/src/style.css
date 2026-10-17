@@ -364,3 +364,13 @@ td.actions button + button { margin-inline-start: 6px; }
 .filters .field > label { font-size: 14px; font-weight: 600; }
 .filters label.field input, .filters label.field select { font-weight: 400; }
 .filters label.field { color: var(--ink); line-height: 1.5; }
+
+/* ---------- similar products (product page) ---------- */
+.similar { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 4px; }
+.similar-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.similar-card { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); padding: 8px;
+  border: 1px solid var(--line); border-radius: var(--radius); height: 100%; }
+.similar-card:hover { border-color: var(--accent); }
+.similar-image { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
+.similar-name { font-weight: 600; font-size: 15px; }
+.similar-meta { font-size: 14px; }

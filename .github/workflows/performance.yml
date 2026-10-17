@@ -9,10 +9,10 @@ on:
       test:
         description: Which test
         type: choice
-        options: [load, stress, spike, soak, flash-sale, smoke]
+        options: [load, stress, spike, soak, flash-sale, smoke, jmeter]
         default: load
       args:
-        description: Extra k6 options, e.g. "-e HOLD=10m -e BROWSERS=80" or "-e DURATION=1h"
+        description: Extra options. k6 e.g. "-e HOLD=10m -e BROWSERS=80"; jmeter e.g. "-Jusers=100 -Jloops=5 -Jrampup=30"
         required: false
         default: ''
 
@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   k6:
+    if: inputs.test != 'jmeter'
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     services:
@@ -62,4 +63,54 @@ jobs:
           name: k6-${{ inputs.test }}-report
           path: |
             performance/reports/
+            backend.log
+
+  # Apache JMeter: the shop journey register -> login -> search -> add to cart (performance/jmeter).
+  # Default 50 users x 5 loops; "-Jusers=100" for 100. p95 per step and the error rate are checked
+  # against the SLOs by performance/jmeter/summary.py; the HTML dashboard is uploaded as an artifact.
+  jmeter:
+    if: inputs.test == 'jmeter'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_DB: ecommerce, POSTGRES_USER: ecommerce, POSTGRES_PASSWORD: ecommerce }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ecommerce" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - name: Build and start backend
+        run: |
+          mvn -B -f backend/pom.xml -DskipTests package
+          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health && break; sleep 2; done
+      - name: Install Apache JMeter 5.6.3
+        run: |
+          base=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
+          curl -sSfL -o jmeter.tgz "$base"
+          # verify against Apache's published SHA-512 before unpacking
+          expected=$(curl -sSfL "$base.sha512" | awk '{print $1}')
+          actual=$(sha512sum jmeter.tgz | awk '{print $1}')
+          [ -n "$expected" ] && [ "$expected" = "$actual" ] || { echo "JMeter checksum mismatch"; exit 1; }
+          tar xzf jmeter.tgz
+      - name: JMeter shop journey
+        env: { ARGS: '${{ inputs.args }}' }
+        run: |
+          # shellcheck disable=SC2086
+          apache-jmeter-5.6.3/bin/jmeter -n -t performance/jmeter/shop-journey.jmx -Jhost=localhost -Jport=8081 $ARGS \
+            -l jmeter-results.jtl -e -o jmeter-report
+      - name: p95 and error rate against the SLOs
+        if: always()
+        run: python3 performance/jmeter/summary.py jmeter-results.jtl
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: jmeter-report
+          path: |
+            jmeter-report/
+            jmeter-results.jtl
             backend.log

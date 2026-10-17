@@ -15,6 +15,24 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
+    /**
+     * "Similar products": others on sale in the same category (case-insensitive), the closest price first,
+     * products in stock before sold-out ones. Without a category: the closest price among all products.
+     */
+    @Query("""
+            select p from Product p
+            where p.active = true and p.id <> :id and lower(p.category) = lower(:category)
+            order by case when p.stock > 0 then 0 else 1 end, abs(p.price - :price), p.id""")
+    List<Product> similarInCategory(@Param("id") Long id, @Param("category") String category,
+                                    @Param("price") java.math.BigDecimal price, Pageable pageable);
+
+    /** For a product without a category: the closest price among all products on sale. */
+    @Query("""
+            select p from Product p
+            where p.active = true and p.id <> :id
+            order by case when p.stock > 0 then 0 else 1 end, abs(p.price - :price), p.id""")
+    List<Product> similarByPrice(@Param("id") Long id, @Param("price") java.math.BigDecimal price, Pageable pageable);
+
     /** The categories of the products on sale, for the catalog's category filter. */
     @Query("select distinct p.category from Product p where p.active = true and p.category is not null order by p.category")
     List<String> activeCategories();

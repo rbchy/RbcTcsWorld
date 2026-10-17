@@ -96,6 +96,23 @@ public class ProductService {
         };
     }
 
+    public static final int MAX_SIMILAR = 12;
+
+    /**
+     * Up to {@code limit} (1..12, default 4) products like this one: same category, in stock first,
+     * closest price first. 404 when the product itself is not on sale.
+     */
+    @Transactional(readOnly = true)
+    public List<Product> similar(long id, Integer limit) {
+        int n = limit == null ? 4 : limit;
+        if (n < 1 || n > MAX_SIMILAR) throw new BusinessRuleException("limit must be between 1 and " + MAX_SIMILAR);
+        Product p = get(id);
+        PageRequest first = PageRequest.of(0, n);
+        return p.getCategory() == null || p.getCategory().isBlank()
+                ? repo.similarByPrice(p.getId(), p.getPrice(), first)
+                : repo.similarInCategory(p.getId(), p.getCategory(), p.getPrice(), first);
+    }
+
     @Transactional(readOnly = true)
     public List<String> categories() {
         return repo.activeCategories();

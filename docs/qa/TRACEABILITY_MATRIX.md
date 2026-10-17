@@ -36,6 +36,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-CAT-03 | Unknown product -> 404 JSON (not 500); non-numeric id -> 400 | `ApiIntegrationTest#missingProductIs404NotA500`, `ProductApiTest#missingProduct`, `ProductApiTest#badId`, `bdd:Unknown product returns 404 with a JSON error` | I A B | Pass |
 | REQ-CAT-04 | Catalog list is paginated: size 1..100 (default 20), stable sorts, totals and Link headers, bounded response size ([DEF-007](DEFECT_REPORTS.md#def-007)) | `ProductServiceTest#invalidPageSizeOrSortIs400`, `ProductServiceTest#requestedPageAndStableSortReachTheDatabase`, `ProductServiceTest#nameSortIgnoresCaseAndEndsWithIdSoPagesAreStable`, `ApiIntegrationTest#catalogIsPaginatedWithTotalsAndLinks_DEF007`, `CatalogPaginationTest#defaultPageIsBounded`, `CatalogPaginationTest#walkAllPages`, `CatalogPaginationTest#linkHeader`, `CatalogPaginationTest#boundaries`, `CatalogPaginationTest#sorting`, `CatalogPaginationTest#responseSizeIsBounded`, `HomePageUiTest#loadMore`, k6 `performance/tests/catalog.js` | U I A UI P | Pass |
 | REQ-CAT-05 | Every product has a picture: the 8 seeded products their own, others the category picture (also when a link fails to load). An admin may set `/products/<name>.svg/png/jpg/webp` or an `https://` link; `javascript:`, `data:`, `http://`, `../` and quotes are refused with 400 | `ProductServiceTest#createKeepsThePicture`, `ProductServiceTest#updateReplacesOrRemovesThePicture`, `ProductServiceTest#blankPictureMeansNone`, `ApiIntegrationTest#seededProductsHaveTheirPictures`, `ApiIntegrationTest#unsafePictureLinksAre400`, `ApiIntegrationTest#adminCanGiveAProductAPicture`, `ApiContractTest#catalogContract`, `HomePageUiTest#seededProductPictures`, `HomePageUiTest#productWithoutPictureGetsTheFallback`, `UiAdminProductsTest#productPicture` | U I A UI | Pass |
+| REQ-CAT-06 | The product page suggests up to 4 similar products (1-12 by API): same category, in stock first, then the closest price; without a category the closest price overall; 404 for a product not on sale | `ProductServiceTest#similarProductsComeFromTheSameCategoryNearestPriceFirst`, `ProductServiceTest#withoutACategorySimilarMeansTheClosestPrice`, `ProductServiceTest#theNumberOfSimilarProductsIsLimitedAndTheProductMustBeOnSale`, `ProductSearchIntegrationTest#similarProductsAreFromTheSameCategoryInStockFirstThenClosestPrice`, `AdminSuiteApiTest#similarProducts`, `playwright/tests/catalog.spec.ts` | U I A UI | Pass |
 
 ## Cart
 
@@ -157,6 +158,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 |---|---|---|---|---|
 | NFR-PERF-01 | At 50 users: read p95 < 500 ms, write p95 < 1000 ms, purchase journey p95 < 3 s, errors < 1 %, checks > 99 % | k6 `performance/tests/smoke.js` (every build), k6 `performance/tests/load.js` | P | Pass (load p95 4 ms CI, 20 ms Mac) |
 | NFR-PERF-02 | Correct under a rush: exactly STOCK orders succeed, no 5xx, stock ends at 0 | k6 `performance/tests/flash-sale.js`, `InventoryConcurrencyTest#flashSale` | P A | Pass (300 buyers / 50 units) |
+| NFR-PERF-03 | JMeter shop journey (register, login, search, add to cart) at 50 and 100 users: error rate below 1 % and p95 below 1000 ms per step (search below 500 ms) | JMeter `performance/jmeter/shop-journey.jmx`, `performance/jmeter/summary.py` (workflow "Performance (manual)", test jmeter) | P | Pass (50 users: p95 93 ms, 100 users: p95 77 ms, 0 % errors) |
 | NFR-SEC-01 | Security headers on every response; no CORS for foreign origins; no stack traces; actuator shows health only | `SecurityIntegrationTest#securityHeadersOnPublicAndErrorResponses`, `SecurityIntegrationTest#foreignWebsitesGetNoCorsPermission`, `SecurityIntegrationTest#unexpectedErrorsDoNotLeakInternals`, `SecurityIntegrationTest#onlyTheHealthEndpointOfActuatorIsReachable`, `InputAndExposureTest#securityHeaders`, `InputAndExposureTest#noCorsForForeignOrigins`, `InputAndExposureTest#cleanErrors`, `InputAndExposureTest#healthWithoutDetails` | I A S | Pass |
 | NFR-SEC-02 | Injection and malformed input never succeed and never cause 5xx | `InputAndExposureTest#sqlInjectionInSearch`, `InputAndExposureTest#sqlInjectionInLogin`, `InputAndExposureTest#oddPaths`, `InputAndExposureTest#oversizedInput`, `InputAndExposureTest#badBodies`, `InputAndExposureTest#malformedQueryStrings`, OWASP ZAP API scan | A S | Pass (ZAP: 0 medium/high) |
 | NFR-SEC-03 | No shipped library with an unaccepted critical vulnerability; every accepted one has a reason, a guard test and an expiry | OSV-Scanner gate in CI, `SecurityIntegrationTest#noXsltViewRenderingIsConfigured_CVE_2026_47884` | I S | Pass (0 open, 0 accepted since Spring Boot 4.1) |
@@ -177,7 +179,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 14 | 14 | - |
-| Catalog | 5 | 5 | - |
+| Catalog | 6 | 6 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 10 | 10 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
@@ -187,5 +189,5 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Storefront UI | 9 | 9 | - |
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
-| Non-functional | 16 | 16 | - |
-| **Total** | **102** | **102 (100 %)** | **0** |
+| Non-functional | 17 | 17 | - |
+| **Total** | **104** | **104 (100 %)** | **0** |

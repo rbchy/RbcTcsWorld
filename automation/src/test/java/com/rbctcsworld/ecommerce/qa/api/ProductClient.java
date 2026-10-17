@@ -32,6 +32,13 @@ public class ProductClient extends ApiClient {
         return anonymous().queryParams(query).get("/api/products");
     }
 
+    /** "Similar products" for a product page; limit may be null (default 4). */
+    public Response similar(long id, Integer limit) {
+        var spec = anonymous();
+        if (limit != null) spec = spec.queryParam("limit", limit);
+        return spec.get("/api/products/{id}/similar", id);
+    }
+
     public Response categories() {
         return anonymous().get("/api/products/categories");
     }

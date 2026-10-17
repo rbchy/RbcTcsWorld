@@ -48,4 +48,16 @@ test.describe('Catalog and product pictures', () => {
     await expect(img).toHaveAttribute('src', '/products/home-mug-002.svg');
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
   });
+
+  test('the product page suggests similar products from the same category', async ({ page, api }) => {
+    const category = `pw-sim-${Date.now()}`;
+    const a = await api.createProduct({ price: 10, category });
+    const b = await api.createProduct({ price: 11, category });
+    await page.goto(`/#/products/${a.id}`);
+    const similar = page.getByTestId('similar-products');
+    await expect(similar).toContainText('Similar products');
+    await expect(similar.getByTestId('similar-product')).toHaveCount(1);
+    await similar.getByText(b.name).click();
+    await expect(page.getByTestId('detail-name')).toHaveText(b.name);
+  });
 });

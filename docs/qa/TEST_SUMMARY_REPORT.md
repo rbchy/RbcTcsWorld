@@ -1,15 +1,15 @@
-# Test Summary Report - Release 1.0
+# Test Summary Report - Release 1.4
 
 | | |
 |---|---|
-| Release | 1.3 (Modules 0-5, storefront UI, performance and security hardening; Spring Boot 4.1; API contract, accessibility, cross-browser) |
-| Build | branch `feature/cross-browser` -> `main`, CI on 2026-10-08 (GitHub Actions); Jenkins build #10 green |
+| Release | 1.4 (Modules 0-5, storefront UI, performance and security hardening; Spring Boot 4.1; API contract, accessibility, cross-browser; Playwright and phones; delivery address; password reset) |
+| Build | PRs #30 (delivery address) and #31 (password reset) -> `main`, CI on 2026-10-17 (GitHub Actions, 18 gates green); Jenkins builds #54 (Chrome) and #59 (Safari) green |
 | Prepared by | RB Chowdhury, QA Lead |
 | Plan | [Test Plan](TEST_PLAN.md) |
 
 ## 1. Recommendation
 
-**GO for release 1.0.** All exit criteria are met, every requirement is covered, and no defect is open.
+**GO for release 1.4.** All exit criteria are met, every requirement is covered, and no defect is open.
 The last open defect, [DEF-007](DEFECT_REPORTS.md#def-007) (catalog without pagination), was fixed test-first
 before sign-off: response size -91 %, constant regardless of catalog size, and on the large local
 catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
@@ -18,16 +18,16 @@ catalog the endpoint p95 dropped from 22 ms to 9 ms (-59 %).
 
 | # | Criterion | Target | Result | |
 |---|---|---|---|---|
-| 1 | Automated tests on CI | 100 % pass | **758 / 758** passed, 0 skipped (+44 smoke against Docker) | ✅ |
-| 2 | Requirement coverage | >= 95 % | **63 / 63 = 100 %** | ✅ |
+| 1 | Automated tests on CI | 100 % pass | **1013 / 1013** passed, 3 skipped by design (+44 smoke against Docker, +15 demo checks) | ✅ |
+| 2 | Requirement coverage | >= 95 % | **90 / 90 = 100 %** | ✅ |
 | 3 | Open Critical / High defects | 0 | **0** | ✅ |
 | 4 | k6 smoke + load SLOs | all pass | all pass | ✅ |
 | 5 | k6 flash sale | orders = stock, stock 0 | 15 / 15 (CI), 50 / 50 (local, 300 buyers) | ✅ |
 | 6 | OWASP ZAP | 0 Medium / High | **0** (Low only, informational) | ✅ |
 | 7 | OSV-Scanner | 0 unaccepted CVSS >= 9 | **0 open, 0 accepted** (was 21; both Spring CVEs fixed by the Boot 4 upgrade) | ✅ |
-| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.1 % lines, 93.9 % branches** | ✅ |
-| 9 | Mutation score (PIT, business logic) | >= 84 % | **92.2 %** (was 65.5 %); test strength 99.3 % | ✅ |
-| 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, OpenAPI unchanged (34 paths)** | ✅ |
+| 8 | Code coverage (JaCoCo) | >= 97 % lines, >= 88 % branches | **98.2 % lines, 94.0 % branches** | ✅ |
+| 9 | Mutation score (PIT, business logic) | >= 84 % | **92.4 %** (was 65.5 %); test strength 99.2 % | ✅ |
+| 10 | API contract | 12 schemas match; no breaking OpenAPI change | **6/6 contract tests, no breaking OpenAPI change** (new: shipping address, password reset endpoints) | ✅ |
 | 11 | Accessibility (WCAG 2.1 AA, axe-core) | 0 serious/critical on every page | **14/14 pages clean** (the first 8 all failed before DEF-018) | ✅ |
 | 12 | Cross-browser (Firefox, Edge) | all UI tests pass in each browser | **35/35 Firefox 157, 35/35 Edge 154** (Chrome in criterion 1) | ✅ |
 

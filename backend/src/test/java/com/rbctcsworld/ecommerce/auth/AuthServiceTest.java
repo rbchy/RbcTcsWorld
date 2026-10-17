@@ -146,4 +146,31 @@ class AuthServiceTest {
         when(encoder.encode(anyString())).thenReturn("dummy-hash");
         assertThatThrownBy(() -> service.login(null, "whatever")).isInstanceOf(InvalidCredentialsException.class);
     }
+
+    @Test
+    void aDisabledAccountIsToldSoOnlyAfterTheRightPasswordAndGetsNoSession() {
+        AppUser off = new AppUser("off@test.com", "hash");
+        off.setActive(false);
+        when(repo.findByEmail("off@test.com")).thenReturn(Optional.of(off));
+        when(encoder.matches("wrong", "hash")).thenReturn(false);
+        when(encoder.matches("right", "hash")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.login("off@test.com", "wrong"))
+                .isInstanceOf(InvalidCredentialsException.class);
+        assertThatThrownBy(() -> service.login("off@test.com", "right"))
+                .isInstanceOf(com.rbctcsworld.ecommerce.common.exception.ForbiddenException.class)
+                .hasMessage(AuthService.DISABLED);
+        verify(refreshTokens, org.mockito.Mockito.never()).issue(any(AppUser.class));
+    }
+
+    @Test
+    void aDisabledAccountCannotRefreshItsSession() {
+        AppUser off = new AppUser("off@test.com", "hash");
+        off.setActive(false);
+        when(refreshTokens.rotate("old")).thenReturn(new RefreshTokenService.Rotated(off, "new"));
+
+        assertThatThrownBy(() -> service.refresh("old"))
+                .isInstanceOf(com.rbctcsworld.ecommerce.common.exception.InvalidRefreshTokenException.class);
+        verify(jwt, org.mockito.Mockito.never()).generate(any());
+    }
 }

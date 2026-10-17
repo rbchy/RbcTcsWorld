@@ -87,4 +87,15 @@ public class Coupon {
     public boolean isActive() { return active; }
 
     public void setActive(boolean active) { this.active = active; }
+
+    /** Changes the terms; the code and the usage count stay. */
+    public void update(String type, BigDecimal discountValue, BigDecimal minOrderAmount, Integer maxUses,
+                       LocalDateTime validFrom, LocalDateTime validUntil) {
+        this.type = type;
+        this.discountValue = discountValue;
+        this.minOrderAmount = minOrderAmount == null ? BigDecimal.ZERO : minOrderAmount;
+        this.maxUses = maxUses;
+        this.validFrom = validFrom;
+        this.validUntil = validUntil;
+    }
 }

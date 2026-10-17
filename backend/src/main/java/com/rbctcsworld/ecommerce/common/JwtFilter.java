@@ -1,5 +1,7 @@
 package com.rbctcsworld.ecommerce.common;
 
+import com.rbctcsworld.ecommerce.auth.AppUser;
+
 import com.rbctcsworld.ecommerce.auth.JwtService;
 import com.rbctcsworld.ecommerce.auth.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -36,7 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             try {
                 String email = jwt.email(header.substring(7));
-                users.findByEmail(email).ifPresent(u -> SecurityContextHolder.getContext().setAuthentication(
+                users.findByEmail(email).filter(AppUser::isActive).ifPresent(u -> SecurityContextHolder.getContext().setAuthentication(
                         new UsernamePasswordAuthenticationToken(u.getEmail(), null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole())))));
             } catch (Exception invalidToken) {

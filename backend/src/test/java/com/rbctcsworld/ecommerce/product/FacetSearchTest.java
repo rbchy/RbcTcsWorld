@@ -99,7 +99,7 @@ class FacetSearchTest {
         Facets g = Facets.count(catalog(), grey);
         assertThat(g.total()).isEqualTo(1);
         assertThat(count(g.colors(), "Navy")).isEqualTo(1);               // the colour facet ignores "grey"
-        assertThat(g.sizes()).extracting(Facets.Option::value).containsExactly("M", "XL");   // grey sizes in stock
+        assertThat(g.sizes()).extracting(Facets.Option::value).containsExactly("m", "XL");   // grey sizes; the first spelling seen is shown ("m")
         assertThat(count(g.categories(), "books")).isZero();               // books have no colour: not counted
     }
 

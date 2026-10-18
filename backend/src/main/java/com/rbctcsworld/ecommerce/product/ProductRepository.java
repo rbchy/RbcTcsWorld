@@ -33,6 +33,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             order by case when p.stock > 0 then 0 else 1 end, abs(p.price - :price), p.id""")
     List<Product> similarByPrice(@Param("id") Long id, @Param("price") java.math.BigDecimal price, Pageable pageable);
 
+    /**
+     * "Customers who bought this also bought": for the orders that contain one of the source products (cancelled
+     * orders do not count), the other products ranked by in how many of those orders they appear.
+     * Rows are [productId, orders]; the most frequent first, ties by id.
+     */
+    @Query("""
+            select b.productId, count(distinct b.order.id) from OrderItem a, OrderItem b
+            where a.order = b.order and a.productId in :sources and b.productId not in :sources
+              and a.order.status <> 'CANCELLED'
+            group by b.productId
+            order by count(distinct b.order.id) desc, b.productId""")
+    List<Object[]> boughtWith(@Param("sources") java.util.Collection<Long> sources, Pageable pageable);
+
     /** Flash deals running at {@code now} (UTC): the one ending first on top. */
     @Query("""
             select p from Product p

@@ -27,6 +27,7 @@ import java.util.List;
  *        &category=a,b &minRating=4 &colors=Navy,Red &sizes=M,L
  * GET    /api/products/facets?(same filters)  public  200 counts for the filter panel | 400 bad filter
  * GET    /api/products/{id} public           200 | 404
+ * GET    /api/products/{id}/bought-together?limit=4  public  200 products often bought in the same order | 400 | 404
  * GET    /api/products/deals  public  200 flash deals running now, the one ending first on top (at most 12)
  * GET    /api/products/{id}/variants   public  200 every size/colour of the item | 404
  * GET    /api/products/variant-groups?names=A,B  public  200 option summary per group | 400 more than 100
@@ -90,12 +91,18 @@ public class ProductController {
         return service.categories();
     }
 
-    /** "Similar products" for the product page: same category, in stock first, closest price. */
+    /** "Customers who bought this also bought": products from the same orders, most frequent first. */
+    @GetMapping("/{id}/bought-together")
+    public List<Product> boughtTogether(@PathVariable long id, @RequestParam(required = false) Integer limit) {
+        return service.boughtTogether(id, limit);
+    }
+
     @GetMapping("/deals")
     public List<Product> deals() {
         return service.liveDeals();
     }
 
+    /** "Similar products" for the product page: same category, in stock first, closest price. */
     @GetMapping("/{id}/similar")
     public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
         return service.similar(id, limit);

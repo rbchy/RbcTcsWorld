@@ -171,6 +171,35 @@ public class ProductService {
                 .limit(n).toList();
     }
 
+    /**
+     * "Customers who bought this also bought": the products that most often share an order with this item (all of
+     * its sizes and colours count as the item). Only products on sale and in stock, one per item (variant group),
+     * most frequent first; fewer than {@code limit} when there is little history; empty when nobody bought it yet.
+     */
+    @Transactional(readOnly = true)
+    public List<Product> boughtTogether(long id, Integer limit) {
+        int n = limit == null ? 4 : limit;
+        if (n < 1 || n > MAX_SIMILAR) throw new BusinessRuleException("limit must be between 1 and " + MAX_SIMILAR);
+        Product p = get(id);
+        List<Long> sources = p.getVariantGroup() == null ? List.of(p.getId())
+                : repo.variantsOf(p.getVariantGroup()).stream().map(Product::getId).toList();
+        // ask for more than n: sold-out and repeated variants of one item are dropped below
+        List<Object[]> ranked = repo.boughtWith(sources, PageRequest.of(0, n * 6 + 12));
+        if (ranked.isEmpty()) return List.of();
+        Map<Long, Product> byId = new java.util.HashMap<>();
+        repo.findAllById(ranked.stream().map(r -> ((Number) r[0]).longValue()).toList()).forEach(x -> byId.put(x.getId(), x));
+        List<Product> out = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (Object[] row : ranked) {
+            Product c = byId.get(((Number) row[0]).longValue());
+            if (c == null || !c.isActive() || c.getStock() < 1) continue;
+            if (!seen.add(c.getVariantGroup() == null ? "P" + c.getId() : "G" + c.getVariantGroup())) continue;
+            out.add(c);
+            if (out.size() == n) break;
+        }
+        return out;
+    }
+
     /** Every size and colour of this product's item (itself included); a product without variants: just itself. */
     @Transactional(readOnly = true)
     public List<Product> variants(long id) {

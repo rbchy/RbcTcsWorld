@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 @Service
 public class NotificationDeliveryService {
 
+    static final String REDACTED_CODE = "[sign-in code removed after delivery]";
     static final String REDACTED = "[password reset link removed after delivery]";
 
     private static final Logger log = LoggerFactory.getLogger(NotificationDeliveryService.class);
@@ -64,6 +65,8 @@ public class NotificationDeliveryService {
                 if (AccountEmailEvent.Type.PASSWORD_RESET.name().equals(n.getType())) {
                     // the link would let anyone with database access take over the account until it expires
                     notifications.redactBody(n.getId(), REDACTED);
+                } else if (AccountEmailEvent.Type.LOGIN_CODE.name().equals(n.getType())) {
+                    notifications.redactBody(n.getId(), REDACTED_CODE);
                 }
                 sent++;
             } catch (RuntimeException e) {

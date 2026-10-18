@@ -27,6 +27,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-AUTH-13 | A reset link is 256 random bits stored only as a hash, works once, for 30 minutes, and a newer link replaces older ones; an unknown, used or expired link gets one 400 message | `PasswordResetServiceTest#aKnownEmailGetsOneLinkThatOnlyItsHashIsStoredFor`, `PasswordResetServiceTest#aLinkWorksUntilTheLastSecond`, `PasswordResetServiceTest#anExpiredLinkIsRefused`, `PasswordResetServiceTest#aUsedLinkIsRefused`, `PasswordResetServiceTest#aLinkUsedAtTheSameMomentByAnotherRequestIsRefused`, `PasswordResetIntegrationTest#aNewerLinkMakesTheOlderOneUseless`, `PasswordResetIntegrationTest#anExpiredOrUnknownLinkIsRefused`, `PasswordResetApiTest#onlyTheNewestLinkWorks`, `PasswordResetApiTest#validation` | U I A S | Pass |
 | REQ-AUTH-14 | A reset sets the new password (8-72), ends every session, lifts a login lockout and e-mails "your password was changed"; the delivered reset e-mail is removed from the database | `PasswordResetServiceTest#aValidLinkSetsTheNewPasswordAndEndsEverySession`, `PasswordResetIntegrationTest#aResetChangesThePasswordEndsEverySessionAndTheLinkWorksOnce`, `PasswordResetIntegrationTest#aResetLiftsALoginLockout`, `PasswordResetIntegrationTest#theDeliveredResetEmailNoLongerContainsTheLink`, `NotificationDeliveryServiceTest#aDeliveredResetLinkIsRemovedFromTheDatabase`, `PasswordResetApiTest#resetByEmail`, `UiPasswordResetTest#resetFromTheLoginPage`, `UiPasswordResetTest#mistakesOnTheResetPage` | U I A UI | Pass |
 | REQ-AUTH-15 | Guest checkout: a customer session from just an e-mail (random password nobody knows, guest flag in the answer); an e-mail with an account - full or guest - is refused (409) so nobody opens somebody else's orders; "Forgot password" turns a guest into a full account | `GuestCheckoutTest#aGuestGetsACustomerSessionWithAPasswordNobodyKnows`, `GuestCheckoutTest#twoGuestsNeverShareASecret`, `GuestCheckoutTest#anEmailWithAnAccountCannotCheckOutAsAGuest`, `GuestCheckoutTest#aSecondGuestCheckoutWithTheSameEmailIsToldToSetAPassword`, `GuestCheckoutTest#normalAccountsAreNotGuestsAndAClaimedGuestIsNoLongerOne`, `PasswordResetServiceTest#aGuestWhoSetsAPasswordNowHasAFullAccount`, `CheckoutExtrasIntegrationTest#aGuestShopsPaysAndLaterClaimsTheAccountWithForgotPassword`, `CheckoutExtrasIntegrationTest#anEmailWithAnAccountMustLogInInstead`, `CheckoutExtrasApiTest#guestCheckout`, `CheckoutExtrasApiTest#guestClaimsTheAccount`, `CheckoutExtrasApiTest#guestRules`, `bdd:A guest buys without a password`, `bdd:The same guest e-mail twice is sent to Forgot password`, `playwright/tests/checkout-extras.spec.ts` | U I A B UI | Pass |
+| REQ-AUTH-16 | Two-factor sign-in (opt-in, needs the current password to turn on or off; not for guests): after the right password a 6-digit code is e-mailed and login answers 200 `twoFactorRequired` with no tokens; `/login/verify` finishes it; the code works once, for 10 minutes and 5 wrong guesses; only hashes are stored and the delivered e-mail is redacted; at most 5 codes per hour (429) | `TwoFactorServiceTest`, `TwoFactorApiTest`, `playwright/tests/two-factor.spec.ts` | U A UI | Pass |
 
 ## Catalog
 
@@ -201,7 +202,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
-| Identity and access | 15 | 15 | - |
+| Identity and access | 16 | 16 | - |
 | Catalog | 10 | 10 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 15 | 15 | - |
@@ -214,4 +215,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **122** | **122 (100 %)** | **0** |
+| **Total** | **123** | **123 (100 %)** | **0** |

@@ -32,6 +32,10 @@ public class AppUser {
     @Column(nullable = false)
     private boolean guest;
 
+    /** Opt-in: after the password, a 6-digit code sent by e-mail is needed to sign in. */
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled;
+
     /** Set by the database when the account is created. */
     @Column(name = "created_at", insertable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
@@ -60,6 +64,8 @@ public class AppUser {
     public String getRole() { return role; }
     public boolean isActive() { return active; }
     public boolean isGuest() { return guest; }
+    public boolean isTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean enabled) { this.twoFactorEnabled = enabled; }
 
     /** A guest account (see AuthService.guest). */
     public static AppUser guest(String email, String unusablePasswordHash) {

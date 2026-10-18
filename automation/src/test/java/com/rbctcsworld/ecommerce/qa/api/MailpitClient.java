@@ -58,6 +58,19 @@ public class MailpitClient {
         return given().baseUri(base).get("/api/v1/message/{id}", id).then().statusCode(200).extract().path("Text");
     }
 
+    /** The 6-digit sign-in code of the newest "sign-in code" e-mail to this address (waits for it). */
+    public String loginCode(String address, int expectedCodeMails) {
+        List<Mail> codes = waitForInbox(address,
+                m -> m.stream().filter(x -> x.subject().startsWith("Your RbcTcsWorld sign-in code")).count() >= expectedCodeMails)
+                .stream().filter(x -> x.subject().startsWith("Your RbcTcsWorld sign-in code")).toList();
+        if (codes.size() < expectedCodeMails) {
+            throw new AssertionError("expected " + expectedCodeMails + " sign-in code e-mail(s) to " + address + ", got " + codes.size());
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("sign-in code is (\\d{6})").matcher(text(codes.get(0).id()));
+        if (!m.find()) throw new AssertionError("no code in the e-mail");
+        return m.group(1);
+    }
+
     /** The token of the newest password reset e-mail to this address (waits for it). */
     public String resetToken(String address, int expectedResetMails) {
         List<Mail> resets = waitForInbox(address,

@@ -25,6 +25,9 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
   const [error, setError] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [challenge, setChallenge] = useState(null);   // {challengeToken} while the e-mailed code is awaited
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState('');
 
   useEffect(() => { setMode(initialMode); setErrors({}); setError(''); }, [initialMode]);
 
@@ -44,10 +47,25 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
     try {
       const r = await api.post(mode === 'login' ? '/auth/login' : '/auth/register',
         { email: form.email.trim(), password: form.password });
+      if (r.data.twoFactorRequired) { setChallenge(r.data); setCode(''); setCodeError(''); return; }
       saveSession(r.data);
       go(['/login', '/register'].includes(redirect) ? '/' : redirect);
     } catch (err) {
       setError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verify = async e => {
+    e.preventDefault();
+    if (!/^\s*\d{6}\s*$/.test(code)) { setCodeError(t('vSixDigits')); return; }
+    setBusy(true); setCodeError('');
+    try {
+      saveSession((await api.post('/auth/login/verify', { challengeToken: challenge.challengeToken, code: code.trim() })).data);
+      go(['/login', '/register'].includes(redirect) ? '/' : redirect);
+    } catch (err) {
+      setCodeError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -95,6 +113,23 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
         <p className="hero-tag">RbcTcsWorld</p>
       </div>
     </aside>
+    {challenge ? (
+    <section className="card auth" data-testid="code-card" aria-labelledby="code-title">
+      <h1 id="code-title" data-testid="code-title">{t('codeTitle')}</h1>
+      <p className="muted">{t('codeLead', { email: form.email.trim() })}</p>
+      <form onSubmit={verify} noValidate>
+        <div className="field">
+          <label htmlFor="auth-code">{t('codeLabel')}</label>
+          <input id="auth-code" data-testid="code-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+                 value={code} onChange={e => setCode(e.target.value)} aria-invalid={!!codeError}
+                 aria-describedby={codeError ? 'code-error' : undefined} />
+          {codeError && <span className="field-error" id="code-error" data-testid="code-error" role="alert">{codeError}</span>}
+        </div>
+        <button type="submit" className="block" disabled={busy} data-testid="code-submit">{t('codeBtn')}</button>
+      </form>
+      <button className="link" data-testid="code-back" onClick={() => { setChallenge(null); setCode(''); }}>{t('codeBack')}</button>
+    </section>
+    ) : (
     <section className="card auth" data-mode={mode} data-testid="auth-card">
       <h1 data-testid="auth-title">{mode === 'login' ? t('loginTitle') : t('registerTitle')}</h1>
       <p className="muted">{mode === 'login' ? t('loginLead') : t('registerLead')}</p>
@@ -153,6 +188,7 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
         </form>
       )}
     </section>
+    )}
     </div>
   );
 }

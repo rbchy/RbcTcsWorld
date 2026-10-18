@@ -7,6 +7,6 @@ package com.rbctcsworld.ecommerce.notification;
 public record AccountEmailEvent(String recipient, Type type, String subject, String body) {
 
     public enum Type {
-        PASSWORD_RESET, PASSWORD_CHANGED
+        PASSWORD_RESET, PASSWORD_CHANGED, LOGIN_CODE, TWO_FACTOR_CHANGED
     }
 }

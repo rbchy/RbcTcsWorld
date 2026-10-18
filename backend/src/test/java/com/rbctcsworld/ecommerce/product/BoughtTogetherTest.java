@@ -87,7 +87,7 @@ class BoughtTogetherTest {
     @Test
     void theDefaultIsFourAndTheLimitIsChecked() {
         when(repo.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(p(1, 5, null, null)));
-        when(repo.boughtWith(anyCollection(), any(Pageable.class))).thenReturn(List.of(row(2, 1)));
+        when(repo.boughtWith(anyCollection(), any(Pageable.class))).thenReturn(List.<Object[]>of(row(2, 1)));
         when(repo.findAllById(anyCollection())).thenReturn(List.of(p(2, 1, null, null)));
         assertThat(service.boughtTogether(1, null)).hasSize(1);
         ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);

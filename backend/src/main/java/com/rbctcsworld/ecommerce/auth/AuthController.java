@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
  * POST /api/auth/login    -> 200 {token,email,role,refreshToken,expiresIn} | 400 | 401 bad credentials | 429 locked
  * POST /api/auth/refresh  -> 200 {token,email,role,refreshToken,expiresIn} | 400 | 401 invalid/expired/reused
  * POST /api/auth/logout   -> 204 (always, also for an unknown token)
+ * POST /api/auth/login/verify {challengeToken, code} -> 200 {token,...} | 400 wrong/expired code
+ *   (login answers 200 {twoFactorRequired:true, challengeToken} instead when the account has two-factor sign-in on)
  * POST /api/auth/forgot-password {email}             -> 202 (always the same answer) | 400 validation
  * POST /api/auth/reset-password  {token, newPassword} -> 204 | 400 invalid/used/expired link or weak password
  */
@@ -67,6 +69,21 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     AuthService.AuthResult guest(@Valid @RequestBody GuestRequest r) {
         return service.guest(r.email());
+    }
+
+    record VerifyRequest(@NotBlank @Size(max = 200) String challengeToken,
+                         @NotBlank @jakarta.validation.constraints.Pattern(regexp = "^\\s*\\d{6}\\s*$", message = "must be 6 digits") String code) {
+    }
+
+    @PostMapping("/login/verify")
+    AuthService.AuthResult verify(@Valid @RequestBody VerifyRequest r) {
+        return service.verifyLogin(r.challengeToken(), r.code());
+    }
+
+    /** The password was right and the account wants the e-mailed code: 200 with the challenge, no tokens. */
+    @org.springframework.web.bind.annotation.ExceptionHandler(TwoFactorRequiredException.class)
+    TwoFactorService.Challenge twoFactorRequired(TwoFactorRequiredException e) {
+        return e.getChallenge();
     }
 
     @PostMapping("/login")

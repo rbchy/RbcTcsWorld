@@ -92,7 +92,7 @@ export const BUTTON_ICONS = [
   ['chart', [b('="report-run"')]],
   ['calendar', [b('^="report-last-"')]],
   ['print', [b('="report-print"')]],
-  ['shield', [b('="audit-verify"')]],
+  ['shield', [b('="audit-verify"'), b('="two-factor-toggle"')]],
   ['eye', [b('="audit-show"'), b('="customer-view"')]],
   ['clock', [b('="apr-history"')]],
   ['plus', [b('="admin-product-add"'), b('="warehouse-add"')]],

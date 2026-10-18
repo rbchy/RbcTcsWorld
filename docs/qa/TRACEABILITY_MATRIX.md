@@ -93,6 +93,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-PAY-05 | With PAYMENT_PROVIDER=stripe, charges and refunds go through Stripe PaymentIntents / Refunds in cents; Stripe card errors give the same short reasons as the mock (402), anything else is 503; the provider's id is kept but never shown | `StripePaymentGatewayTest#approvedChargeKeepsThePaymentIntentId`, `StripePaymentGatewayTest#cardErrorsBecomeShortCustomerSafeReasons`, `StripePaymentGatewayTest#everythingThatIsNotAboutTheCardIs503`, `StripePaymentGatewayTest#amountsGoToStripeInCents`, `StripeClientTest#cardDeclineIsACardErrorWithItsCodesAndPaymentIntent`, `StripeClientTest#slowStripeTimesOutAsAConnectionError`, `PaymentServiceTest#providerOutageIsRecordedAndReportedAs503`, `PaymentServiceTest#successfulChargeKeepsTheProviderAndItsReference`, `StripeSandboxIntegrationTest#declinedAndInsufficientFundsCardsGiveTheSameReasonsAsTheMock` | U I | Pass |
 | REQ-PAY-06 | Consumer contract with Stripe: every request the shop sends is a valid Stripe API request (stripe-mock from Stripe's OpenAPI spec); dollar amounts, unknown parameters and missing keys are rejected | `StripeContractIntegrationTest#ourPaymentIntentRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#ourRefundRequestIsAValidStripeRequest`, `StripeContractIntegrationTest#theWholeGatewayTalksToStripe`, `StripeContractIntegrationTest#stripeRejectsDollarAmounts`, `StripeContractIntegrationTest#stripeRejectsUnknownParameters`, `StripeClientTest#paymentIntentRequestIsExactlyWhatStripeExpects`, `StripeClientTest#refundRequestAndAnswer` | I | Pass |
 | REQ-PAY-07 | A retried charge or refund never moves money twice (idempotency key from order, amount and card / refund number); a live Stripe key cannot run outside the prod profile | `StripePaymentGatewayTest#sameOrderAmountAndCardGiveTheSameIdempotencyKeyAnotherCardADifferentOne`, `StripePaymentGatewayTest#refundSucceedsOrIsPending`, `PaymentServiceTest#refundUsesTheChargeReferenceAndCountsEarlierRefunds`, `PaymentGatewayConfigTest#aLiveKeyOnlyRunsWithTheProdProfile`, `PaymentGatewayConfigTest#stripeWithoutAKeyStopsTheStart`, `StripeSandboxIntegrationTest#aRetryWithTheSameKeyDoesNotChargeTwice` | U I | Pass |
+| REQ-PAY-08 | Saved cards (wallet): up to 5 per customer, one default, twins refused (409), bad/expired cards 400; only brand, last 4, expiry and the provider's token are stored - never the number or CVV, and the API never returns the token; pay with a saved card (`/pay-saved`, CVV asked every time; somebody else's card 404; declines still recorded); "save this card" only after a successful payment | `PaymentMethodServiceTest`, `SavedCardChargeTest`, `PaymentMethodsApiTest`, `playwright/tests/wallet.spec.ts` | U A UI | Pass |
 
 ## Address book
 
@@ -213,7 +214,11 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Catalog | 14 | 14 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
-| Pricing, coupons, payments | 12 | 12 | - |
+| Pricing, coupons, payments | 13 | 13 | - |
+| Catalog | 13 | 13 | - |
+| Cart | 3 | 3 | - |
+| Orders and inventory | 16 | 16 | - |
+| Pricing, coupons, payments | 13 | 13 | - |
 | Address book | 3 | 3 | - |
 | Fulfilment and returns | 6 | 6 | - |
 | Customer e-mails | 4 | 4 | - |

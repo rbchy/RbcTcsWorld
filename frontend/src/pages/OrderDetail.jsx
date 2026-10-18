@@ -68,7 +68,8 @@ export default function OrderDetail({ id }) {
         </div>
         <div>
           <button className="secondary" data-testid="download-invoice" onClick={downloadInvoice}>{t('downloadInvoice')}</button>
-          {s === 'PLACED' && <PayForm onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')} />}
+          {s === 'PLACED' && <PayForm onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')}
+                                      onPaySaved={body => act(() => api.post(`/orders/${id}/pay-saved`, body), 'Payment received. Thank you!')} />}
           {(s === 'PLACED' || s === 'PAID') && (
             <button className="secondary" data-testid="cancel-order"
                     onClick={() => act(() => api.post(`/orders/${id}/cancel`), 'Order cancelled')}>Cancel order</button>
@@ -105,21 +106,52 @@ export default function OrderDetail({ id }) {
   );
 }
 
-function PayForm({ onPay }) {
+function PayForm({ onPay, onPaySaved }) {
+  const { t } = useI18n();
   const [card, setCard] = useState({ cardNumber: '', expiryMonth: '12', expiryYear: '2030', cvv: '' });
+  const [saveCard, setSaveCard] = useState(false);
+  const [saved, setSaved] = useState([]);         // the wallet (REQ-PAY-07)
+  const [chosen, setChosen] = useState('');       // id of the saved card in use, '' = a new card
   const set = k => e => setCard({ ...card, [k]: e.target.value });
+
+  useEffect(() => {
+    api.get('/payment-methods').then(r => {
+      const usable = r.data.filter(m => !m.expired);
+      setSaved(usable);
+      const def = usable.find(m => m.isDefault) || usable[0];
+      if (def) setChosen(String(def.id));
+    }).catch(() => {});
+  }, []);
+
+  const useSaved = chosen !== '';
   return (
     <form className="pay" data-testid="pay-form" onSubmit={e => {
       e.preventDefault();
-      onPay({ ...card, expiryMonth: Number(card.expiryMonth), expiryYear: Number(card.expiryYear) });
+      if (useSaved) onPaySaved({ paymentMethodId: Number(chosen), cvv: card.cvv });
+      else onPay({ ...card, expiryMonth: Number(card.expiryMonth), expiryYear: Number(card.expiryYear), saveCard });
     }}>
       <h2>Pay</h2>
-      <label>Card number<input data-testid="card-number" value={card.cardNumber} onChange={set('cardNumber')} placeholder="4242 4242 4242 4242" /></label>
-      <div className="row">
-        <label>Month<input data-testid="card-month" value={card.expiryMonth} onChange={set('expiryMonth')} className="qty" /></label>
-        <label>Year<input data-testid="card-year" value={card.expiryYear} onChange={set('expiryYear')} className="qty" /></label>
-        <label>CVV<input data-testid="card-cvv" value={card.cvv} onChange={set('cvv')} className="qty" /></label>
-      </div>
+      {saved.length > 0 && (
+        <label>{t('payWithSaved')}
+          <select data-testid="saved-card" value={chosen} onChange={e => setChosen(e.target.value)}>
+            {saved.map(m => <option key={m.id} value={m.id}>{m.brand} •••• {m.last4} ({String(m.expiryMonth).padStart(2, '0')}/{m.expiryYear})</option>)}
+            <option value="">{t('useNewCard')}</option>
+          </select>
+        </label>
+      )}
+      {!useSaved && (
+        <>
+          <label>Card number<input data-testid="card-number" value={card.cardNumber} onChange={set('cardNumber')} placeholder="4242 4242 4242 4242" /></label>
+          <div className="row">
+            <label>Month<input data-testid="card-month" value={card.expiryMonth} onChange={set('expiryMonth')} className="qty" /></label>
+            <label>Year<input data-testid="card-year" value={card.expiryYear} onChange={set('expiryYear')} className="qty" /></label>
+          </div>
+        </>
+      )}
+      <label>CVV<input data-testid="card-cvv" value={card.cvv} onChange={set('cvv')} className="qty" autoComplete="off" /></label>
+      {!useSaved && (
+        <label className="check"><input type="checkbox" checked={saveCard} data-testid="save-card" onChange={e => setSaveCard(e.target.checked)} />{t('saveThisCard')}</label>
+      )}
       <button data-testid="pay-button" type="submit">Pay now</button>
       <p className="muted small">Test cards: 4242… approved · 4000 0000 0000 0002 declined</p>
     </form>

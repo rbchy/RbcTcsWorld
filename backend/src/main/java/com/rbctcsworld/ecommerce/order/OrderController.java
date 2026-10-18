@@ -4,6 +4,7 @@ import com.rbctcsworld.ecommerce.order.OrderDtos.CheckoutRequest;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.TrackingResponse;
 import com.rbctcsworld.ecommerce.payment.PaymentDtos.PayRequest;
+import com.rbctcsworld.ecommerce.payment.PaymentDtos.PaySavedRequest;
 import com.rbctcsworld.ecommerce.payment.PaymentTransaction;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,7 @@ import java.util.List;
  * GET  /api/orders                  200 my orders (newest first)
  * GET  /api/orders/{id}             200 | 404 (missing or not mine)
  * POST /api/orders/{id}/pay {card}  200 PAID | 400 bad/expired card | 402 declined | 404 | 409 not payable
+ * POST /api/orders/{id}/pay-saved {paymentMethodId, cvv}  200 PAID | 400 expired card | 402 declined | 404 not your card | 409
  * GET  /api/orders/{id}/payments    200 payment attempts + refunds (last 4 digits only)
  * POST /api/orders/{id}/cancel      200 (refund if PAID) | 404 | 409 already cancelled / already shipped
  * GET  /api/orders/{id}/tracking    200 status timeline | 404
@@ -63,6 +65,11 @@ public class OrderController {
     @PostMapping("/{id}/pay")
     public OrderResponse pay(Authentication auth, @PathVariable Long id, @Valid @RequestBody PayRequest card) {
         return service.pay(auth.getName(), id, card);
+    }
+
+    @PostMapping("/{id}/pay-saved")
+    public OrderResponse paySaved(Authentication auth, @PathVariable Long id, @Valid @RequestBody PaySavedRequest request) {
+        return service.paySaved(auth.getName(), id, request);
     }
 
     @GetMapping("/{id}/payments")

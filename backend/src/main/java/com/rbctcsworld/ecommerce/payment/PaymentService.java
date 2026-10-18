@@ -50,10 +50,24 @@ public class PaymentService {
             throw new BusinessRuleException("Card has expired");
         }
         String last4 = number.substring(number.length() - 4);
+        return settle(orderId, amount, last4, () -> gateway.charge(orderId, number, amount));
+    }
 
+    /**
+     * Charges a saved card by its provider token. An expired card is 400 and nothing is recorded; everything else
+     * behaves like {@link #charge}.
+     */
+    public PaymentTransaction chargeSaved(Long orderId, BigDecimal amount, SavedPaymentMethod method) {
+        if (method.expiredAt(YearMonth.now(clock))) {
+            throw new BusinessRuleException("Card has expired");
+        }
+        return settle(orderId, amount, method.getLast4(), () -> gateway.chargeToken(orderId, method.getToken(), amount));
+    }
+
+    private PaymentTransaction settle(Long orderId, BigDecimal amount, String last4, java.util.function.Supplier<GatewayResult> call) {
         GatewayResult result;
         try {
-            result = gateway.charge(orderId, number, amount);
+            result = call.get();
         } catch (PaymentUnavailableException e) {
             transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE, PaymentTransaction.FAILED,
                     amount, last4, "Provider unavailable", gateway.name(), null));

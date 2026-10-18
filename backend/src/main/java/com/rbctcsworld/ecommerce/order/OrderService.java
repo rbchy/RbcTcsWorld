@@ -101,7 +101,7 @@ public class OrderService {
         order.shipTo(address.normalized());
         for (CartItem line : lines) {
             Product p = line.getProduct();
-            order.addItem(new OrderItem(p.getId(), p.getSku(), p.getName(), p.getPrice(), line.getQuantity()));
+            order.addItem(new OrderItem(p.getId(), p.getSku(), p.displayName(), p.getPrice(), line.getQuantity()));
         }
 
         Coupon coupon = hasText(couponCode) ? coupons.validate(couponCode, user.getId(), order.getSubtotal()) : null;
@@ -197,7 +197,7 @@ public class OrderService {
 
     private static OrderLine toLine(CartItem ci) {
         Product p = ci.getProduct();
-        return new OrderLine(p.getId(), p.getSku(), p.getName(), p.getPrice(), ci.getQuantity(),
+        return new OrderLine(p.getId(), p.getSku(), p.displayName(), p.getPrice(), ci.getQuantity(),
                 p.getPrice().multiply(BigDecimal.valueOf(ci.getQuantity())));
     }
 

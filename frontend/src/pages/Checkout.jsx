@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { go } from '../session';
 import { useI18n } from '../i18n';
-import { US_STATES } from '../usStates';
+import { getSession } from '../session';
+import AddressFields, { EMPTY_ADDRESS, addressBody, nullsToEmpty } from '../AddressFields';
 
-const EMPTY_ADDRESS = { fullName: '', line1: '', line2: '', city: '', state: '', zip: '', phone: '' };
 const REQUIRED = ['fullName', 'line1', 'city', 'state', 'zip'];
+const same = (a, b) => ['fullName', 'line1', 'line2', 'city', 'state', 'zip']
+  .every(k => (a[k] || '').trim().toLowerCase() === (b[k] || '').trim().toLowerCase());
 
 /**
  * Review prices (quote), optionally apply a coupon, enter the delivery address, then place the order.
@@ -19,6 +21,10 @@ export default function Checkout() {
   const [error, setError] = useState('');
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [saved, setSaved] = useState([]);          // the address book
+  const [chosen, setChosen] = useState('new');     // id of a saved address, or 'new'
+  const [keep, setKeep] = useState(false);         // save the typed address to the address book
+  const guest = getSession()?.guest;
 
   const loadQuote = async code => {
     try {
@@ -30,17 +36,29 @@ export default function Checkout() {
     }
   };
   useEffect(() => { loadQuote(''); }, []);
+  // the default saved address first; without an address book, the address of the last order
   useEffect(() => {
-    api.get('/orders').then(r => {
-      const last = r.data.find(o => o.shippingAddress)?.shippingAddress;
-      if (last) setAddress(a => (a === EMPTY_ADDRESS ? { ...EMPTY_ADDRESS, ...nullsToEmpty(last) } : a));
+    api.get('/addresses').then(r => {
+      setSaved(r.data);
+      const first = r.data.find(a => a.isDefault) || r.data[0];
+      if (first) { setChosen(first.id); setAddress(nullsToEmpty(first.address)); return; }
+      api.get('/orders').then(o => {
+        const last = o.data.find(x => x.shippingAddress)?.shippingAddress;
+        if (last) setAddress(a => (a === EMPTY_ADDRESS ? nullsToEmpty(last) : a));
+      }).catch(() => {});
     }).catch(() => {});
   }, []);
 
-  const set = field => e => {
-    setAddress({ ...address, [field]: e.target.value });
+  const change = (field, value) => {
+    setAddress({ ...address, [field]: value });
     setFieldErrors({ ...fieldErrors, [field]: undefined });
   };
+  const choose = a => {
+    setChosen(a === 'new' ? 'new' : a.id);
+    setAddress(a === 'new' ? EMPTY_ADDRESS : nullsToEmpty(a.address));
+    setFieldErrors({});
+  };
+  const alreadySaved = saved.some(a => same(a.address, address));
 
   const place = async e => {
     e.preventDefault();
@@ -50,6 +68,9 @@ export default function Checkout() {
     try {
       const shippingAddress = { ...address, line2: address.line2.trim() || null, phone: address.phone.trim() || null };
       const r = await api.post('/orders', { couponCode: applied || null, shippingAddress });
+      if (keep && !alreadySaved) {
+        await api.post('/addresses', { address: addressBody(address), makeDefault: saved.length === 0 }).catch(() => {});
+      }
       go(`/orders/${r.data.id}`);
     } catch (err) {
       // server-side field errors arrive as "shippingAddress.zip": show each one under its own field
@@ -59,16 +80,6 @@ export default function Checkout() {
       setError(errorText(err));
     }
   };
-
-  const field = (name, type = 'text', autoComplete = undefined) => (
-    <div className="field">
-      <label htmlFor={`addr-${name}`}>{t(`addr${name[0].toUpperCase()}${name.slice(1)}`)}</label>
-      <input id={`addr-${name}`} data-testid={`addr-${name}`} type={type} value={address[name]} onChange={set(name)}
-             autoComplete={autoComplete} aria-invalid={!!fieldErrors[name]}
-             aria-describedby={fieldErrors[name] ? `addr-${name}-error` : undefined} />
-      {fieldErrors[name] && <span className="field-error" id={`addr-${name}-error`} data-testid={`addr-${name}-error`}>{fieldErrors[name]}</span>}
-    </div>
-  );
 
   return (
     <section className="card narrow">
@@ -82,36 +93,40 @@ export default function Checkout() {
           </div>
           <PriceTable q={quote} />
           <form onSubmit={place} noValidate data-testid="address-form">
+            {saved.length > 0 && (
+              <fieldset className="address saved-addresses" data-testid="saved-addresses">
+                <legend>{t('deliverTo')}</legend>
+                {saved.map(a => (
+                  <label key={a.id} className={`addr-choice${chosen === a.id ? ' on' : ''}`} data-testid="saved-address">
+                    <input type="radio" name="deliver-to" checked={chosen === a.id} onChange={() => choose(a)} />
+                    <span><strong>{a.label || a.address.fullName}</strong>{a.isDefault && <em className="badge state-active">{t('defaultBadge')}</em>}
+                      <span className="small muted">{[a.address.line1, a.address.city, `${a.address.state} ${a.address.zip}`].join(', ')}</span></span>
+                  </label>
+                ))}
+                <label className={`addr-choice${chosen === 'new' ? ' on' : ''}`}>
+                  <input type="radio" name="deliver-to" checked={chosen === 'new'} onChange={() => choose('new')} data-testid="new-address" />
+                  <span><strong>{t('useNewAddress')}</strong></span>
+                </label>
+              </fieldset>
+            )}
             <fieldset className="address">
               <legend>{t('shipToTitle')}</legend>
               <p className="hint">{t('shipToLead')}</p>
-              {field('fullName', 'text', 'name')}
-              {field('line1', 'text', 'address-line1')}
-              {field('line2', 'text', 'address-line2')}
-              {field('city', 'text', 'address-level2')}
-              <div className="field">
-                <label htmlFor="addr-state">{t('addrState')}</label>
-                <select id="addr-state" data-testid="addr-state" value={address.state} onChange={set('state')}
-                        autoComplete="address-level1" aria-invalid={!!fieldErrors.state}
-                        aria-describedby={fieldErrors.state ? 'addr-state-error' : undefined}>
-                  <option value="">{t('addrChooseState')}</option>
-                  {US_STATES.map(([code, name]) => <option key={code} value={code}>{code} - {name}</option>)}
-                </select>
-                {fieldErrors.state && <span className="field-error" id="addr-state-error" data-testid="addr-state-error">{fieldErrors.state}</span>}
-              </div>
-              {field('zip', 'text', 'postal-code')}
-              {field('phone', 'tel', 'tel')}
+              <AddressFields prefix="addr" value={address} onChange={change} errors={fieldErrors} t={t} />
+              {!guest && !alreadySaved && (
+                <label className="check">
+                  <input type="checkbox" checked={keep} onChange={e => setKeep(e.target.checked)} data-testid="save-address" />
+                  {t('saveAddress')}
+                </label>
+              )}
             </fieldset>
             <button data-testid="place-order" type="submit">Place order</button>
+            {guest && <p className="hint" data-testid="guest-hint">{t('guestHint')} <a href="#/forgot-password">{t('forgotLink')}</a></p>}
           </form>
         </>
       )}
     </section>
   );
-}
-
-function nullsToEmpty(a) {
-  return Object.fromEntries(Object.entries(a).map(([k, v]) => [k, v ?? '']));
 }
 
 export function PriceTable({ q }) {

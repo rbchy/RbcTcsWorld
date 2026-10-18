@@ -96,6 +96,7 @@ public class PasswordResetService {
         }
         AppUser user = users.findById(token.getUserId()).orElseThrow(() -> new BusinessRuleException(INVALID_LINK));
         user.changePassword(encoder.encode(newPassword));
+        user.claim();                                   // a guest who sets a password now has a full account
         users.save(user);
         tokens.useAllOf(user.getId(), now);
         refreshTokens.revokeAllOf(user.getId(), now);

@@ -29,7 +29,7 @@ export default function Cart() {
         <p data-testid="cart-empty">Your cart is empty. <a href="#/">Continue shopping</a></p>
       ) : (
         <>
-          <table data-testid="cart-table">
+          <table className="cart-table" data-testid="cart-table">
             <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th><th><span className="sr-only">Actions</span></th></tr></thead>
             <tbody>
               {cart.items.map(i => (

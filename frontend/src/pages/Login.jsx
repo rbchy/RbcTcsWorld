@@ -53,6 +53,27 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
     }
   };
 
+  // guest checkout: buy with just an e-mail; "Forgot password" later turns it into a full account
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestError, setGuestError] = useState('');
+  const [guestFail, setGuestFail] = useState('');
+  const guest = async e => {
+    e.preventDefault();
+    const v = guestEmail.trim();
+    const invalid = !v ? 'vEmailRequired' : !EMAIL.test(v) ? 'vEmailInvalid' : '';
+    setGuestError(invalid); setGuestFail('');
+    if (invalid) return;
+    setBusy(true);
+    try {
+      saveSession((await api.post('/auth/guest', { email: v })).data);
+      go(['/login', '/register'].includes(redirect) ? '/' : redirect);
+    } catch (err) {
+      setGuestFail(errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const toggle = () => { setMode(mode === 'login' ? 'register' : 'login'); setErrors({}); setError(''); };
   const fieldError = name => errors[name] && (
     <span className="field-error" id={`${name}-error`} data-testid={`${name}-error`}>{t(errors[name])}</span>
@@ -115,6 +136,22 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
       <button className="link" data-testid="auth-toggle" onClick={toggle}>
         {mode === 'login' ? t('toRegister') : t('toLogin')}
       </button>
+      {mode === 'login' && (
+        <form className="guest-box" onSubmit={guest} noValidate data-testid="guest-form" aria-labelledby="guest-title">
+          <h2 id="guest-title">{t('guestTitle')}</h2>
+          <p className="hint">{t('guestLead')}</p>
+          <div className="field">
+            <label htmlFor="guest-email">{t('email')}</label>
+            <input id="guest-email" type="email" autoComplete="email" value={guestEmail}
+                   onChange={e => { setGuestEmail(e.target.value); if (guestError) setGuestError(''); }}
+                   aria-invalid={!!guestError} aria-describedby={guestError ? 'guest-email-error' : undefined} data-testid="guest-email" />
+            {guestError && <span className="field-error" id="guest-email-error" data-testid="guest-email-error">{t(guestError)}</span>}
+          </div>
+          {guestFail && <p className="error" role="alert" data-testid="guest-error">{guestFail}
+            {' '}<a href="#/forgot-password">{t('forgotLink')}</a></p>}
+          <button type="submit" className="ghost block" disabled={busy} data-testid="guest-continue">{t('guestContinue')}</button>
+        </form>
+      )}
     </section>
     </div>
   );

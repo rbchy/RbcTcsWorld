@@ -3,6 +3,7 @@ import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice } from './common';
 import Watermark from '../../Watermark';
+import DateInput from '../../DateInput';
 
 export const REPORTS = ['sales', 'top-products', 'orders-by-status', 'returns', 'coupons', 'low-stock', 'inventory', 'stock-by-warehouse'];
 const SNAPSHOT = ['low-stock', 'inventory', 'stock-by-warehouse'];                        // stock as it is now: no dates
@@ -196,7 +197,9 @@ function FieldInput({ id, label, error, t, ...input }) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} data-testid={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...input} />
+      {input.type === 'date'
+        ? <DateInput id={id} data-testid={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...input} />
+        : <input id={id} data-testid={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...input} />}
       {error && <span className="field-error" id={`${id}-error`} data-testid={`${id}-error`}>{t(error)}</span>}
     </div>
   );

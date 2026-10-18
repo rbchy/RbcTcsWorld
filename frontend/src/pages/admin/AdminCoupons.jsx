@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
+import DateInput from '../../DateInput';
 
 const EMPTY = { code: '', type: 'PERCENT', value: '', minOrderAmount: '0', maxUses: '', validFrom: '', validUntil: '' };
 export const COUPON_STATES = ['ACTIVE', 'SCHEDULED', 'EXPIRED', 'USED_UP', 'DISABLED'];
@@ -128,10 +129,10 @@ export default function AdminCoupons() {
           <input value={form.maxUses} onChange={set('maxUses')} inputMode="numeric" data-testid="cf-max" />
         </Field>
         <Field id="cf-from" label={t('validFrom')} error={errors.validFrom}>
-          <input type="datetime-local" value={form.validFrom} onChange={set('validFrom')} data-testid="cf-from" />
+          <DateInput type="datetime-local" defaultTime="00:00" value={form.validFrom} onChange={set('validFrom')} data-testid="cf-from" />
         </Field>
         <Field id="cf-until" label={t('validUntil')} error={errors.validUntil}>
-          <input type="datetime-local" value={form.validUntil} onChange={set('validUntil')} data-testid="cf-until" />
+          <DateInput type="datetime-local" defaultTime="23:59" value={form.validUntil} onChange={set('validUntil')} data-testid="cf-until" />
         </Field>
         <div className="row form-actions">
           <button type="submit" data-testid="cf-save">{editing ? t('saveChanges') : t('createCoupon')}</button>

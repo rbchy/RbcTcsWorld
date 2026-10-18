@@ -39,6 +39,16 @@ public class ProductClient extends ApiClient {
         return spec.get("/api/products/{id}/similar", id);
     }
 
+    /** Every size and colour of the item this product belongs to. */
+    public Response variants(long id) {
+        return anonymous().get("/api/products/{id}/variants", id);
+    }
+
+    /** Option summaries for catalog cards (one request for many variant groups). */
+    public Response variantGroups(String... names) {
+        return anonymous().queryParam("names", (Object[]) names).get("/api/products/variant-groups");
+    }
+
     public Response categories() {
         return anonymous().get("/api/products/categories");
     }
@@ -76,6 +86,16 @@ public class ProductClient extends ApiClient {
             }
         }
         throw new IllegalStateException("No active product with SKU " + sku);
+    }
+
+    /** A product body with variant fields (any may be null = not sent). */
+    public static Map<String, Object> variantBody(String name, String sku, BigDecimal price, int stock,
+                                                  String group, String size, String color) {
+        Map<String, Object> m = body(name, sku, "clothing", price, stock);
+        if (group != null) m.put("variantGroup", group);
+        if (size != null) m.put("size", size);
+        if (color != null) m.put("color", color);
+        return m;
     }
 
     public static Map<String, Object> body(String name, String sku, String category, BigDecimal price, int stock) {

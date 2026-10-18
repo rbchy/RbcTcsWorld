@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Notice, when } from './common';
+import DateInput from '../../DateInput';
 
 const PAGE = 20;
 function last30() {
@@ -45,12 +46,13 @@ export default function AdminPayments() {
       <p className="muted small">{t('paymentsHint')}</p>
       <Notice error={error} />
       <form className="card filters" role="search" aria-label={t('paymentsTitle')} onSubmit={search} noValidate data-testid="payment-search">
-        <label className="field">{t('fromDate')}
-          <input type="date" value={filter.from} onChange={set('from')} data-testid="py-from" />
-        </label>
+        <div className="field">
+          <label htmlFor="py-from">{t('fromDate')}</label>
+          <DateInput id="py-from" value={filter.from} onChange={set('from')} data-testid="py-from" />
+        </div>
         <div className="field">
           <label htmlFor="py-to">{t('toDate')}</label>
-          <input id="py-to" type="date" value={filter.to} onChange={set('to')} data-testid="py-to" aria-invalid={!!errors.to}
+          <DateInput id="py-to" value={filter.to} onChange={set('to')} data-testid="py-to" aria-invalid={!!errors.to}
                  aria-describedby={errors.to ? 'py-to-error' : undefined} />
           {errors.to && <span className="field-error" id="py-to-error" data-testid="py-to-error">{t(errors.to)}</span>}
         </div>

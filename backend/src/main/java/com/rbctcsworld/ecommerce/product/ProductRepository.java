@@ -33,6 +33,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             order by case when p.stock > 0 then 0 else 1 end, abs(p.price - :price), p.id""")
     List<Product> similarByPrice(@Param("id") Long id, @Param("price") java.math.BigDecimal price, Pageable pageable);
 
+    /** The variants of one item on sale, in the order they were added. */
+    @Query("select p from Product p where p.active = true and p.variantGroup = :group order by p.id")
+    List<Product> variantsOf(@Param("group") String group);
+
+    /** The variants of several items at once (for the option summary on catalog cards). */
+    @Query("select p from Product p where p.active = true and p.variantGroup in :groups order by p.id")
+    List<Product> variantsOfAll(@Param("groups") java.util.Collection<String> groups);
+
     /** The categories of the products on sale, for the catalog's category filter. */
     @Query("select distinct p.category from Product p where p.active = true and p.category is not null order by p.category")
     List<String> activeCategories();

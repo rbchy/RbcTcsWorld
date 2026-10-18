@@ -10,7 +10,7 @@ test.describe('API through the storefront origin', () => {
     expect(products).toHaveLength(5);
     for (const p of products) {
       expect(Object.keys(p).sort()).toEqual(
-        ['active', 'category', 'id', 'imageUrl', 'name', 'price', 'ratingAverage', 'ratingCount', 'sku', 'stock']);
+        ['active', 'category', 'color', 'id', 'imageUrl', 'name', 'price', 'ratingAverage', 'ratingCount', 'size', 'sku', 'stock', 'variantGroup']);
     }
   });
 

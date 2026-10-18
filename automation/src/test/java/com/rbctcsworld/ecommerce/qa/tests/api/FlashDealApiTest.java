@@ -57,7 +57,7 @@ class FlashDealApiTest {
         products.anonymousGet("/api/products/deals").then().statusCode(200).body("id", hasItem((int) id));
 
         Customer c = Fixtures.newCustomer();
-        cart.add(c.token(), id, 2).then().statusCode(200).body("subtotal", equalTo(50.0f));
+        cart.add(c.token(), id, 2).then().statusCode(201).body("subtotal", equalTo(50.0f));
     }
 
     @Test
@@ -67,7 +67,7 @@ class FlashDealApiTest {
                 .then().statusCode(201).body("dealLive", equalTo(false)).extract().jsonPath().getLong("id");
 
         products.anonymousGet("/api/products/deals").then().statusCode(200).body("id", not(hasItem((int) id)));
-        cart.add(Fixtures.newCustomer().token(), id, 1).then().statusCode(200).body("subtotal", equalTo(40.0f));
+        cart.add(Fixtures.newCustomer().token(), id, 1).then().statusCode(201).body("subtotal", equalTo(40.0f));
     }
 
     @Test

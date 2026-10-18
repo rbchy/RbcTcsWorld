@@ -39,7 +39,8 @@ public class ProductService {
     static Map<String, Object> audited(Product p) {
         return AuditChange.fields("name", p.getName(), "sku", p.getSku(), "category", p.getCategory(),
                 "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive(),
-                "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor());
+                "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor(),
+                "dealPrice", p.getDealPrice(), "dealStartsAt", p.getDealStartsAt(), "dealEndsAt", p.getDealEndsAt());
     }
 
     private void audit(Product p, String action, Map<String, Object> before) {
@@ -261,6 +262,8 @@ public class ProductService {
         Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());
         p.changeVariant(variant.group(), variant.size(), variant.color());
+        checkDeal(r, null);
+        p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());
         Product saved = repo.save(p);
         inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
@@ -274,14 +277,47 @@ public class ProductService {
                 .filter(other -> !other.getId().equals(p.getId()))
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
         VariantKey variant = variantOf(r, p.getId());
+        checkDeal(r, p);
         Map<String, Object> before = audited(p);
         inventory.changeTotalFromProductForm(p.getId(), r.stock());        // atomic; the entity never writes stock
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());                                  // PUT replaces: no imageUrl = no picture
         p.changeVariant(variant.group(), variant.size(), variant.color());  // ... and no variant fields = no variant
+        p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());      // ... and no deal fields = no deal
         Product saved = repo.save(p);
         audit(saved, "PRODUCT_UPDATED", before);
         return saved;
+    }
+
+    public static final int MAX_DEAL_DAYS = 30;
+    public static final int MAX_DEALS_SHOWN = 12;
+
+    /**
+     * A deal is a price below the normal price between two UTC times: all three fields or none (400), the end after
+     * the start, at most 30 days long, and not already over. An unchanged deal that has ended is kept as it is, so
+     * the form of a product whose deal is over can still be saved.
+     */
+    void checkDeal(ProductRequest r, Product existing) {
+        boolean any = r.dealPrice() != null || r.dealStartsAt() != null || r.dealEndsAt() != null;
+        if (!any) return;
+        if (r.dealPrice() == null) throw new BusinessRuleException("A deal needs a deal price");
+        if (r.dealStartsAt() == null || r.dealEndsAt() == null) throw new BusinessRuleException("A deal needs a start and an end");
+        if (r.dealPrice().compareTo(r.price()) >= 0) throw new BusinessRuleException("The deal price must be lower than the price");
+        if (!r.dealEndsAt().isAfter(r.dealStartsAt())) throw new BusinessRuleException("The deal must end after it starts");
+        if (java.time.Duration.between(r.dealStartsAt(), r.dealEndsAt()).compareTo(java.time.Duration.ofDays(MAX_DEAL_DAYS)) > 0) {
+            throw new BusinessRuleException("A deal can last " + MAX_DEAL_DAYS + " days at most");
+        }
+        boolean unchanged = existing != null && r.dealPrice().compareTo(existing.getDealPrice() == null ? java.math.BigDecimal.valueOf(-1) : existing.getDealPrice()) == 0
+                && r.dealStartsAt().equals(existing.getDealStartsAt()) && r.dealEndsAt().equals(existing.getDealEndsAt());
+        if (!unchanged && !r.dealEndsAt().isAfter(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))) {
+            throw new BusinessRuleException("The deal has already ended");
+        }
+    }
+
+    /** The deals running right now (UTC), the one ending first on top; only products in stock. */
+    @Transactional(readOnly = true)
+    public List<Product> liveDeals() {
+        return repo.liveDeals(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC), PageRequest.of(0, MAX_DEALS_SHOWN));
     }
 
     /** Soft delete: keeps history for orders/audit, hides the product from customers. */

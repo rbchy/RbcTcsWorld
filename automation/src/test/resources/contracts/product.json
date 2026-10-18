@@ -80,6 +80,20 @@
         "null"
       ],
       "maxLength": 30
+    },
+    "dealPrice": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true
+    },
+    "dealStartsAt": {
+      "type": "string"
+    },
+    "dealEndsAt": {
+      "type": "string"
+    },
+    "dealLive": {
+      "type": "boolean"
     }
   }
 }

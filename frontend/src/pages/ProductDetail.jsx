@@ -4,6 +4,7 @@ import { getSession, go } from '../session';
 import Stars from './Stars';
 import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
+import { Price, Countdown, isLive } from '../Deal';
 import { compareSizes, pickVariant, slug, swatch, variantLabel } from '../variants';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
@@ -65,11 +66,12 @@ export default function ProductDetail({ id }) {
         <div>
           <h1 data-testid="detail-name">{product.name}</h1>
           <p className="muted">{product.category} · SKU <span data-testid="detail-sku">{product.sku}</span></p>
-          <p className="detail-price-row"><strong data-testid="detail-price">{money(product.price)}</strong>
+          <p className="detail-price-row"><Price p={product} testId="detail-price" />
             <span className={`stock-note ${product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : 'in'}`} data-testid="detail-stock">
               {product.stock === 0 ? t('outOfStock') : product.stock <= 5 ? t('onlyLeft', { n: product.stock }) : t('inStock')}
             </span>
           </p>
+          {isLive(product) && <p><Countdown endsAt={product.dealEndsAt} testId="detail-countdown" /></p>}
           {variants.length > 1 && <VariantPicker product={product} variants={variants} t={t} />}
           <div className="buy-box">
             <div className="field qty-field">

@@ -32,11 +32,21 @@ public record ProductRequest(
         String size,
         /** Navy, Heather Grey ... */
         @Size(max = 30) @Pattern(regexp = "^[\\p{L} -]*$", message = "may only contain letters, spaces and -")
-        String color) {
+        String color,
+        /** Optional flash deal: a price below the normal price between two UTC times (all three, or none). */
+        @Positive @Digits(integer = 10, fraction = 2) BigDecimal dealPrice,
+        java.time.LocalDateTime dealStartsAt,
+        java.time.LocalDateTime dealEndsAt) {
+
+    /** Without a deal (older clients, tests). */
+    public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
+                          String variantGroup, String size, String color) {
+        this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, null, null, null);
+    }
 
     /** Without variant (older clients, tests). */
     public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl) {
-        this(name, sku, category, price, stock, imageUrl, null, null, null);
+        this(name, sku, category, price, stock, imageUrl, null, null, null, null, null, null);
     }
 
     /** Without a picture (older clients, tests). */

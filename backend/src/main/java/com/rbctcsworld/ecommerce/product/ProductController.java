@@ -24,6 +24,8 @@ import java.util.List;
  *        headers: X-Total-Count, X-Total-Pages, X-Page, X-Page-Size, Link (rel="next"/"prev")
  *        The body stayed an array, so older clients keep working (backward-compatible fix of DEF-007).
  *        &grouped=true: one card per variant group (the storefront)
+ *        &category=a,b &minRating=4 &colors=Navy,Red &sizes=M,L
+ * GET    /api/products/facets?(same filters)  public  200 counts for the filter panel | 400 bad filter
  * GET    /api/products/{id} public           200 | 404
  * GET    /api/products/{id}/variants   public  200 every size/colour of the item | 404
  * GET    /api/products/variant-groups?names=A,B  public  200 option summary per group | 400 more than 100
@@ -52,8 +54,12 @@ public class ProductController {
                                              @RequestParam(required = false) java.math.BigDecimal minPrice,
                                              @RequestParam(required = false) java.math.BigDecimal maxPrice,
                                              @RequestParam(required = false) Boolean inStock,
-                                             @RequestParam(required = false) Boolean grouped) {
-        Page<Product> result = service.page(q, page, size, sort, new ProductFilter(category, minPrice, maxPrice, inStock, grouped));
+                                             @RequestParam(required = false) Boolean grouped,
+                                             @RequestParam(required = false) java.math.BigDecimal minRating,
+                                             @RequestParam(required = false) List<String> colors,
+                                             @RequestParam(required = false) List<String> sizes) {
+        Page<Product> result = service.page(q, page, size, sort,
+                new ProductFilter(category, minPrice, maxPrice, inStock, grouped, minRating, colors, sizes));
         ResponseEntity.BodyBuilder response = ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.getTotalElements()))
                 .header("X-Total-Pages", String.valueOf(result.getTotalPages()))
@@ -87,6 +93,19 @@ public class ProductController {
     @GetMapping("/{id}/similar")
     public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
         return service.similar(id, limit);
+    }
+
+    /** Counts for the catalog's filter panel (disjunctive facets, items not variants). */
+    @GetMapping("/facets")
+    public Facets facets(@RequestParam(required = false) String q,
+                         @RequestParam(required = false) String category,
+                         @RequestParam(required = false) java.math.BigDecimal minPrice,
+                         @RequestParam(required = false) java.math.BigDecimal maxPrice,
+                         @RequestParam(required = false) Boolean inStock,
+                         @RequestParam(required = false) java.math.BigDecimal minRating,
+                         @RequestParam(required = false) List<String> colors,
+                         @RequestParam(required = false) List<String> sizes) {
+        return service.facets(q, new ProductFilter(category, minPrice, maxPrice, inStock, true, minRating, colors, sizes));
     }
 
     /** Every size and colour of the item this product belongs to (itself included), for the product page. */

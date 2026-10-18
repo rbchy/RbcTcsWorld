@@ -26,6 +26,9 @@ public class AuthController {
     record AuthRequest(@Email @NotBlank String email, @NotBlank @Size(min = 8, max = 72) String password) {
     }
 
+    record GuestRequest(@Email @NotBlank @Size(max = 255) String email) {
+    }
+
     record RefreshRequest(@NotBlank @Size(max = 200) String refreshToken) {
     }
 
@@ -57,6 +60,13 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     AuthService.AuthResult register(@Valid @RequestBody AuthRequest r) {
         return service.register(r.email(), r.password());
+    }
+
+    /** Guest checkout: 201 {token, ..., guest: true} | 400 bad e-mail | 409 the e-mail already has an account. */
+    @PostMapping("/guest")
+    @ResponseStatus(HttpStatus.CREATED)
+    AuthService.AuthResult guest(@Valid @RequestBody GuestRequest r) {
+        return service.guest(r.email());
     }
 
     @PostMapping("/login")

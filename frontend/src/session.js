@@ -8,11 +8,13 @@ const listeners = new Set();
 
 export function getSession() {
   const token = localStorage.getItem('token');
-  return token ? { token, email: localStorage.getItem('email'), role: localStorage.getItem('role') } : null;
+  return token ? { token, email: localStorage.getItem('email'), role: localStorage.getItem('role'),
+    guest: localStorage.getItem('guest') === 'true' } : null;
 }
 
-export function saveSession({ token, email, role, refreshToken }) {
+export function saveSession({ token, email, role, refreshToken, guest }) {
   localStorage.setItem('token', token);
+  if (guest) localStorage.setItem('guest', 'true'); else localStorage.removeItem('guest');
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
   localStorage.setItem('email', email);
   localStorage.setItem('role', role);
@@ -20,7 +22,7 @@ export function saveSession({ token, email, role, refreshToken }) {
 }
 
 export function clearSession() {
-  ['token', 'refreshToken', 'email', 'role'].forEach(k => localStorage.removeItem(k));
+  ['token', 'refreshToken', 'email', 'role', 'guest'].forEach(k => localStorage.removeItem(k));
   listeners.forEach(l => l());
 }
 

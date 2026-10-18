@@ -28,6 +28,10 @@ public class AppUser {
     @Column(nullable = false)
     private boolean active = true;
 
+    /** A guest checkout: no password of its own yet. Setting one with "Forgot password" makes it a full account. */
+    @Column(nullable = false)
+    private boolean guest;
+
     /** Set by the database when the account is created. */
     @Column(name = "created_at", insertable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
@@ -55,6 +59,19 @@ public class AppUser {
     public String getPassword() { return password; }
     public String getRole() { return role; }
     public boolean isActive() { return active; }
+    public boolean isGuest() { return guest; }
+
+    /** A guest account (see AuthService.guest). */
+    public static AppUser guest(String email, String unusablePasswordHash) {
+        AppUser u = new AppUser(email, unusablePasswordHash, Role.CUSTOMER);
+        u.guest = true;
+        return u;
+    }
+
+    /** The guest chose a password: from now on a normal customer account. */
+    public void claim() {
+        this.guest = false;
+    }
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setActive(boolean active) { this.active = active; }

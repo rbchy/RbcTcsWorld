@@ -94,10 +94,13 @@ class FlashDealTest {
 
     @Test
     void theDealMustEndAfterItStartsAndLastAtMostThirtyDays() {
-        assertThatThrownBy(() -> service.checkDeal(req("40.00", "25.00", hours(2), hours(2)), null))
+        LocalDateTime start = hours(1);                                   // one fixed start: two now() calls would differ
+        assertThatThrownBy(() -> service.checkDeal(req("40.00", "25.00", start, start), null))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("end after it starts");
-        assertThatCode(() -> service.checkDeal(req("40.00", "25.00", hours(0), hours(24 * 30)), null)).doesNotThrowAnyException();
-        assertThatThrownBy(() -> service.checkDeal(req("40.00", "25.00", hours(0), hours(24 * 30 + 1)), null))
+        assertThatThrownBy(() -> service.checkDeal(req("40.00", "25.00", start, start.minusMinutes(1)), null))
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("end after it starts");
+        assertThatCode(() -> service.checkDeal(req("40.00", "25.00", start, start.plusDays(30)), null)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> service.checkDeal(req("40.00", "25.00", start, start.plusDays(30).plusSeconds(1)), null))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("30 days");
     }
 

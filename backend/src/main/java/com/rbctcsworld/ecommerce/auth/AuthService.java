@@ -17,15 +17,17 @@ public class AuthService {
     private final JwtService jwt;
     private final LoginAttemptService attempts;
     private final RefreshTokenService refreshTokens;
+    private final TwoFactorService twoFactor;
     private volatile String dummyHash;
 
     public AuthService(UserRepository repo, PasswordEncoder encoder, JwtService jwt, LoginAttemptService attempts,
-                       RefreshTokenService refreshTokens) {
+                       RefreshTokenService refreshTokens, TwoFactorService twoFactor) {
         this.repo = repo;
         this.encoder = encoder;
         this.jwt = jwt;
         this.attempts = attempts;
         this.refreshTokens = refreshTokens;
+        this.twoFactor = twoFactor;
     }
 
     /** New accounts are always CUSTOMER; admins are only created by DataSeeder. */
@@ -89,6 +91,20 @@ public class AuthService {
             // only told after the right password, so it does not reveal which e-mails have accounts
             throw new ForbiddenException(DISABLED);
         }
+        if (user.isTwoFactorEnabled()) {
+            // right password, but the account also wants the e-mailed code: no tokens yet (REQ-AUTH-16)
+            throw new TwoFactorRequiredException(twoFactor.begin(user));
+        }
+        return result(user, refreshTokens.issue(user));
+    }
+
+    /** Second step of a two-factor sign-in: the e-mailed code finishes it. */
+    public AuthResult verifyLogin(String challengeToken, String code) {
+        AppUser user = twoFactor.verify(challengeToken, code);
+        if (!user.isActive()) {
+            throw new ForbiddenException(DISABLED);
+        }
+        attempts.loginSucceeded(user.getEmail());
         return result(user, refreshTokens.issue(user));
     }
 

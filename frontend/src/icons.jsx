@@ -79,7 +79,7 @@ const b = s => `button[data-testid${s}]`;
 export const BUTTON_ICONS = [
   ['search', [b('$="-search"'), b('="ss-search"')]],
   ['reset', [b('$="-reset"'), b('="anf-retry"')]],
-  ['download', [b('$="-export"'), b('="install-app"')]],
+  ['download', [b('$="-export"'), b('="install-app"'), b('="download-invoice"')]],
   ['check', [b('$="-save"'), b('="review-submit"'), b('="return-submit"'), b('="place-order"'), b('="arr-approve"'),
     b('="arv-publish"'), b('="aor-deliver"'), b('="customer-enable"'), b('="customer-disable-yes"')]],
   ['x', [b('$="-cancel"'), b('="cancel-order"'), b('="customer-close"'), b('="arr-reject"'), b('="arv-hide"'),
@@ -92,7 +92,7 @@ export const BUTTON_ICONS = [
   ['chart', [b('="report-run"')]],
   ['calendar', [b('^="report-last-"')]],
   ['print', [b('="report-print"')]],
-  ['shield', [b('="audit-verify"')]],
+  ['shield', [b('="audit-verify"'), b('="two-factor-toggle"')]],
   ['eye', [b('="audit-show"'), b('="customer-view"')]],
   ['clock', [b('="apr-history"')]],
   ['plus', [b('="admin-product-add"'), b('="warehouse-add"')]],

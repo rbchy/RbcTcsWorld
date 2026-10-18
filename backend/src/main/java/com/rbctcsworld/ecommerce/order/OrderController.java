@@ -7,7 +7,10 @@ import com.rbctcsworld.ecommerce.payment.PaymentDtos.PayRequest;
 import com.rbctcsworld.ecommerce.payment.PaymentDtos.PaySavedRequest;
 import com.rbctcsworld.ecommerce.payment.PaymentTransaction;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +33,7 @@ import java.util.List;
  * GET  /api/orders/{id}/payments    200 payment attempts + refunds (last 4 digits only)
  * POST /api/orders/{id}/cancel      200 (refund if PAID) | 404 | 409 already cancelled / already shipped
  * GET  /api/orders/{id}/tracking    200 status timeline | 404
+ * GET  /api/orders/{id}/invoice     200 the invoice as a PDF file | 404 (missing or not mine)
  */
 @RestController
 @RequestMapping("/api/orders")
@@ -76,6 +80,16 @@ public class OrderController {
     @GetMapping("/{id}/tracking")
     public TrackingResponse tracking(Authentication auth, @PathVariable Long id) {
         return service.myTracking(auth.getName(), id);
+    }
+
+    @GetMapping("/{id}/invoice")
+    public ResponseEntity<byte[]> invoice(Authentication auth, @PathVariable Long id) {
+        OrderResponse order = service.myOrder(auth.getName(), id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"invoice-" + order.orderNumber() + ".pdf\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(InvoicePdf.render(order));
     }
 
     @PostMapping("/{id}/cancel")

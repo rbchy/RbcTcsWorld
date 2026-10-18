@@ -70,19 +70,17 @@ public class ProductService {
         String s = sort == null || sort.isBlank() ? "id" : sort.trim().toLowerCase();
         if (!SORTS.contains(s)) throw new BusinessRuleException("sort must be one of " + SORTS);
         PageRequest request = PageRequest.of(page, size, sortOf(s));
-        ProductFilter f = filter == null ? ProductFilter.NONE : filter;
-        if (f.minPrice() != null && f.minPrice().signum() < 0) throw new BusinessRuleException("minPrice cannot be negative");
-        if (f.maxPrice() != null && f.maxPrice().signum() < 0) throw new BusinessRuleException("maxPrice cannot be negative");
-        if (f.minPrice() != null && f.maxPrice() != null && f.maxPrice().compareTo(f.minPrice()) < 0) {
-            throw new BusinessRuleException("maxPrice must not be below minPrice");
-        }
+        ProductFilter f = checked(filter == null ? ProductFilter.NONE : filter);
         if (!f.isEmpty()) return repo.findAll(spec(q, f), request);
         return (q == null || q.isBlank())
                 ? repo.findByActiveTrue(request)
                 : repo.findByNameContainingIgnoreCaseAndActiveTrue(q.trim(), request);
     }
 
-    /** active AND name contains q AND category = ... AND minPrice <= price <= maxPrice AND stock > 0 (each when given). */
+    /**
+     * active AND name contains q AND every filter of {@link ProductFilter} (each when given). grouped: one row per
+     * item - a single product, or the first variant (lowest id) of its group that passes the same filters.
+     */
     static Specification<Product> spec(String q, ProductFilter f) {
         return (root, query, cb) -> {
             List<Predicate> where = new ArrayList<>();
@@ -90,22 +88,64 @@ public class ProductService {
             if (q != null && !q.isBlank()) {
                 where.add(cb.like(cb.lower(root.<String>get("name")), "%" + q.trim().toLowerCase(Locale.ROOT) + "%"));
             }
-            if (f.category() != null && !f.category().isBlank()) {
-                where.add(cb.equal(cb.lower(root.<String>get("category")), f.category().trim().toLowerCase(Locale.ROOT)));
-            }
-            if (f.minPrice() != null) where.add(cb.greaterThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.minPrice()));
-            if (f.maxPrice() != null) where.add(cb.lessThanOrEqualTo(root.<java.math.BigDecimal>get("price"), f.maxPrice()));
-            if (Boolean.TRUE.equals(f.inStock())) where.add(cb.greaterThan(root.<Integer>get("stock"), 0));
+            where.addAll(variantFilters(cb, root, f));
             if (Boolean.TRUE.equals(f.grouped())) {
-                // one card per item: a single product, or the first variant (lowest id) on sale of its group
                 var first = query.subquery(Long.class);
                 var v = first.from(Product.class);
-                first.select(cb.min(v.<Long>get("id")))
-                        .where(cb.equal(v.get("variantGroup"), root.get("variantGroup")), cb.isTrue(v.<Boolean>get("active")));
+                List<Predicate> same = new ArrayList<>(variantFilters(cb, v, f));
+                same.add(cb.equal(v.get("variantGroup"), root.get("variantGroup")));
+                same.add(cb.isTrue(v.<Boolean>get("active")));
+                first.select(cb.min(v.<Long>get("id"))).where(same.toArray(new Predicate[0]));
                 where.add(cb.or(cb.isNull(root.get("variantGroup")), cb.equal(root.get("id"), first)));
             }
             return cb.and(where.toArray(new Predicate[0]));
         };
+    }
+
+    /** The filters that look at one product row (the in-memory twin is ProductFilter.matches). */
+    private static List<Predicate> variantFilters(jakarta.persistence.criteria.CriteriaBuilder cb,
+                                                  jakarta.persistence.criteria.Path<Product> p, ProductFilter f) {
+        List<Predicate> where = new ArrayList<>();
+        if (!f.categories().isEmpty()) where.add(cb.lower(p.<String>get("category")).in(f.categories()));
+        if (f.minPrice() != null) where.add(cb.greaterThanOrEqualTo(p.<java.math.BigDecimal>get("price"), f.minPrice()));
+        if (f.maxPrice() != null) where.add(cb.lessThanOrEqualTo(p.<java.math.BigDecimal>get("price"), f.maxPrice()));
+        if (Boolean.TRUE.equals(f.inStock())) where.add(cb.greaterThan(p.<Integer>get("stock"), 0));
+        if (f.minRating() != null) where.add(cb.greaterThanOrEqualTo(p.<java.math.BigDecimal>get("ratingAverage"), f.minRating()));
+        if (!f.colorList().isEmpty()) where.add(cb.lower(p.<String>get("color")).in(f.colorList()));
+        if (!f.sizeList().isEmpty()) where.add(cb.lower(p.<String>get("size")).in(f.sizeList()));
+        return where;
+    }
+
+    public static final int MAX_FACET_PRODUCTS = 5000;
+    public static final int MAX_FILTER_VALUES = 20;
+
+    /**
+     * Counts for the catalog's filter panel, for the products matching q and the other filters ("disjunctive"
+     * facets: ticking "books" does not hide the count of "home"). Counts are ITEMS (cards), not variants.
+     * Computed in memory over at most 5000 matching products: enough for this shop; a big one would use the
+     * aggregations of a search engine (OpenSearch, Elasticsearch) instead.
+     */
+    @Transactional(readOnly = true)
+    public Facets facets(String q, ProductFilter filter) {
+        ProductFilter f = checked(filter == null ? ProductFilter.NONE : filter);
+        List<Product> candidates = repo.findAll(spec(q, ProductFilter.NONE), PageRequest.of(0, MAX_FACET_PRODUCTS, Sort.by("id"))).getContent();
+        return Facets.count(candidates, f);
+    }
+
+    /** The checks every filtered query shares (400 for each). */
+    static ProductFilter checked(ProductFilter f) {
+        if (f.minPrice() != null && f.minPrice().signum() < 0) throw new BusinessRuleException("minPrice cannot be negative");
+        if (f.maxPrice() != null && f.maxPrice().signum() < 0) throw new BusinessRuleException("maxPrice cannot be negative");
+        if (f.minPrice() != null && f.maxPrice() != null && f.maxPrice().compareTo(f.minPrice()) < 0) {
+            throw new BusinessRuleException("maxPrice must not be below minPrice");
+        }
+        if (f.minRating() != null && (f.minRating().signum() < 0 || f.minRating().compareTo(java.math.BigDecimal.valueOf(5)) > 0)) {
+            throw new BusinessRuleException("minRating must be between 0 and 5");
+        }
+        if (f.categories().size() > MAX_FILTER_VALUES || f.colorList().size() > MAX_FILTER_VALUES || f.sizeList().size() > MAX_FILTER_VALUES) {
+            throw new BusinessRuleException("at most " + MAX_FILTER_VALUES + " values per filter");
+        }
+        return f;
     }
 
     public static final int MAX_SIMILAR = 12;

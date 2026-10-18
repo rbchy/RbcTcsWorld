@@ -26,6 +26,19 @@ export default function OrderDetail({ id }) {
   };
   useEffect(() => { load(); }, [id]);
 
+  // The invoice needs the login token, so it is fetched with it and handed to the browser as a file.
+  const downloadInvoice = async () => {
+    try {
+      const r = await api.get(`/orders/${id}/invoice`, { responseType: 'blob' });
+      const url = URL.createObjectURL(r.data);
+      const a = document.createElement('a');
+      a.href = url; a.download = `invoice-${order.orderNumber}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setError(''); setNotice(t('invoiceDownloaded'));
+    } catch (e) { setNotice(''); setError(errorText(e)); }
+  };
+
   const act = async (fn, okText) => {
     try { await fn(); setError(''); setNotice(okText); }
     catch (e) { setNotice(''); setError(errorText(e)); }
@@ -54,6 +67,7 @@ export default function OrderDetail({ id }) {
           )}
         </div>
         <div>
+          <button className="secondary" data-testid="download-invoice" onClick={downloadInvoice}>{t('downloadInvoice')}</button>
           {s === 'PLACED' && <PayForm onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')} />}
           {(s === 'PLACED' || s === 'PAID') && (
             <button className="secondary" data-testid="cancel-order"

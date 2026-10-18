@@ -32,6 +32,11 @@ public class ProductClient extends ApiClient {
         return anonymous().queryParams(query).get("/api/products");
     }
 
+    /** Counts behind the catalog's filter panel (same filters as the search). */
+    public Response facets(Map<String, ?> query) {
+        return anonymous().queryParams(query).get("/api/products/facets");
+    }
+
     /** "Similar products" for a product page; limit may be null (default 4). */
     public Response similar(long id, Integer limit) {
         var spec = anonymous();

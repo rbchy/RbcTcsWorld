@@ -28,6 +28,20 @@ public class AuthClient extends ApiClient {
         return anonymous().body(Map.of("email", email)).post("/api/auth/guest");
     }
 
+    /** Second step of a two-factor sign-in. */
+    public Response verifyLogin(String challengeToken, String code) {
+        return anonymous().body(Map.of("challengeToken", challengeToken, "code", code)).post("/api/auth/login/verify");
+    }
+
+    /** Turns two-factor sign-in on or off for the signed-in customer. */
+    public Response setTwoFactor(String token, boolean enabled, String password) {
+        return as(token).body(Map.of("enabled", enabled, "password", password)).put("/api/account/two-factor");
+    }
+
+    public Response twoFactorState(String token) {
+        return as(token).get("/api/account/two-factor");
+    }
+
     public Response refresh(String refreshToken) {
         return anonymous().body(Map.of("refreshToken", refreshToken)).post("/api/auth/refresh");
     }

@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 import { Icon } from '../icons';
 import { swatch } from '../variants';
 import { Price, Countdown, isLive } from '../Deal';
+import Filters, { NO_FILTERS, filterParams, isFiltered } from '../Filters';
 
 const PAGE_SIZE = 20;
 
@@ -19,13 +20,15 @@ export default function Home() {
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
   const [deals, setDeals] = useState([]);           // flash deals running now
+  const [filters, setFilters] = useState(NO_FILTERS);
+  const [facets, setFacets] = useState(null);
   const [options, setOptions] = useState({});      // variant group -> {options, colors, sizes, minPrice, maxPrice}
 
   // The catalog is paginated (DEF-007): 20 products per request, "Load more" fetches the next page.
   // isCurrent: DEF-016 - every keystroke in the search box sends a request, and responses can arrive out of
   // order. A late answer for "mo" must never replace the results for "mouse", so stale answers are dropped.
   const load = (pageNo, append, isCurrent = () => true) =>
-    api.get('/products', { params: { q, page: pageNo, size: PAGE_SIZE, grouped: true } })
+    api.get('/products', { params: { q, page: pageNo, size: PAGE_SIZE, grouped: true, ...filterParams(filters, facets) } })
       .then(r => {
         if (!isCurrent()) return;
         setProducts(prev => (append ? [...prev, ...r.data] : r.data));
@@ -42,12 +45,21 @@ export default function Home() {
       })
       .catch(e => { if (!isCurrent()) return; if (!append) setProducts([]); setError(errorText(e)); });
 
+  // The counts behind every filter option. They follow the search words and the other selected filters.
+  useEffect(() => {
+    let current = true;
+    api.get('/products/facets', { params: { q, ...filterParams(filters, facets) } })
+      .then(r => { if (current) setFacets(r.data); })
+      .catch(() => {});
+    return () => { current = false; };
+  }, [q, filters]);
+
   // Short debounce (fewer requests while typing) + a guard so only the newest search may update the list.
   useEffect(() => {
     let current = true;
     const timer = setTimeout(() => load(0, false, () => current), q ? 200 : 0);
     return () => { current = false; clearTimeout(timer); };
-  }, [q]);
+  }, [q, filters]);
 
   useEffect(() => { api.get('/products/deals').then(r => setDeals(r.data)).catch(() => {}); }, []);
 
@@ -81,12 +93,12 @@ export default function Home() {
         <h1>RbcTcsWorld E-Commerce</h1>
         <input data-testid="search-input" type="search" aria-label={t('searchProducts')} placeholder={t('searchProducts')} value={q} onChange={e => setQ(e.target.value)} />
       </header>
-      {!q && <Banner t={t} />}
+      {!q && !isFiltered(filters) && <Banner t={t} />}
       {error && <p data-testid="error-banner" className="error">{error}</p>}
       {flash && <p data-testid="flash" className="ok">{flash}</p>}
       <p className="muted small" id="catalog" data-testid="catalog-total">{t('showing', { n: products.length, total })}</p>
-      {!error && total === 0 && q && <p className="card muted" data-testid="no-results">{t('noProducts')}</p>}
-      {deals.length > 0 && !q && (
+      {!error && total === 0 && (q || isFiltered(filters)) && <p className="card muted" data-testid="no-results">{t('noProducts')}</p>}
+      {deals.length > 0 && !q && !isFiltered(filters) && (
         <section className="deals-shelf" data-testid="deals-shelf" aria-labelledby="deals-title">
           <h2 id="deals-title">{t('flashDeals')}</h2>
           <div className="deals-row">
@@ -101,12 +113,17 @@ export default function Home() {
           </div>
         </section>
       )}
+      <div className="catalog-layout">
+        <aside aria-label={t('filters')}><Filters value={filters} onChange={setFilters} facets={facets} /></aside>
+        <div>
       <section className="grid" data-testid="product-grid">
         {products.map(p => <ProductCard key={p.id} p={p} options={options[p.variantGroup]} onAdd={add} onWish={wish} t={t} />)}
       </section>
       {products.length < total && (
         <p className="center"><button className="ghost" data-testid="load-more" onClick={() => load(page + 1, true)}>{t('loadMore')}</button></p>
       )}
+        </div>
+      </div>
     </>
   );
 }

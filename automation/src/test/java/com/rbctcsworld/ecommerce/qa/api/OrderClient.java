@@ -40,6 +40,11 @@ public class OrderClient extends ApiClient {
         return as(token).get("/api/orders/{id}/tracking", orderId);
     }
 
+    /** The invoice of an order as a PDF file. */
+    public Response invoice(String token, long orderId) {
+        return as(token).get("/api/orders/{id}/invoice", orderId);
+    }
+
     public Response requestReturn(String token, long orderId, String reason) {
         return as(token).body(Map.of("reason", reason)).post("/api/orders/{id}/return", orderId);
     }

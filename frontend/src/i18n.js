@@ -162,6 +162,8 @@ const T = {
   addrPhone: ['Phone (optional)', 'ফোন (ঐচ্ছিক)', 'Teléfono (opcional)', 'Téléphone (facultatif)', 'الهاتف (اختياري)', '电话（可选）'],
   addrChooseState: ['Choose a state', 'রাজ্য বেছে নিন', 'Elige un estado', 'Choisissez un État', 'اختر الولاية', '选择州'],
   addrMissing: ['Please fill in this field', 'এই ঘরটা পূরণ করুন', 'Completa este campo', 'Veuillez remplir ce champ', 'يرجى ملء هذا الحقل', '请填写此项'],
+  downloadInvoice: ['Download invoice (PDF)', 'ইনভয়েস নামান (PDF)', 'Descargar factura (PDF)', 'Télécharger la facture (PDF)', 'تنزيل الفاتورة (PDF)', '下载发票 (PDF)'],
+  invoiceDownloaded: ['Invoice downloaded.', 'ইনভয়েস নামানো হয়েছে।', 'Factura descargada.', 'Facture téléchargée.', 'تم تنزيل الفاتورة.', '发票已下载。'],
   shipsTo: ['Ships to', 'যেখানে যাবে', 'Se envía a', 'Livraison à', 'يُشحن إلى', '寄送至'],
   ordersTitle: ['Your orders', 'আপনার অর্ডার', 'Tus pedidos', 'Vos commandes', 'طلباتك', '我的订单'],
   wishlistTitle: ['Your wishlist', 'আপনার পছন্দের তালিকা', 'Tus favoritos', 'Votre liste d’envies', 'مفضلتك', '我的心愿单'],

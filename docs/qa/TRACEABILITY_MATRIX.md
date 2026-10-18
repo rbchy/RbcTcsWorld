@@ -46,6 +46,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-CAT-10 | Cart lines, orders and the wishlist name the variant bought ("Name (Colour, Size)"); only that variant's stock goes down | `ProductVariantIntegrationTest#theCartTheOrderAndTheWishlistNameTheVariant`, `ProductVariantApiTest#orderNamesTheVariant`, `bdd:The order line names the size and colour that were bought`, `playwright/tests/variants.spec.ts` | I A B UI | Pass |
 | REQ-CAT-11 | Filter panel: category, price band, rating, in-stock, colour and size filters; each option shows how many items (cards, not variants) it would find; a group ignores its own selection; 400 for a rating outside 0-5 or more than 20 values | `FacetSearchTest#withoutFiltersEveryItemIsCountedOnceWhateverItsVariants`, `FacetSearchTest#priceBandsAreInclusiveAndCountItems`, `FacetSearchTest#aFacetIgnoresItsOwnSelectionButEveryOtherFilterApplies`, `FacetSearchTest#badFiltersAre400`, `FacetSearchIntegrationTest#theFacetsCountItemsNotVariants`, `FacetSearchIntegrationTest#theListUsesTheSameFilters`, `FacetSearchIntegrationTest#badFiltersAreRefusedWith400`, `FacetSearchApiTest#seededTee`, `FacetSearchApiTest#bandsAndStock`, `bdd:Choosing a colour still offers the other colour`, `bdd:A rating above 5 is refused` | U I A B | Pass |
 | REQ-CAT-12 | The filter panel in the storefront: check boxes with counts, combined filters, clear all, no banner while filtered, no serious accessibility problem, works on phones | `playwright/tests/faceted-search.spec.ts` | UI | Pass |
+| REQ-CAT-14 | Flash deals: a deal price between two UTC times (all three fields or none, lower than the price, end after start, at most 30 days, not already over); the catalog, the product page, the cart, the order and the wishlist use the deal price while it runs; `GET /api/products/deals` lists running deals, the one ending first on top; an ordinary product's JSON has no deal fields | `FlashDealTest`, `FlashDealApiTest`, `playwright/tests/flash-deals.spec.ts` | U A UI | Pass |
 
 ## Cart
 
@@ -207,7 +208,9 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 16 | 16 | - |
-| Catalog | 13 | 13 | - |
+| Catalog | 14 | 14 | - |
+| Identity and access | 16 | 16 | - |
+| Catalog | 14 | 14 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
@@ -219,4 +222,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **127** | **127 (100 %)** | **0** |
+| **Total** | **128** | **128 (100 %)** | **0** |

@@ -95,9 +95,9 @@ public class WishlistService {
 
     static WishlistLine toLine(WishlistItem i) {
         Product p = i.getProduct();
-        BigDecimal drop = i.getPriceWhenAdded().subtract(p.getPrice());
+        BigDecimal drop = i.getPriceWhenAdded().subtract(p.currentPrice());
         if (drop.signum() < 0) drop = BigDecimal.ZERO;
-        return new WishlistLine(p.getId(), p.getSku(), p.displayName(), i.getPriceWhenAdded(), p.getPrice(),
+        return new WishlistLine(p.getId(), p.getSku(), p.displayName(), i.getPriceWhenAdded(), p.currentPrice(),
                 drop.setScale(2), p.isActive() && p.getStock() > 0, p.getRatingAverage(), p.getRatingCount(),
                 i.getCreatedAt());
     }

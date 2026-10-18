@@ -46,6 +46,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             order by count(distinct b.order.id) desc, b.productId""")
     List<Object[]> boughtWith(@Param("sources") java.util.Collection<Long> sources, Pageable pageable);
 
+    /** Flash deals running at {@code now} (UTC): the one ending first on top. */
+    @Query("""
+            select p from Product p
+            where p.active = true and p.dealPrice is not null and p.dealStartsAt <= :now and p.dealEndsAt > :now and p.stock > 0
+            order by p.dealEndsAt, p.id""")
+    List<Product> liveDeals(@Param("now") java.time.LocalDateTime now, Pageable pageable);
+
     /** The variants of one item on sale, in the order they were added. */
     @Query("select p from Product p where p.active = true and p.variantGroup = :group order by p.id")
     List<Product> variantsOf(@Param("group") String group);

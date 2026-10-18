@@ -14,6 +14,7 @@ export default function ProductDetail({ id }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [similar, setSimilar] = useState([]);
+  const [together, setTogether] = useState([]);
   const [variants, setVariants] = useState([]);
   const [qty, setQty] = useState('1');
   const [cartMsg, setCartMsg] = useState('');
@@ -36,6 +37,8 @@ export default function ProductDetail({ id }) {
 
   useEffect(() => {
     setSimilar([]);
+    setTogether([]);
+    api.get(`/products/${id}/bought-together`, { params: { limit: 4 } }).then(r => setTogether(r.data)).catch(() => setTogether([]));
     api.get(`/products/${id}/similar`, { params: { limit: 4 } }).then(r => setSimilar(r.data)).catch(() => setSimilar([]));
   }, [id]);
 
@@ -136,6 +139,22 @@ export default function ProductDetail({ id }) {
           </ul>
         </div>
       </div>
+      {together.length > 0 && (
+        <section className="similar" aria-labelledby="together-title" data-testid="bought-together">
+          <h2 id="together-title">{t('boughtTogetherTitle')}</h2>
+          <ul className="similar-grid">
+            {together.map(tp => (
+              <li key={tp.id} data-testid="bought-together-product">
+                <a href={`#/products/${tp.id}`} className="similar-card">
+                  <ProductImage product={tp} alt="" className="similar-image" testId="together-image" />
+                  <span className="similar-name">{tp.name}</span>
+                  <span className="similar-meta"><strong>{money(tp.price)}</strong></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {similar.length > 0 && (
         <section className="similar" aria-labelledby="similar-title" data-testid="similar-products">
           <h2 id="similar-title">{t('similarTitle')}</h2>

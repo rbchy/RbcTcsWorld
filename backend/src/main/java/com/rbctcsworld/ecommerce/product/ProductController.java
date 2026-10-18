@@ -25,6 +25,7 @@ import java.util.List;
  *        The body stayed an array, so older clients keep working (backward-compatible fix of DEF-007).
  *        &grouped=true: one card per variant group (the storefront)
  * GET    /api/products/{id} public           200 | 404
+ * GET    /api/products/{id}/bought-together?limit=4  public  200 products often bought in the same order | 400 | 404
  * GET    /api/products/{id}/variants   public  200 every size/colour of the item | 404
  * GET    /api/products/variant-groups?names=A,B  public  200 option summary per group | 400 more than 100
  * POST   /api/products      ADMIN            201 | 400 | 401 | 403 | 409
@@ -84,6 +85,11 @@ public class ProductController {
     }
 
     /** "Similar products" for the product page: same category, in stock first, closest price. */
+    @GetMapping("/{id}/bought-together")
+    public List<Product> boughtTogether(@PathVariable long id, @RequestParam(required = false) Integer limit) {
+        return service.boughtTogether(id, limit);
+    }
+
     @GetMapping("/{id}/similar")
     public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
         return service.similar(id, limit);

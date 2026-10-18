@@ -40,14 +40,14 @@ test('a bad card number is flagged in the form', async ({ signedIn: page }) => {
   await expect(page.getByTestId('wc-number-error')).toHaveText('Enter 13 to 19 digits');
 });
 
-test('paying with a saved card only asks for the CVV', async ({ signedIn: page, customer, api }) => {
+test('paying with a saved card only asks for the CVV', async ({ signedIn: page, customer, api, request }) => {
   const product = await api.createProduct({ price: 10, stock: 5 });
   await api.addToCart(customer.token, product.id, 1);
-  const order = await (await api.request.post('/api/orders', {
+  const order = await (await request.post('/api/orders', {
     headers: { Authorization: `Bearer ${customer.token}` },
     data: { shippingAddress: ADDRESS },
   })).json();
-  const saved = await api.request.post('/api/payment-methods', {
+  const saved = await request.post('/api/payment-methods', {
     headers: { Authorization: `Bearer ${customer.token}` },
     data: { cardNumber: '4242424242424242', expiryMonth: 12, expiryYear: 2035, makeDefault: true },
   });

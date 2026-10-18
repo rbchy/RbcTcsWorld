@@ -36,6 +36,25 @@ public class OrderClient extends ApiClient {
         return pay(token, orderId, cardNumber, 12, 2035, "123");
     }
 
+    /** Pays with a card from the wallet (the CVV is asked every time). */
+    public Response paySaved(String token, long orderId, Long paymentMethodId, String cvv) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("paymentMethodId", paymentMethodId);
+        body.put("cvv", cvv);
+        return as(token).body(body).post("/api/orders/{id}/pay-saved", orderId);
+    }
+
+    /** Pays with a new card and asks the shop to keep it in the wallet. */
+    public Response payAndSave(String token, long orderId, String cardNumber) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("cardNumber", cardNumber);
+        body.put("expiryMonth", 12);
+        body.put("expiryYear", 2035);
+        body.put("cvv", "123");
+        body.put("saveCard", true);
+        return as(token).body(body).post("/api/orders/{id}/pay", orderId);
+    }
+
     public Response tracking(String token, long orderId) {
         return as(token).get("/api/orders/{id}/tracking", orderId);
     }

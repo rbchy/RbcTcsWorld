@@ -49,6 +49,20 @@ public class StripePaymentGateway implements PaymentGateway {
         if (paymentMethod == null) {
             return GatewayResult.decline("Use a Stripe test card, e.g. 4242 4242 4242 4242", null);
         }
+        return chargeToken(orderId, paymentMethod, amount);
+    }
+
+    /** In test mode the "token" of a card is its Stripe test PaymentMethod; live mode would attach a real one. */
+    @Override
+    public String tokenize(String cardNumber) {
+        return TEST_PAYMENT_METHODS.get(cardNumber);
+    }
+
+    @Override
+    public GatewayResult chargeToken(Long orderId, String paymentMethod, BigDecimal amount) {
+        if (paymentMethod == null || !paymentMethod.startsWith("pm_")) {
+            return GatewayResult.decline("Unknown saved card", null);
+        }
         long cents = cents(amount);
         // same order + amount + card = same key: a retry after a timeout returns the first answer, no double charge
         String key = "order-" + orderId + "-charge-" + cents + "-" + paymentMethod;

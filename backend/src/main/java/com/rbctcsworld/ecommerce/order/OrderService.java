@@ -16,6 +16,8 @@ import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.QuoteResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.TrackingResponse;
 import com.rbctcsworld.ecommerce.payment.PaymentDtos.PayRequest;
+import com.rbctcsworld.ecommerce.payment.PaymentDtos.PaySavedRequest;
+import com.rbctcsworld.ecommerce.payment.PaymentMethodService;
 import com.rbctcsworld.ecommerce.payment.PaymentService;
 import com.rbctcsworld.ecommerce.payment.PaymentTransaction;
 import com.rbctcsworld.ecommerce.pricing.PricingService;
@@ -59,11 +61,12 @@ public class OrderService {
     private final PricingService pricing;
     private final CouponService coupons;
     private final PaymentService payments;
+    private final PaymentMethodService paymentMethods;
     private final ApplicationEventPublisher events;
 
     public OrderService(OrderRepository orders, CartItemRepository cartItems, UserRepository users,
                         InventoryService inventory, PricingService pricing, CouponService coupons,
-                        PaymentService payments, ApplicationEventPublisher events) {
+                        PaymentService payments, PaymentMethodService paymentMethods, ApplicationEventPublisher events) {
         this.orders = orders;
         this.cartItems = cartItems;
         this.users = users;
@@ -71,6 +74,7 @@ public class OrderService {
         this.pricing = pricing;
         this.coupons = coupons;
         this.payments = payments;
+        this.paymentMethods = paymentMethods;
         this.events = events;
     }
 
@@ -131,6 +135,24 @@ public class OrderService {
         CustomerOrder order = owned(email, orderId);
         order.assertCanMoveTo(OrderStatus.PAID);                      // 409 before any money moves
         payments.charge(order.getId(), order.getTotal(), card);   // throws 400 / 402 on problems
+        OrderResponse paid = markPaid(order);
+        if (Boolean.TRUE.equals(card.saveCard())) {
+            // "save this card": only after the money moved, and it can never fail the payment
+            paymentMethods.saveAfterPayment(email, card.cardNumber(), card.expiryMonth(), card.expiryYear());
+        }
+        return paid;
+    }
+
+    /** Pays with a card from the wallet; the CVV is asked again and never kept. 404 for somebody else's card. */
+    @Transactional(noRollbackFor = PaymentDeclinedException.class)
+    public OrderResponse paySaved(String email, Long orderId, PaySavedRequest request) {
+        CustomerOrder order = owned(email, orderId);
+        order.assertCanMoveTo(OrderStatus.PAID);
+        payments.chargeSaved(order.getId(), order.getTotal(), paymentMethods.ownedBy(email, request.paymentMethodId()));
+        return markPaid(order);
+    }
+
+    private OrderResponse markPaid(CustomerOrder order) {
         String from = order.getStatus();
         order.markPaid();
         events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));

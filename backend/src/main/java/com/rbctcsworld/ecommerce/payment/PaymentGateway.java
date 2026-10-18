@@ -12,6 +12,15 @@ public interface PaymentGateway {
     GatewayResult charge(Long orderId, String cardNumber, BigDecimal amount);
 
     /**
+     * Turns a card into the provider's own token for later payments, so the card number never has to be kept.
+     * Returns null when the provider cannot use this card (Stripe test mode: only its test cards).
+     */
+    String tokenize(String cardNumber);
+
+    /** Charges a token made by {@link #tokenize}. Same results as {@link #charge}. */
+    GatewayResult chargeToken(Long orderId, String token, BigDecimal amount);
+
+    /**
      * Refunds (part of) an earlier successful charge, identified by the provider's reference.
      * refundNumber = 1 for the first refund of the order, 2 for the second...: part of the idempotency key,
      * so a retried refund is not paid twice while a second, real refund still goes through.

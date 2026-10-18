@@ -174,6 +174,7 @@ export function Sidebar({ route, session, open, onNavigate }) {
           <Item route={route} href="#/cart" testId="nav-cart" icon="cart" onNavigate={onNavigate}>{t('navCart')}</Item>
           <Item route={route} href="#/orders" testId="nav-orders" icon="box" onNavigate={onNavigate}>{t('navOrders')}</Item>
           <Item route={route} href="#/addresses" testId="nav-addresses" icon="pin" onNavigate={onNavigate}>{t('navAddresses')}</Item>
+          <Item route={route} href="#/payment-methods" testId="nav-wallet" icon="card" onNavigate={onNavigate}>{t('navWallet')}</Item>
         </ul>
       </div>
       <div className="side-sec c-account">

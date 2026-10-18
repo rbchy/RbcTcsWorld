@@ -28,6 +28,25 @@ public class MockPaymentGateway implements PaymentGateway {
         };
     }
 
+    /** The token only remembers which kind of test card it was, so a saved declining card keeps declining. */
+    @Override
+    public String tokenize(String cardNumber) {
+        String kind = switch (cardNumber) {
+            case DECLINED_CARD -> "declined";
+            case INSUFFICIENT_FUNDS_CARD -> "funds";
+            default -> "ok";
+        };
+        return "mock_pm_" + kind + "_" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    @Override
+    public GatewayResult chargeToken(Long orderId, String token, BigDecimal amount) {
+        if (token.startsWith("mock_pm_declined_")) return GatewayResult.decline("Card declined", null);
+        if (token.startsWith("mock_pm_funds_")) return GatewayResult.decline("Insufficient funds", null);
+        if (token.startsWith("mock_pm_ok_")) return GatewayResult.ok("mock_ch_" + UUID.randomUUID());
+        return GatewayResult.decline("Unknown saved card", null);
+    }
+
     @Override
     public GatewayResult refund(Long orderId, String chargeReference, BigDecimal amount, int refundNumber) {
         return GatewayResult.ok("mock_re_" + UUID.randomUUID());

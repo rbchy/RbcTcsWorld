@@ -15,6 +15,7 @@ import OrderDetail from './pages/OrderDetail';
 import ProductDetail from './pages/ProductDetail';
 import Wishlist from './pages/Wishlist';
 import Addresses from './pages/Addresses';
+import PaymentMethods from './pages/PaymentMethods';
 import Help from './pages/Help';
 import Goodbye from './pages/Goodbye';
 import { AdminOnly } from './pages/admin/common';
@@ -50,7 +51,7 @@ function App() {
   const route = useRoute();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist', '/addresses', '/admin'].some(p => route.startsWith(p));
+  const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist', '/addresses', '/payment-methods', '/admin'].some(p => route.startsWith(p));
 
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') setMenuOpen(false); };
@@ -73,6 +74,7 @@ function App() {
   else if (route.startsWith('/orders/')) page = <OrderDetail id={route.split('/')[2]} />;
   else if (route === '/wishlist') page = <Wishlist />;
   else if (route === '/addresses') page = <Addresses />;
+  else if (route === '/payment-methods') page = <PaymentMethods />;
   else if (route.startsWith('/products/')) page = <ProductDetail id={route.split('/')[2]} />;
   else page = <Home />;
 

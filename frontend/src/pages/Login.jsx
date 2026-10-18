@@ -59,7 +59,7 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
 
   const verify = async e => {
     e.preventDefault();
-    if (!/^\s*\d{6}\s*$/.test(code)) { setCodeError(t('vCode')); return; }
+    if (!/^\s*\d{6}\s*$/.test(code)) { setCodeError(t('vSixDigits')); return; }
     setBusy(true); setCodeError('');
     try {
       saveSession((await api.post('/auth/login/verify', { challengeToken: challenge.challengeToken, code: code.trim() })).data);

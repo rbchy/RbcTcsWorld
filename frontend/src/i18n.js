@@ -88,7 +88,7 @@ const T = {
   codeLabel: ['6-digit code', '৬ সংখ্যার কোড', 'Código de 6 dígitos', 'Code à 6 chiffres', 'رمز من 6 أرقام', '6 位验证码'],
   codeBtn: ['Verify and sign in', 'যাচাই করে সাইন-ইন', 'Verificar e iniciar sesión', 'Vérifier et se connecter', 'تحقق وسجّل الدخول', '验证并登录'],
   codeBack: ['Use a different account', 'অন্য অ্যাকাউন্ট ব্যবহার করুন', 'Usar otra cuenta', 'Utiliser un autre compte', 'استخدم حسابًا آخر', '使用其他账户'],
-  vCode: ['Enter the 6 digits', '৬টি সংখ্যা দিন', 'Introduzca los 6 dígitos', 'Saisissez les 6 chiffres', 'أدخل الأرقام الستة', '请输入 6 位数字'],
+  vSixDigits: ['Enter the 6 digits', '৬টি সংখ্যা দিন', 'Introduzca los 6 dígitos', 'Saisissez les 6 chiffres', 'أدخل الأرقام الستة', '请输入 6 位数字'],
   navAddresses: ['Addresses', 'ঠিকানা', 'Direcciones', 'Adresses', 'العناوين', '地址簿'],
   deliverTo: ['Deliver to', 'কোথায় পাঠাব', 'Enviar a', 'Livrer à', 'التوصيل إلى', '配送至'],
   defaultBadge: ['Default', 'ডিফল্ট', 'Predeterminada', 'Par défaut', 'الافتراضي', '默认'],

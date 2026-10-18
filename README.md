@@ -3,13 +3,13 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-1230-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-98.6%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-93.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
+![Tests](https://img.shields.io/badge/automated%20tests-1481-brightgreen)
+[![Coverage](https://img.shields.io/badge/line%20coverage-97.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-89.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
 
 An Amazon-inspired online store (catalog, cart, checkout with a delivery address, Stripe or mock payment, shipping,
-returns, reviews, wishlist, order e-mails, password reset by e-mail, a store back office with customers, coupons,
+returns, reviews, wishlist, order e-mails, password reset by e-mail, guest checkout and an address book, size/colour variants, a faceted filter panel, flash deals with a countdown, "customers also bought", invoice PDFs, optional two-factor sign-in by e-mailed code, a saved-card wallet (tokens only), a store back office with customers, coupons,
 multi-warehouse inventory, reports, a payment ledger and advanced search, and an append-only audit trail inspired by 21 CFR Part 11 / ALCOA+)
 that I built **to be tested**: the application is the test object, and the real work is the test system around it.
 Every push goes through 18 quality gates in GitHub Actions; the same pipeline runs in Jenkins on a Mac.
@@ -49,22 +49,22 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 663 / 663 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 398 / 398 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 98.6 % / 95.6 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 93.2 % (test strength 98.0 %) | PIT |
+| 1 | Backend unit + integration | 100 % pass | 772 / 772 | JUnit 5, Mockito, H2 + Flyway |
+| 2 | API, database, BDD, UI | 100 % pass | 444 / 444 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.3 % / 94.2 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 89.3 % (test strength 94.7 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 23 pages | axe-core, WCAG 2.1 A + AA |
-| 8 | Cross-browser | 100 % pass | 53 / 53 in Firefox and Edge | Selenium, CI matrix |
+| 8 | Cross-browser | 100 % pass | 59 / 59 in Firefox and Edge | Selenium, CI matrix |
 | 9 | Performance | SLO thresholds (p95, error rate, no overselling) | p95 16-72 ms, 0 % errors; JMeter 100 users p95 77 ms | k6, JMeter (manual workflow) |
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
-| 12 | Containers | stack healthy, smoke tests pass | 44 / 44 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 109 / 109 | `docs/qa/check_rtm.py` |
+| 12 | Containers | stack healthy, smoke tests pass | 63 / 63 | Docker Compose |
+| 13 | Traceability | every requirement has a test | 129 / 129 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | 15 / 15 smoke checks | Docker Compose, Caddy, `deploy/smoke.sh` (GitHub Actions only: needs ports 80/443) |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 158 / 158 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 254 / 254 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
 
@@ -85,7 +85,7 @@ flowchart TB
     A["API tests<br/>REST Assured clients"]
     C["Contract<br/>JSON Schema + OpenAPI diff"]
     D["Database checks<br/>read-only JDBC"]
-    B["BDD<br/>43 Cucumber scenarios"]
+    B["BDD<br/>52 Cucumber scenarios"]
     S["Security<br/>JWT, RBAC/IDOR matrix, injection"]
   end
   subgraph ui["Browser (fewest tests)"]
@@ -267,7 +267,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 ## Documentation
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (109 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (129 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (28)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md)
 
 **Help (Bangla), start here:** [HELP_BN](docs/HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.

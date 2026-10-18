@@ -5,7 +5,7 @@ import { Field, Notice, when } from './common';
 import ProductImage, { IMAGE_URL } from '../../ProductImage';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '' };
 
 /** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
  *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
@@ -28,6 +28,16 @@ export function validateProduct(f) {
   if (color && !/^[\p{L} -]{1,30}$/u.test(color)) e.color = 'vColor';
   if (!group && (size || color)) e.variantGroup = 'vGroupNeeded';
   if (group && !e.variantGroup && !size && !color) e.size = 'vSizeOrColor';
+  // flash deal (same rules as ProductService.checkDeal): all three or none, lower than the price, end after start
+  const dp = String(f.dealPrice ?? '').trim();
+  const ds = f.dealStartsAt ?? '';
+  const de = f.dealEndsAt ?? '';
+  if (dp || ds || de) {
+    if (!dp || !ds || !de) e.dealPrice = 'vDealAll';
+    else if (!/^\d+(\.\d{1,2})?$/.test(dp) || Number(dp) <= 0) e.dealPrice = 'vMoney';
+    else if (!e.price && Number(dp) >= Number(f.price)) e.dealPrice = 'vDealLower';
+    if (ds && de && de <= ds) e.dealEndsAt = 'vDealOrder';
+  }
   return e;
 }
 
@@ -87,7 +97,8 @@ export default function AdminProducts() {
   const open = p => {
     setErrors({}); setOk(''); setError(''); setConfirm(null);
     setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
-      variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '' } : { ...EMPTY });
+      variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
+      dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16) } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -102,7 +113,9 @@ export default function AdminProducts() {
     if (Object.keys(found).length) return;
     const body = { name: form.name.trim(), sku: form.sku.trim(), category: form.category.trim() || null,
       price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl.trim() || null,
-      variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null };
+      variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null,
+      dealPrice: form.dealPrice.trim() ? Number(form.dealPrice) : null,
+      dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -196,6 +209,19 @@ export default function AdminProducts() {
             <datalist id="pf-size-list">{['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(x => <option key={x} value={x} />)}</datalist>
             <Field id="pf-color" label={t('colorLabel')} error={errors.color}>
               <input value={form.color} onChange={set('color')} maxLength={30} placeholder="Navy" data-testid="pf-color" />
+            </Field>
+          </fieldset>
+          <fieldset className="deal-fields">
+            <legend>{t('dealLegend')}</legend>
+            <p className="hint">{t('dealHint')}</p>
+            <Field id="pf-deal-price" label={t('dealPriceLabel')} error={errors.dealPrice}>
+              <input value={form.dealPrice} onChange={set('dealPrice')} inputMode="decimal" data-testid="pf-deal-price" />
+            </Field>
+            <Field id="pf-deal-start" label={t('dealStartLabel')} error={errors.dealStartsAt}>
+              <input type="datetime-local" value={form.dealStartsAt} onChange={set('dealStartsAt')} data-testid="pf-deal-start" />
+            </Field>
+            <Field id="pf-deal-end" label={t('dealEndLabel')} error={errors.dealEndsAt}>
+              <input type="datetime-local" value={form.dealEndsAt} onChange={set('dealEndsAt')} data-testid="pf-deal-end" />
             </Field>
           </fieldset>
           <div className="image-field">

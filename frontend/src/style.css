@@ -580,3 +580,17 @@ label.addr-choice em { font-style: normal; margin-inline-start: 8px; }
 .address-card address { font-style: normal; line-height: 1.5; }
 .address-form .field { margin-bottom: 12px; }
 @media (max-width: 860px) { .role-badge.guest { display: none; } }
+
+/* flash deals */
+.deal-price { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 6px 8px; }
+.deal-price .now { color: #b3261e; }
+.deal-price .was { color: var(--muted, #5f6368); font-size: .9em; }
+.deal-badge { background: #b3261e; color: #fff; border-radius: 4px; padding: 1px 6px; font-size: .8em; font-weight: 700; }
+.deal-countdown { display: block; font-size: .85em; color: #b3261e; font-variant-numeric: tabular-nums; }
+.deal-countdown.over { color: var(--muted, #5f6368); }
+.deals-shelf { margin-bottom: 20px; }
+.deals-shelf h2 { margin: 0 0 8px; }
+.deals-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.deal-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 16px; }
+.deal-fields legend { font-weight: 700; padding: 0 6px; }
+.deal-fields .hint { grid-column: 1 / -1; margin: 0 0 8px; }

@@ -42,6 +42,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-CAT-08 | Variant rules: a size or colour needs a group, a group needs a size or colour (400); no two products on sale of one group with the same size and colour, ignoring case (409); field formats checked (400); an edit may keep its own size/colour; a deleted variant frees its combination | `ProductVariantTest#aSizeOrColourNeedsAGroupAndAGroupNeedsASizeOrColour`, `ProductVariantTest#twoProductsOfOneGroupCannotHaveTheSameSizeAndColourIgnoringCase`, `ProductVariantTest#aDifferentSizeOrColourInTheSameGroupIsFine`, `ProductVariantTest#anUpdateMayKeepItsOwnSizeAndColourAndAPutWithoutThemEndsTheVariant`, `ProductVariantIntegrationTest#theAdminBuildsAGroupWithTheSameRulesAsTheForm`, `ProductVariantIntegrationTest#anEditCanMoveAVariantButNotOntoAnotherOne`, `ProductVariantApiTest#adminBuildsAGroup`, `bdd:The same size and colour cannot be added twice to one group`, `bdd:A size without a variant group is refused`, `playwright/tests/variants.spec.ts` | U I A B UI | Pass |
 | REQ-CAT-09 | The storefront shows one card per item (grouped=true: the first variant on sale) with an option summary (count, colours, sizes in clothing order, price range, units); the product page offers colour swatches and size buttons, sold-out options can be seen but not bought; similar products leave out the item's other options | `ProductVariantTest#theVariantsOfAProductAreItsWholeGroupOrJustItself`, `ProductVariantTest#summariesListOptionsColoursSizesInClothingOrderPriceRangeAndUnits`, `ProductVariantTest#noGroupsAskedMeansNoQueryAndAtMostAHundredAtATime`, `ProductVariantTest#sizesSortClothingFirstThenNumbersThenTheRest`, `ProductVariantTest#otherSizesAndColoursOfTheSameItemAreNotSimilarProducts`, `ProductVariantTest#theStorefrontsGroupedCatalogUsesTheFilteredQuery`, `ProductVariantIntegrationTest#similarProductsLeaveOutTheOtherSizesOfTheSameItem`, `ProductVariantApiTest#similarSkipsSiblings`, `playwright/tests/variants.spec.ts` | U I A UI | Pass |
 | REQ-CAT-10 | Cart lines, orders and the wishlist name the variant bought ("Name (Colour, Size)"); only that variant's stock goes down | `ProductVariantIntegrationTest#theCartTheOrderAndTheWishlistNameTheVariant`, `ProductVariantApiTest#orderNamesTheVariant`, `bdd:The order line names the size and colour that were bought`, `playwright/tests/variants.spec.ts` | I A B UI | Pass |
+| REQ-CAT-14 | Flash deals: a deal price between two UTC times (all three fields or none, lower than the price, end after start, at most 30 days, not already over); the catalog, the product page, the cart, the order and the wishlist use the deal price while it runs; `GET /api/products/deals` lists running deals, the one ending first on top; an ordinary product's JSON has no deal fields | `FlashDealTest`, `FlashDealApiTest`, `playwright/tests/flash-deals.spec.ts` | U A UI | Pass |
 
 ## Cart
 
@@ -202,7 +203,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 15 | 15 | - |
-| Catalog | 10 | 10 | - |
+| Catalog | 11 | 11 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 15 | 15 | - |
 | Pricing, coupons, payments | 12 | 12 | - |
@@ -214,4 +215,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **122** | **122 (100 %)** | **0** |
+| **Total** | **123** | **123 (100 %)** | **0** |

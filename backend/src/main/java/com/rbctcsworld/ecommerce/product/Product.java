@@ -7,7 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "products")
@@ -60,6 +64,16 @@ public class Product {
     @Column(length = 30)
     private String color;
 
+    /** Flash deal (UTC): the price paid between start (inclusive) and end (exclusive). All three set, or none. */
+    @Column(name = "deal_price", precision = 12, scale = 2)
+    private BigDecimal dealPrice;
+
+    @Column(name = "deal_starts_at")
+    private LocalDateTime dealStartsAt;
+
+    @Column(name = "deal_ends_at")
+    private LocalDateTime dealEndsAt;
+
     protected Product() {
     }
 
@@ -93,6 +107,39 @@ public class Product {
     public String getVariantGroup() { return variantGroup; }
     public String getSize() { return size; }
     public String getColor() { return color; }
+
+    /** Already validated by ProductService; null price = no deal. */
+    public void changeDeal(BigDecimal dealPrice, LocalDateTime startsAt, LocalDateTime endsAt) {
+        boolean none = dealPrice == null;
+        this.dealPrice = none ? null : dealPrice;
+        this.dealStartsAt = none ? null : startsAt;
+        this.dealEndsAt = none ? null : endsAt;
+    }
+
+    /** The deal fields are only in the JSON of a product that has a deal, so ordinary products look as before. */
+    @JsonInclude(JsonInclude.Include.NON_NULL) public BigDecimal getDealPrice() { return dealPrice; }
+    @JsonInclude(JsonInclude.Include.NON_NULL) public LocalDateTime getDealStartsAt() { return dealStartsAt; }
+    @JsonInclude(JsonInclude.Include.NON_NULL) public LocalDateTime getDealEndsAt() { return dealEndsAt; }
+
+    /** True while the deal runs, false before it starts or after it ended, absent without a deal. */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean getDealLive() {
+        return dealPrice == null ? null : isDealLiveAt(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    public boolean isDealLiveAt(LocalDateTime nowUtc) {
+        return dealPrice != null && !nowUtc.isBefore(dealStartsAt) && nowUtc.isBefore(dealEndsAt);
+    }
+
+    /** What a customer pays at this moment: the deal price while the deal runs, the price otherwise. */
+    public BigDecimal priceAt(LocalDateTime nowUtc) {
+        return isDealLiveAt(nowUtc) ? dealPrice : price;
+    }
+
+    /** Not a JSON property (no "get" prefix); cart, orders and the wishlist use it. */
+    public BigDecimal currentPrice() {
+        return priceAt(LocalDateTime.now(ZoneOffset.UTC));
+    }
 
     /** Already normalised by ProductService (group upper case; blank = null). */
     public void changeVariant(String variantGroup, String size, String color) {

@@ -6,6 +6,7 @@ import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
 import { Icon } from '../icons';
 import { swatch } from '../variants';
+import { Price, Countdown, isLive } from '../Deal';
 
 const PAGE_SIZE = 20;
 
@@ -17,6 +18,7 @@ export default function Home() {
   const [q, setQ] = useState('');
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
+  const [deals, setDeals] = useState([]);           // flash deals running now
   const [options, setOptions] = useState({});      // variant group -> {options, colors, sizes, minPrice, maxPrice}
 
   // The catalog is paginated (DEF-007): 20 products per request, "Load more" fetches the next page.
@@ -46,6 +48,8 @@ export default function Home() {
     const timer = setTimeout(() => load(0, false, () => current), q ? 200 : 0);
     return () => { current = false; clearTimeout(timer); };
   }, [q]);
+
+  useEffect(() => { api.get('/products/deals').then(r => setDeals(r.data)).catch(() => {}); }, []);
 
   const add = async (productId, quantity) => {
     if (!getSession()) { go('/login'); return; }
@@ -82,6 +86,21 @@ export default function Home() {
       {flash && <p data-testid="flash" className="ok">{flash}</p>}
       <p className="muted small" id="catalog" data-testid="catalog-total">{t('showing', { n: products.length, total })}</p>
       {!error && total === 0 && q && <p className="card muted" data-testid="no-results">{t('noProducts')}</p>}
+      {deals.length > 0 && !q && (
+        <section className="deals-shelf" data-testid="deals-shelf" aria-labelledby="deals-title">
+          <h2 id="deals-title">{t('flashDeals')}</h2>
+          <div className="deals-row">
+            {deals.map(d => (
+              <article className="product-card" key={d.id} data-testid="deal-card" data-sku={d.sku}>
+                <ProductImage product={d} />
+                <h3><a href={`#/products/${d.id}`}>{d.name}</a></h3>
+                <p><Price p={d} testId="deal-card-price" /></p>
+                <Countdown endsAt={d.dealEndsAt} testId="deal-card-countdown" />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="grid" data-testid="product-grid">
         {products.map(p => <ProductCard key={p.id} p={p} options={options[p.variantGroup]} onAdd={add} onWish={wish} t={t} />)}
       </section>
@@ -101,7 +120,8 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
       <h2><a href={`#/products/${p.id}`} data-testid="product-name">{p.name}</a></h2>
       <p className="muted">{p.category}</p>
       <Stars average={p.ratingAverage} count={p.ratingCount} />
-      <p><strong data-testid="product-price">{money(p.price)}</strong></p>
+      <p><Price p={p} /></p>
+      {isLive(p) && <Countdown endsAt={p.dealEndsAt} />}
       <p className="muted" data-testid="product-stock">{t('stock')}: {p.stock}</p>
       <div className="row">
         <input type="number" min="1" max="10" value={qty} data-testid="qty-input" aria-label={`Quantity of ${p.name}`}

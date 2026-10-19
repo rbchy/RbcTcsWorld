@@ -11,7 +11,10 @@ test.describe('Forgot password', () => {
     for (const email of [customer.email, `nobody-${Date.now()}@test.com`]) {
       await page.goto('/#/login');
       await page.getByTestId('forgot-link').click();
-      await page.getByLabel('Email', { exact: true }).fill(email);
+      // Wait for the forgot-password page first: the login page also has two e-mail fields (sign in and guest
+      // checkout), so a label locator matched them during the page change and failed in strict mode.
+      await expect(page.getByTestId('forgot-card')).toBeVisible();
+      await page.getByTestId('forgot-email').fill(email);
       await page.getByTestId('forgot-submit').click();
       await expect(page.getByTestId('forgot-sent')).toContainText('If an account exists for this e-mail');
     }

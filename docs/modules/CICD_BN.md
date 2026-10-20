@@ -171,6 +171,11 @@ GitHub ঘোষণা দিয়েছিল, ১৯ অক্টোবর �
   - বাছাই করা browser Mac-এ install না থাকলে শুধু একটা NOTE দেখায়, build থামায় না। Chrome, Firefox আর Edge না থাকলে Selenium Manager নিজেই browser নামিয়ে নেয় (`~/.cache/selenium`)। Build #22 Firefox install ছাড়াই পাস করেছিল, অথচ প্রথম সংস্করণের পরীক্ষা build #32-কে ভুল করে থামিয়ে দিয়েছিল।
   - Safari হলে: আসল একটা WebDriver session খুলে বন্ধ করে দেখে। না পারলে কয়েক সেকেন্ডে build থামে, ঠিক কী চালু করতে হবে সেই বার্তাসহ।
 
+### Mac-এর স্ক্রিন জাগিয়ে রাখা (build #70)
+- **কী হয়েছিল:** `BROWSER=safari` দিয়ে build চলার মাঝে Mac-এর স্ক্রিন বন্ধ বা lock হয়ে গিয়েছিল। Lock করা স্ক্রিনে Safari কিছুই আঁকে না, তাই পাতাগুলো ফাঁকা থাকল আর ১২টা UI টেস্ট timeout হলো। Allure-এর failure screenshot-গুলো পুরো কালো ছিল, আর একটা টেস্ট ১০০৯ সেকেন্ড আটকে ছিল। একই commit Chrome (#67), Firefox (#68) আর Edge (#69)-এ পাস করেছিল।
+- **এখন:** Automation আর Playwright stage macOS-এ `caffeinate -dimsu` দিয়ে চলে। Build চলা পর্যন্ত display আর Mac ঘুমায় না। অন্য OS-এ `caffeinate` নেই, তাই সেখানে কিছুই বদলায় না।
+- **তবুও:** নিজে হাতে lock করলে (Ctrl+Cmd+Q) বা ঢাকনা বন্ধ করলে caffeinate কিছু করতে পারে না। Safari build চলার সময় Mac খোলা আর unlock রাখুন।
+
 ## এখন CI-র gate-গুলো (প্রতিটা push-এ)
 1. Backend টেস্ট (২৮৪টা) আর JaCoCo coverage gate
 2. Traceability matrix check

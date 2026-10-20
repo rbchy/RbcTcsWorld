@@ -9,9 +9,18 @@ function tile(fill) {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
+/** The name once, very large: the storefront banner's watermark (scaled to the banner by CSS). */
+function big(fill) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="200" viewBox="0 0 1200 200">`
+    + `<text x="600" y="160" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" `
+    + `font-size="190" font-weight="900" letter-spacing="-4" fill="${fill}">RbcTcsWorld</text></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
 const TONES = {
   dark: tile('rgba(232, 241, 243, 0.07)'),     // on the harbor-blue banners
   light: tile('rgba(18, 49, 63, 0.06)'),       // on white (report sheets)
+  big: big('rgba(232, 241, 243, 0.11)'),       // one large name across the storefront banner
 };
 
 /**

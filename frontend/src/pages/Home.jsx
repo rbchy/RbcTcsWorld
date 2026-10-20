@@ -8,6 +8,8 @@ import { Icon } from '../icons';
 import { swatch } from '../variants';
 import { Price, Countdown, isLive } from '../Deal';
 import Filters, { NO_FILTERS, filterParams, isFiltered } from '../Filters';
+import Watermark from '../Watermark';
+import ShopScene from '../ShopScene';
 
 const PAGE_SIZE = 20;
 
@@ -152,19 +154,33 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
   );
 }
 
-/** The one bold element of the storefront: a parcel label carrying the welcome offer. */
+/**
+ * The startup banner: the welcome-offer parcel label, a way in (log in / create account) for visitors,
+ * a picture of the shop and the RbcTcsWorld name as a large watermark behind it all.
+ */
 function Banner({ t }) {
+  const session = getSession();
+  const visitor = !session || session.guest;
+  const toCatalog = e => { e.preventDefault(); document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }); };
   return (
     <section className="banner" aria-labelledby="banner-title" data-testid="banner">
-      <div className="label-card">
-        <div className="barcode" aria-hidden="true" />
-        <div className="label-body">
-          <h2 id="banner-title">{t('bannerTitle')}</h2>
-          <p>{t('bannerText')}</p>
-          <p className="coupon"><span>{t('bannerCode')}</span> <strong data-testid="banner-code">WELCOME10</strong></p>
+      <Watermark tone="big" />
+      <div className="banner-main">
+        <div className="label-card">
+          <div className="barcode" aria-hidden="true" />
+          <div className="label-body">
+            <h2 id="banner-title">{t('bannerTitle')}</h2>
+            <p>{t('bannerText')}</p>
+            <p className="coupon"><span>{t('bannerCode')}</span> <strong data-testid="banner-code">WELCOME10</strong></p>
+          </div>
+        </div>
+        <div className="banner-actions">
+          {visitor && <a className="banner-btn" href="#/login" data-testid="banner-login">{t('navLogin')}</a>}
+          {visitor && <a className="banner-btn ghost" href="#/register" data-testid="banner-register">{t('navRegister')}</a>}
+          <a className="banner-link" href="#/" onClick={toCatalog} data-testid="banner-shop">{t('bannerShop')}</a>
         </div>
       </div>
-      <a className="banner-link" href="#/" onClick={e => { e.preventDefault(); document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }); }}>{t('bannerShop')}</a>
+      <ShopScene />
     </section>
   );
 }

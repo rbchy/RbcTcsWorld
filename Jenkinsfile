@@ -24,7 +24,7 @@ pipeline {
 
     parameters {
         booleanParam(name: 'RUN_UI', defaultValue: true, description: 'Selenium UI tests')
-        choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge', 'safari'], description: 'Browser for the UI and accessibility tests (must be installed on the agent; Safari: run "sudo safaridriver --enable" once)')
+        choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge', 'safari'], description: 'Browser for the UI and accessibility tests (must be installed on the agent; Safari: run "sudo safaridriver --enable" once and keep the Mac unlocked; the build keeps the display awake with caffeinate)')
         booleanParam(name: 'RUN_PLAYWRIGHT', defaultValue: true, description: 'Playwright suite (TypeScript) in Chromium, WebKit (Safari engine) and iPhone 14; needs Node.js on the agent (brew install node), skipped with a note otherwise')
         choice(name: 'PHONE', choices: ['none', 'ios-safari', 'android-chrome'], description: 'Phone tests through Appium (docs/modules/APPIUM_MOBILE_BN.md): start the iOS Simulator or Android emulator and "appium" on this Mac first')
         booleanParam(name: 'RUN_MUTATION', defaultValue: true, description: 'PIT mutation testing of the business logic (about 4 minutes)')
@@ -158,7 +158,10 @@ pipeline {
                 script {
                     // "mobile" tests need an Appium server and a phone (see docs/modules/APPIUM_MOBILE_BN.md)
                     def filter = params.RUN_UI ? '-DexcludedGroups=mobile' : '-DexcludedGroups=ui,mobile'
-                    sh "mvn -B -f automation/pom.xml clean test ${filter} -DbaseUrl=${BASE_URL} -DuiUrl=${UI_URL} -Dheadless=true -Dbrowser=${params.BROWSER}"
+                    // macOS: keep the display awake while the browser runs. A locked or sleeping screen paints nothing in
+                    // Safari, so pages stay blank and every wait times out (build #70: black screenshots, 12 timeouts).
+                    // caffeinate only exists on macOS; elsewhere KEEP is empty and mvn runs as before.
+                    sh "KEEP=\$(command -v caffeinate >/dev/null 2>&1 && echo 'caffeinate -dimsu'); \$KEEP mvn -B -f automation/pom.xml clean test ${filter} -DbaseUrl=${BASE_URL} -DuiUrl=${UI_URL} -Dheadless=true -Dbrowser=${params.BROWSER}"
                 }
             }
             post {
@@ -183,7 +186,9 @@ pipeline {
                         npm ci --no-audit --no-fund
                         npx playwright install chromium webkit
                         # visual baselines are Linux Chromium pictures (GitHub Actions); not compared on the Mac
-                        SKIP_VISUAL=1 UI_URL=$UI_URL npx playwright test --project=chromium --project=webkit --project=mobile-iphone
+                        # keep the Mac's display awake during the run (see the automation stage)
+                        KEEP=$(command -v caffeinate >/dev/null 2>&1 && echo 'caffeinate -dimsu')
+                        SKIP_VISUAL=1 UI_URL=$UI_URL $KEEP npx playwright test --project=chromium --project=webkit --project=mobile-iphone
                     '''
                 }
             }

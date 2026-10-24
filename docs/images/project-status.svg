@@ -1,0 +1,78 @@
+<svg width="1000" height="560" viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project status board: 1489 automated tests, 1486 passed and 3 skipped by design; 18 of 18 CI gates passed; 97.3 percent line coverage; 89.3 percent mutation score; 129 of 129 requirements traced.">
+<rect width="1000" height="560" rx="14" fill="#12313f"/>
+<text x="32" y="48" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#f4b04a" text-anchor="start">Project Status Board</text>
+<text x="32" y="72" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#9fbac2" text-anchor="start">RbcTcsWorld E-Commerce Suite · main @ f1a74ed · 23 Oct 2026 · every gate green</text>
+<rect x="32.0" y="92" width="177.6" height="96" rx="10" fill="#1b4253"/><text x="48.0" y="132" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff" text-anchor="start">1,489</text><text x="48.0" y="154" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#e8f1f3" text-anchor="start">automated tests</text><text x="48.0" y="173" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">1,486 passed · 3 skipped</text>
+<rect x="221.6" y="92" width="177.6" height="96" rx="10" fill="#1b4253"/><text x="237.6" y="132" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff" text-anchor="start">18 / 18</text><text x="237.6" y="154" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#e8f1f3" text-anchor="start">CI gates passed</text><text x="237.6" y="173" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">GitHub Actions + Jenkins</text>
+<rect x="411.2" y="92" width="177.6" height="96" rx="10" fill="#1b4253"/><text x="427.2" y="132" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff" text-anchor="start">97.3 %</text><text x="427.2" y="154" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#e8f1f3" text-anchor="start">line coverage</text><text x="427.2" y="173" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">94.2 % branches (JaCoCo)</text>
+<rect x="600.8" y="92" width="177.6" height="96" rx="10" fill="#1b4253"/><text x="616.8" y="132" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff" text-anchor="start">89.3 %</text><text x="616.8" y="154" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#e8f1f3" text-anchor="start">mutation score</text><text x="616.8" y="173" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">test strength 94.7 % (PIT)</text>
+<rect x="790.4" y="92" width="177.6" height="96" rx="10" fill="#1b4253"/><text x="806.4" y="132" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff" text-anchor="start">129 / 129</text><text x="806.4" y="154" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#e8f1f3" text-anchor="start">requirements traced</text><text x="806.4" y="173" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">checked on every push</text>
+<text x="32" y="228" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#e8f1f3" text-anchor="start">Tests by level</text>
+<rect x="32.0" y="242" width="483.3" height="26" rx="4" fill="#4fb3a9"/>
+<rect x="517.3" y="242" width="277.1" height="26" rx="4" fill="#f4b04a"/>
+<rect x="796.4" y="242" width="164.6" height="26" rx="4" fill="#8fb8de"/>
+<rect x="963.0" y="242" width="3.0" height="26" rx="4" fill="#e58a8a"/>
+<rect x="32" y="282" width="12" height="12" rx="3" fill="#4fb3a9"/>
+<text x="50" y="293" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">Backend unit + integration 772</text>
+<rect x="277.0" y="282" width="12" height="12" rx="3" fill="#f4b04a"/>
+<text x="295.0" y="293" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">API · DB · BDD · Selenium UI 444</text>
+<rect x="535.4" y="282" width="12" height="12" rx="3" fill="#8fb8de"/>
+<text x="553.4" y="293" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">Playwright (5 browsers/devices) 265</text>
+<rect x="813.9" y="282" width="12" height="12" rx="3" fill="#e58a8a"/>
+<text x="831.9" y="293" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">Appium phones 8</text>
+<text x="32" y="336" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#e8f1f3" text-anchor="start">Quality gates (a red gate fails the build)</text>
+<rect x="32.0" y="350" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="365" r="8" fill="#4ade80"/><path d="M45.0 365 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="370" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">1  Backend tests</text>
+<rect x="348.0" y="350" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="365" r="8" fill="#4ade80"/><path d="M361.0 365 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="370" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">2  API · DB · BDD · UI</text>
+<rect x="664.0" y="350" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="365" r="8" fill="#4ade80"/><path d="M677.0 365 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="370" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">3  Coverage 97.3 %</text>
+<rect x="32.0" y="386" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="401" r="8" fill="#4ade80"/><path d="M45.0 401 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="406" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">4  Mutation 89.3 %</text>
+<rect x="348.0" y="386" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="401" r="8" fill="#4ade80"/><path d="M361.0 401 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="406" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">5  Contract: consumer</text>
+<rect x="664.0" y="386" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="401" r="8" fill="#4ade80"/><path d="M677.0 401 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="406" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">6  Contract: provider</text>
+<rect x="32.0" y="422" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="437" r="8" fill="#4ade80"/><path d="M45.0 437 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="442" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">7  Accessibility</text>
+<rect x="348.0" y="422" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="437" r="8" fill="#4ade80"/><path d="M361.0 437 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="442" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">8  Firefox + Edge</text>
+<rect x="664.0" y="422" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="437" r="8" fill="#4ade80"/><path d="M677.0 437 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="442" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">9  Performance (k6)</text>
+<rect x="32.0" y="458" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="473" r="8" fill="#4ade80"/><path d="M45.0 473 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="478" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">10  OWASP ZAP</text>
+<rect x="348.0" y="458" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="473" r="8" fill="#4ade80"/><path d="M361.0 473 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="478" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">11  Dependencies (OSV)</text>
+<rect x="664.0" y="458" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="473" r="8" fill="#4ade80"/><path d="M677.0 473 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="478" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">12  Docker smoke</text>
+<rect x="32.0" y="494" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="509" r="8" fill="#4ade80"/><path d="M45.0 509 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="514" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">13  Traceability</text>
+<rect x="348.0" y="494" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="509" r="8" fill="#4ade80"/><path d="M361.0 509 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="514" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">14  Jenkinsfile lint</text>
+<rect x="664.0" y="494" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="509" r="8" fill="#4ade80"/><path d="M677.0 509 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="514" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">15  Public demo stack</text>
+<rect x="32.0" y="530" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="49.0" cy="545" r="8" fill="#4ade80"/><path d="M45.0 545 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66.0" y="550" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">16  Playwright</text>
+<rect x="348.0" y="530" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="365.0" cy="545" r="8" fill="#4ade80"/><path d="M361.0 545 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="382.0" y="550" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">17  Android (Appium)</text>
+<rect x="664.0" y="530" width="304.0" height="30" rx="8" fill="#1b4253"/>
+<circle cx="681.0" cy="545" r="8" fill="#4ade80"/><path d="M677.0 545 l3 3 l5 -6" fill="none" stroke="#12313f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="698.0" y="550" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#e8f1f3" text-anchor="start">18  iOS (Appium)</text>
+</svg>

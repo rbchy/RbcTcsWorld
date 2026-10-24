@@ -3,7 +3,7 @@
 [![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-1481-brightgreen)
+![Tests](https://img.shields.io/badge/automated%20tests-1489-brightgreen)
 [![Coverage](https://img.shields.io/badge/line%20coverage-97.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
 [![Mutation](https://img.shields.io/badge/mutation%20score-89.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
@@ -16,6 +16,64 @@ Every push goes through 18 quality gates in GitHub Actions; the same pipeline ru
 The public demo runs on one free cloud server with HTTPS ([deploy/](deploy/), guide: [ORACLE_CLOUD_BN](docs/deploy/ORACLE_CLOUD_BN.md)).
 
 Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github.com/rbchy) · [LinkedIn](https://www.linkedin.com/in/rbchy/)
+
+---
+
+## 🚦 Project Status Board
+
+<img src="docs/images/project-status.svg" alt="Project status board: 1,489 automated tests (1,486 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.3 % line coverage, 89.3 % mutation score, 129 of 129 requirements traced" width="100%">
+
+[![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
+![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld_ECommerceSuite?label=last%20commit)
+![Open issues](https://img.shields.io/github/issues/rbchy/RbcTcsWorld_ECommerceSuite?label=open%20issues)
+![Open PRs](https://img.shields.io/github/issues-pr/rbchy/RbcTcsWorld_ECommerceSuite?label=open%20PRs)
+
+The board shows the GitHub Actions run of `main` on 23 Oct 2026 (commit `f1a74ed`). The CI badge above is live;
+the board is redrawn after a release with [`docs/images/make_readme_cards.py`](docs/images/make_readme_cards.py).
+
+## 🥧 Breakdown
+
+```mermaid
+pie showData
+    title 1,489 automated tests by level
+    "Backend unit + integration" : 772
+    "API, DB, BDD, Selenium UI" : 444
+    "Playwright (5 browsers/devices)" : 265
+    "Appium (Android + iOS)" : 8
+```
+
+```mermaid
+pie showData
+    title 129 traced requirements by area
+    "Orders and inventory" : 16
+    "Identity and access" : 16
+    "Non-functional" : 17
+    "Catalog" : 14
+    "Storefront UI" : 14
+    "Pricing, coupons, payments" : 13
+    "Reviews and wishlist" : 11
+    "Store admin back office" : 8
+    "Fulfilment and returns" : 6
+    "Customer e-mails" : 4
+    "Audit trail" : 4
+    "Cart" : 3
+    "Address book" : 3
+```
+
+Every requirement links to its tests in the [traceability matrix](docs/qa/TRACEABILITY_MATRIX.md); CI fails if one has none.
+
+## 📈 GitHub Stats
+
+<img src="docs/images/github-stats.svg" alt="GitHub stats: 217 commits on 18 active days since 4 October 2026, 50 merged pull requests, 0 open, 354 CI workflow runs, about 40k lines of code; Java 74.3 %, JavaScript 15.9 %, TypeScript 3.9 %, CSS 2.4 %, other 3.5 %" width="100%">
+
+![Commits](https://img.shields.io/github/commit-activity/t/rbchy/RbcTcsWorld_ECommerceSuite?label=commits)
+![Commit activity](https://img.shields.io/github/commit-activity/m/rbchy/RbcTcsWorld_ECommerceSuite?label=commits%20this%20month)
+![Merged PRs](https://img.shields.io/github/issues-pr-closed/rbchy/RbcTcsWorld_ECommerceSuite?label=closed%20PRs)
+![Top language](https://img.shields.io/github/languages/top/rbchy/RbcTcsWorld_ECommerceSuite)
+![Code size](https://img.shields.io/github/languages/code-size/rbchy/RbcTcsWorld_ECommerceSuite)
+![Stars](https://img.shields.io/github/stars/rbchy/RbcTcsWorld_ECommerceSuite?style=social)
+
+The badges update live from GitHub; the card above is a snapshot of the same day as the status board.
 
 ---
 
@@ -64,7 +122,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 13 | Traceability | every requirement has a test | 129 / 129 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | 15 / 15 smoke checks | Docker Compose, Caddy, `deploy/smoke.sh` (GitHub Actions only: needs ports 80/443) |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 254 / 254 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 262 / 262 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
 

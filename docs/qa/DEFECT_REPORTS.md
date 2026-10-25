@@ -36,6 +36,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-026](#def-026) | Safari: a failed product picture was replaced by an empty frame instead of the category picture | Product - storefront | Medium | P2 | Playwright WebKit project | Closed |
 | [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Closed |
 | [DEF-028](#def-028) | Mail test helper crashed instead of skipping when no mail server runs | Test code | Low | P3 | CI, Firefox job (PR #31) | Closed |
+| [DEF-029](#def-029) | Admin coupons: a late, unfiltered list replaced the search results | Product - store back office | Medium | P2 | CI, Playwright on `main` (first run of rbchy/RbcTcsWorld) | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -721,6 +722,37 @@ failed), and `PasswordResetApiTest` in the API job (runs).
 
 **Lesson:** a "skip if not available" check must survive every way of being unavailable. Test the unhappy path of
 the test helpers too.
+
+---
+
+## DEF-029
+**Admin coupons: a late, unfiltered list replaced the search results**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Medium / P2 - the store admin can edit or switch off the wrong coupon when the table shows other rows than the search asked for |
+| Component | `frontend/src/pages/admin/AdminCoupons.jsx` (`load`) |
+| Environment | GitHub Actions, Playwright job on `main`, first push to rbchy/RbcTcsWorld (25 Oct 2026); passed on every earlier run |
+
+**Steps to reproduce:** in Admin > Coupons create a coupon, then at once search for its code while the unfiltered list
+that Save reloads is still on its way (made reliable by delaying that answer by 1.5 s).
+
+**Expected result:** the table shows only the coupon searched for.
+**Actual result:** for a moment one row, then all coupons again (7 rows); `admin-suite.spec.ts` "a coupon is edited"
+failed twice in the same run.
+
+**Root cause:** Save calls `load()` with the old, empty search; the search starts a second request. Whichever answer
+arrived last filled the table, so a slow unfiltered answer overwrote the filtered one. The storefront had the same race
+and was fixed in [DEF-016](#def-016); the back-office page did not use that guard.
+
+**Fix:** the reload after Save uses the search as it is at that moment (the first fix kept the stale, empty search and
+the new test caught it: the reload was the newest request and still showed every coupon), and each request takes a
+ticket so only the newest may fill the table or show an error.
+**Regression test:** `admin-suite.spec.ts` "a late, unfiltered coupon list never replaces the search results (DEF-029)"
+delays the unfiltered answer with `page.route` and checks the table still shows one row after it arrives.
+
+**Lesson:** a fix for a race belongs in every list that reloads while the user can still type; a test that waits for
+the right answer must also check that a wrong, later answer cannot replace it.
 
 ---
 

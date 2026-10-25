@@ -1,11 +1,11 @@
-# RbcTcsWorld
+# RbcTcsWorld Shop
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Stage](https://img.shields.io/badge/stage-pre--launch%20%C2%B7%20phase%201-f59e0b)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 
-**RbcTcsWorld is an online store on its way to selling for real.** It starts from the
+**RbcTcsWorld Shop is an online store on its way to selling for real.** It starts from the
 [RbcTcsWorld E-Commerce Suite](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite), a shop I built test-first as a
 QA portfolio project, and takes it through the steps a live store needs: safe card payments, real tax, real shipping,
 e-mail from its own domain, backups, legal pages and a business behind it.

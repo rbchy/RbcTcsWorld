@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
@@ -41,8 +41,18 @@ export default function AdminCoupons() {
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
 
-  const load = (f = applied) => api.get('/admin/coupons', { params: { q: f.q.trim() || undefined, status: f.status || undefined } })
-    .then(r => setRows(r.data)).catch(e => setError(errorText(e)));
+  // DEF-029: Save and Switch off reload the list, and the admin may search meanwhile. Two rules keep the table right:
+  // a reload always uses the search as it is *now* (not the one from when Save was clicked), and only the newest
+  // request may fill the table, so an older answer that arrives late is dropped.
+  const latest = useRef(0);
+  const appliedNow = useRef(applied);
+  appliedNow.current = applied;
+  const load = (f = appliedNow.current) => {
+    const ticket = ++latest.current;
+    return api.get('/admin/coupons', { params: { q: f.q.trim() || undefined, status: f.status || undefined } })
+      .then(r => { if (ticket === latest.current) setRows(r.data); })
+      .catch(e => { if (ticket === latest.current) setError(errorText(e)); });
+  };
   useEffect(() => { load(applied); }, [applied]);
 
   const used = editing ? editing.usedCount : 0;

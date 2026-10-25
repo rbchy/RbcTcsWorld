@@ -85,7 +85,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
    [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/) ·
    [Playwright](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/playwright/)
-3. **Defects the tests actually found:** [Defect Reports](qa/DEFECT_REPORTS.md) - 28 entries, each with
+3. **Defects the tests actually found:** [Defect Reports](qa/DEFECT_REPORTS.md) - 29 entries, each with
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](qa/TEST_STRATEGY.md) ·
    [Risk Register](qa/RISK_REGISTER.md) · [Test Summary Report (GO / NO-GO)](qa/TEST_SUMMARY_REPORT.md)
@@ -332,7 +332,7 @@ docs/modules/   Module guides (Bangla), one per feature or test layer
 
 **QA documents (English):** [Strategy](qa/TEST_STRATEGY.md) · [Plan](qa/TEST_PLAN.md) ·
 [Risks](qa/RISK_REGISTER.md) · [Traceability (129 requirements)](qa/TRACEABILITY_MATRIX.md) ·
-[Defects (28)](qa/DEFECT_REPORTS.md) · [Test Summary Report](qa/TEST_SUMMARY_REPORT.md) · [UAT Plan](qa/UAT_PLAN.md) · [UAT Summary](qa/UAT_SUMMARY.md)
+[Defects (29)](qa/DEFECT_REPORTS.md) · [Test Summary Report](qa/TEST_SUMMARY_REPORT.md) · [UAT Plan](qa/UAT_PLAN.md) · [UAT Summary](qa/UAT_SUMMARY.md)
 
 **Help (Bangla), start here:** [HELP_BN](HELP_BN.md) - running on every device, menus, login, admin, tests, reports, Jenkins, troubleshooting.
 

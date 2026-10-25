@@ -745,7 +745,9 @@ failed twice in the same run.
 arrived last filled the table, so a slow unfiltered answer overwrote the filtered one. The storefront had the same race
 and was fixed in [DEF-016](#def-016); the back-office page did not use that guard.
 
-**Fix:** each request takes a ticket; only the newest request may fill the table or show an error.
+**Fix:** the reload after Save uses the search as it is at that moment (the first fix kept the stale, empty search and
+the new test caught it: the reload was the newest request and still showed every coupon), and each request takes a
+ticket so only the newest may fill the table or show an error.
 **Regression test:** `admin-suite.spec.ts` "a late, unfiltered coupon list never replaces the search results (DEF-029)"
 delays the unfiltered answer with `page.route` and checks the table still shows one row after it arrives.
 

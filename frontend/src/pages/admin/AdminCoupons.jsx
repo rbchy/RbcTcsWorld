@@ -41,10 +41,13 @@ export default function AdminCoupons() {
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
 
-  // DEF-029: a reload after Save can still be on its way when the admin searches. Only the newest request may fill the
-  // table; an older, unfiltered answer that arrives late is dropped instead of replacing the search results.
+  // DEF-029: Save and Switch off reload the list, and the admin may search meanwhile. Two rules keep the table right:
+  // a reload always uses the search as it is *now* (not the one from when Save was clicked), and only the newest
+  // request may fill the table, so an older answer that arrives late is dropped.
   const latest = useRef(0);
-  const load = (f = applied) => {
+  const appliedNow = useRef(applied);
+  appliedNow.current = applied;
+  const load = (f = appliedNow.current) => {
     const ticket = ++latest.current;
     return api.get('/admin/coupons', { params: { q: f.q.trim() || undefined, status: f.status || undefined } })
       .then(r => { if (ticket === latest.current) setRows(r.data); })

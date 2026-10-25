@@ -34,7 +34,7 @@ docker compose --profile app down              # বন্ধ (-v দিলে d
 - **Gate:** লাইন ≥ 97% আর শাখা ≥ 88%। মাপা মানের ঠিক নিচে রাখা হয়েছে। আগে ছিল 95% আর 77%।
   - **নিয়ম:** নতুন টেস্ট যোগ হলে gate বাড়ানো যাবে, কিন্তু কখনো কমানো যাবে না (ratchet)।
   - coverage এর নিচে নামলে `mvn verify` fail করে, Mac-এ চালালেও।
-- **অনলাইন রিপোর্ট:** https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/
+- **অনলাইন রিপোর্ট:** https://rbchy.github.io/RbcTcsWorld/coverage/
 - **সবচেয়ে কম coverage কোথায়:** run-এর পেজে "Least covered packages" নামে দেখায়, যেমন `exception` 85% আর `admin` 88%। পরের টেস্ট কোথায় লিখতে হবে, এটা সেটা দেখিয়ে দেয়।
 
 **Mutation testing (PIT):** টেস্ট আসলে ভুল ধরে কি না, সেটা মাপে। দেখুন [MUTATION_BN.md](MUTATION_BN.md)। Score 65.5% থেকে বেড়ে 84.9% হয়েছে, gate 84%।
@@ -64,7 +64,7 @@ docker compose --profile app down              # বন্ধ (-v দিলে d
 
 ### আপনার Mac-এর Jenkins-এ চালানো (8080)
 1. Jenkins চালু করুন (`brew services start jenkins-lts`), তারপর http://localhost:8080 খুলুন। Suggested plugins install করুন।
-2. **New Item → Pipeline** বেছে নিন। Definition-এ দিন **Pipeline script from SCM**, তারপর SCM: Git, URL: `https://github.com/rbchy/RbcTcsWorld_ECommerceSuite.git`, Branch: `*/main`, Script Path: `Jenkinsfile`।
+2. **New Item → Pipeline** বেছে নিন। Definition-এ দিন **Pipeline script from SCM**, তারপর SCM: Git, URL: `https://github.com/rbchy/RbcTcsWorld.git`, Branch: `*/main`, Script Path: `Jenkinsfile`।
 3. Docker Desktop চালু থাকতে হবে।
 4. Eclipse-এর backend আর `npm run dev` বন্ধ রাখুন, কারণ Jenkins container-এ নিজের backend চালাবে, আর দুটো একই port চাইবে।
 5. **Build with Parameters** চাপুন। প্রথমবার Docker image build হতে কয়েক মিনিট লাগবে।

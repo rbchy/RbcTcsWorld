@@ -95,7 +95,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -q -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
           curl -sf http://localhost:8081/actuator/health
       - uses: actions/setup-node@v6
@@ -154,7 +154,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -q -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
           curl -sf http://localhost:8081/actuator/health
       - uses: actions/setup-node@v6
@@ -211,7 +211,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -q -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
           curl -sf http://localhost:8081/actuator/health
       - uses: actions/setup-node@v6
@@ -285,7 +285,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -q -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
           curl -sf http://localhost:8081/actuator/health
       - uses: actions/setup-node@v6
@@ -378,11 +378,11 @@ jobs:
       - name: Build and start two backends (8081 + 8082) sharing PostgreSQL and Redis
         run: |
           mvn -B -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health && break; sleep 2; done
           curl -sf http://localhost:8081/actuator/health
           # second instance: proves the lockout is shared (SharedLockoutTest), like a load-balanced deployment
-          SERVER_PORT=8082 nohup java -Xmx384m -jar backend/target/ecommerce-backend-1.0.0.jar > backend-2.log 2>&1 &
+          SERVER_PORT=8082 nohup java -Xmx384m -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend-2.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8082/actuator/health && break; sleep 2; done
           curl -sf http://localhost:8082/actuator/health
       - uses: actions/setup-node@v6
@@ -624,7 +624,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health && break; sleep 2; done
           curl -sf http://localhost:8081/v3/api-docs -o security/zap/openapi.json
           jq '.paths | keys | length' security/zap/openapi.json

@@ -134,13 +134,13 @@ ssh -i ~/.ssh/oracle_demo ubuntu@129.146.10.20
 সার্ভারের ভেতরে চালান:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld_ECommerceSuite/main/deploy/setup-vm.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld/main/deploy/setup-vm.sh | bash
 ```
 
 `deploy/setup-vm.sh` এগুলো করে:
 1. Docker আর git install করে।
 2. সার্ভারের নিজের firewall-এ 80 আর 443 খোলে।
-3. প্রজেক্ট নামায় `~/RbcTcsWorld_ECommerceSuite`-এ।
+3. প্রজেক্ট নামায় `~/RbcTcsWorld`-এ।
 4. `deploy/.env` লেখে: random database পাসওয়ার্ড, JWT secret, admin পাসওয়ার্ড, আর sslip.io ঠিকানা।
 5. রাত ৩:৩০-এর reset চালু করে।
 
@@ -151,7 +151,7 @@ curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld_ECommerceSuite/ma
    store admin  : admin@rbctcsworld.com / Demo-3f9a1c7b2e01!   <- write this down
 ```
 
-**Admin পাসওয়ার্ডটা লিখে রাখুন** (Password manager বা Notes)। পরে দেখতে চাইলে: `cat ~/RbcTcsWorld_ECommerceSuite/deploy/.env`।
+**Admin পাসওয়ার্ডটা লিখে রাখুন** (Password manager বা Notes)। পরে দেখতে চাইলে: `cat ~/RbcTcsWorld/deploy/.env`।
 
 তারপর একবার বেরিয়ে আবার ঢুকুন, যাতে Docker-এর অনুমতি চালু হয়:
 
@@ -165,7 +165,7 @@ ssh -i ~/.ssh/oracle_demo ubuntu@129.146.10.20
 ## ধাপ ৭: শপ চালু করা
 
 ```bash
-~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+~/RbcTcsWorld/deploy/deploy.sh
 ```
 
 - প্রথমবার **১০–১৫ মিনিট** লাগে, কারণ সার্ভারে Java আর React build হয়। পরের বার অনেক কম।
@@ -206,7 +206,7 @@ Smoke test passed
 
 ```bash
 ssh -i ~/.ssh/oracle_demo ubuntu@129.146.10.20
-~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+~/RbcTcsWorld/deploy/deploy.sh
 ```
 
 `deploy.sh` নতুন কোড নামায়, যা বদলেছে শুধু তা আবার build করে, চালু করে, আর smoke test চালায়। Database-এর ডেটা থেকে যায়, আর নতুন Flyway migration নিজে থেকেই চলে।
@@ -216,7 +216,7 @@ ssh -i ~/.ssh/oracle_demo ubuntu@129.146.10.20
 ## দরকারি command (সার্ভারের ভেতরে)
 
 ```bash
-cd ~/RbcTcsWorld_ECommerceSuite
+cd ~/RbcTcsWorld
 DC="docker compose -f deploy/docker-compose.yml --env-file deploy/.env"
 
 $DC ps                          # কোন container চলছে, healthy কিনা

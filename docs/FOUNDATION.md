@@ -1,12 +1,12 @@
-# RbcTcsWorld E-Commerce Suite
+# RbcTcsWorld Shop: the quality foundation
 
-[![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
+[![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 ![Tests](https://img.shields.io/badge/automated%20tests-1489-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-97.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-89.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/)
-[![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/)
+[![Coverage](https://img.shields.io/badge/line%20coverage-97.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-89.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
+[![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld/)
 
 An Amazon-inspired online store (catalog, cart, checkout with a delivery address, Stripe or mock payment, shipping,
 returns, reviews, wishlist, order e-mails, password reset by e-mail, guest checkout and an address book, size/colour variants, a faceted filter panel, flash deals with a countdown, "customers also bought", invoice PDFs, optional two-factor sign-in by e-mailed code, a saved-card wallet (tokens only), a store back office with customers, coupons,
@@ -23,10 +23,10 @@ Author: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://githu
 
 <img src="images/project-status.svg" alt="Project status board: 1,489 automated tests (1,486 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.3 % line coverage, 89.3 % mutation score, 129 of 129 requirements traced" width="100%">
 
-[![CI](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions/workflows/ci.yml)
-![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld_ECommerceSuite?label=last%20commit)
-![Open issues](https://img.shields.io/github/issues/rbchy/RbcTcsWorld_ECommerceSuite?label=open%20issues)
-![Open PRs](https://img.shields.io/github/issues-pr/rbchy/RbcTcsWorld_ECommerceSuite?label=open%20PRs)
+[![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
+![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
+![Open issues](https://img.shields.io/github/issues/rbchy/RbcTcsWorld?label=open%20issues)
+![Open PRs](https://img.shields.io/github/issues-pr/rbchy/RbcTcsWorld?label=open%20PRs)
 
 The board shows the GitHub Actions run of `main` on 23 Oct 2026 (commit `f1a74ed`). The CI badge above is live;
 the board is redrawn after a release with [`docs/images/make_readme_cards.py`](images/make_readme_cards.py).
@@ -66,12 +66,12 @@ Every requirement links to its tests in the [traceability matrix](qa/TRACEABILIT
 
 <img src="images/github-stats.svg" alt="GitHub stats: 217 commits on 18 active days since 4 October 2026, 50 merged pull requests, 0 open, 354 CI workflow runs, about 40k lines of code; Java 74.3 %, JavaScript 15.9 %, TypeScript 3.9 %, CSS 2.4 %, other 3.5 %" width="100%">
 
-![Commits](https://img.shields.io/github/commit-activity/t/rbchy/RbcTcsWorld_ECommerceSuite?label=commits)
-![Commit activity](https://img.shields.io/github/commit-activity/m/rbchy/RbcTcsWorld_ECommerceSuite?label=commits%20this%20month)
-![Merged PRs](https://img.shields.io/github/issues-pr-closed/rbchy/RbcTcsWorld_ECommerceSuite?label=closed%20PRs)
-![Top language](https://img.shields.io/github/languages/top/rbchy/RbcTcsWorld_ECommerceSuite)
-![Code size](https://img.shields.io/github/languages/code-size/rbchy/RbcTcsWorld_ECommerceSuite)
-![Stars](https://img.shields.io/github/stars/rbchy/RbcTcsWorld_ECommerceSuite?style=social)
+![Commits](https://img.shields.io/github/commit-activity/t/rbchy/RbcTcsWorld?label=commits)
+![Commit activity](https://img.shields.io/github/commit-activity/m/rbchy/RbcTcsWorld?label=commits%20this%20month)
+![Merged PRs](https://img.shields.io/github/issues-pr-closed/rbchy/RbcTcsWorld?label=closed%20PRs)
+![Top language](https://img.shields.io/github/languages/top/rbchy/RbcTcsWorld)
+![Code size](https://img.shields.io/github/languages/code-size/rbchy/RbcTcsWorld)
+![Stars](https://img.shields.io/github/stars/rbchy/RbcTcsWorld?style=social)
 
 The badges update live from GitHub; the card above is a snapshot of the same day as the status board.
 
@@ -80,11 +80,11 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 ## Reviewing this in 5 minutes
 
 1. **Latest build:** the screenshot below (Jenkins build 54, all gates passed), or the
-   [GitHub Actions runs](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite/actions).
-2. **Live reports:** [all reports](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/reports/) · [Allure](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/) · [Cucumber](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/cucumber/) ·
-   [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/coverage/) ·
-   [PIT mutation](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/) ·
-   [Playwright](https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/playwright/)
+   [GitHub Actions runs](https://github.com/rbchy/RbcTcsWorld/actions).
+2. **Live reports:** [all reports](https://rbchy.github.io/RbcTcsWorld/reports/) · [Allure](https://rbchy.github.io/RbcTcsWorld/) · [Cucumber](https://rbchy.github.io/RbcTcsWorld/cucumber/) ·
+   [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld/coverage/) ·
+   [PIT mutation](https://rbchy.github.io/RbcTcsWorld/mutation/) ·
+   [Playwright](https://rbchy.github.io/RbcTcsWorld/playwright/)
 3. **Defects the tests actually found:** [Defect Reports](qa/DEFECT_REPORTS.md) - 29 entries, each with
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](qa/TEST_STRATEGY.md) ·

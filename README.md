@@ -5,9 +5,8 @@
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 
-**RbcTcsWorld Shop is an online store on its way to selling for real.** It starts from the
-[RbcTcsWorld E-Commerce Suite](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite), a shop I built test-first as a
-QA portfolio project, and takes it through the steps a live store needs: safe card payments, real tax, real shipping,
+**RbcTcsWorld Shop is an online store on its way to selling for real.** Its code was built test-first, and this
+repository takes it through the steps a live store needs: safe card payments, real tax, real shipping,
 e-mail from its own domain, backups, legal pages and a business behind it.
 
 Nothing here takes real orders yet. Until launch the store runs in demo mode with test cards only.
@@ -20,7 +19,7 @@ Owner: **RB Chowdhury** - [GitHub](https://github.com/rbchy) · [LinkedIn](https
 
 | | |
 |---|---|
-| Started from | E-Commerce Suite `main` @ `c5c5091` (25 Oct 2026), full history kept |
+| Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Inherited | catalog, cart, checkout, orders, stock across warehouses, coupons, flash deals, returns, reviews, wishlist, e-mails, accounts with two-factor sign-in, saved-card wallet, store back office, audit trail, six languages |
 | Inherited quality bar | 1,489 automated tests, 18 CI quality gates, 97.3 % line coverage, 89.3 % mutation score, 129 traced requirements |
 | Current phase | **Phase 1 - foundation** (this repository set up for the store) |

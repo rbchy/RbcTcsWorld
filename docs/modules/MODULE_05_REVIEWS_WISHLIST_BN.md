@@ -71,7 +71,7 @@ Database migration `V7__reviews_wishlist.sql` যোগ করে:
 
 ## নিজের Mac-এ চালানো
 ```bash
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld
 git pull
 docker compose up -d
 mvn -f backend/pom.xml spring-boot:run             # Flyway নিজে V7 চালাবে

@@ -93,7 +93,7 @@ right total, a declined card shows the error, a return can be requested).
 | Security - attack tests | REST Assured, hand-crafted JWTs (Base64 + HMAC) | Allure Epic "Security" |
 | Security - DAST | OWASP ZAP API scan from the OpenAPI spec (`/v3/api-docs`), logged in as a customer | `zap-report` artifact |
 | Security - SCA | OSV-Scanner on Maven-resolved CycloneDX SBOMs and `package-lock.json`, with completeness check and self-test | CI annotations with "fixed in" version |
-| Reporting | Allure 2.29 with history/trend, failure categories | https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/ |
+| Reporting | Allure 2.29 with history/trend, failure categories | https://rbchy.github.io/RbcTcsWorld/ |
 
 ## 7. Test environments
 

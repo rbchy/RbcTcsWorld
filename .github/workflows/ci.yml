@@ -436,7 +436,7 @@ jobs:
         run: |
           H=automation/target/allure-results/history
           mkdir -p $H
-          BASE=https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/history
+          BASE=https://rbchy.github.io/RbcTcsWorld/history
           for f in history.json history-trend.json duration-trend.json retry-trend.json categories-trend.json; do
             curl -sf "$BASE/$f" -o "$H/$f" || true
           done

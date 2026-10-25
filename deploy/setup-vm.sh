@@ -2,19 +2,19 @@
 # One-time setup of a fresh Ubuntu server (Oracle Cloud "Always Free" VM, Ubuntu 24.04, x86 or ARM) for the demo.
 # Run it ON THE SERVER, as the normal user (ubuntu), not as root:
 #
-#   curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld_ECommerceSuite/main/deploy/setup-vm.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld/main/deploy/setup-vm.sh | bash
 #
 # What it does (safe to run again):
 #   1. installs Docker and git
 #   2. opens ports 80 and 443 in the server's own firewall (Oracle's Ubuntu images block them by default)
-#   3. downloads the project to ~/RbcTcsWorld_ECommerceSuite
+#   3. downloads the project to ~/RbcTcsWorld
 #   4. writes deploy/.env with random secrets and the sslip.io address of this server (only if it is missing)
 #   5. installs the nightly reset (03:30 server time)
-# Then start the shop with:  ~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+# Then start the shop with:  ~/RbcTcsWorld/deploy/deploy.sh
 set -euo pipefail
 
-REPO_URL="https://github.com/rbchy/RbcTcsWorld_ECommerceSuite.git"
-DIR="$HOME/RbcTcsWorld_ECommerceSuite"
+REPO_URL="https://github.com/rbchy/RbcTcsWorld.git"
+DIR="$HOME/RbcTcsWorld"
 
 if [ "$(id -u)" -eq 0 ]; then
   echo "Run this as the normal user (e.g. ubuntu), not as root. It uses sudo where needed."; exit 1

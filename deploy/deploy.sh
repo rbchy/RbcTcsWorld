@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start or update the demo: newest code from GitHub, rebuild what changed, wait until healthy, then check it
-# from the outside like a visitor (deploy/smoke.sh). Run on the server:  ~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+# from the outside like a visitor (deploy/smoke.sh). Run on the server:  ~/RbcTcsWorld/deploy/deploy.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

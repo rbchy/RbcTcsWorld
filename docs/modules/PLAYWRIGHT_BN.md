@@ -36,7 +36,7 @@ playwright/
 শপ চালু থাকতে হবে, desktop launcher দিয়ে অথবা `docker compose --profile app up -d`। তারপর:
 
 ```bash
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite/playwright
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld/playwright
 npm ci                                        # প্রথমবার
 npx playwright install chromium firefox webkit   # প্রথমবার, browser নামায়
 

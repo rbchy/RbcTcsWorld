@@ -5,7 +5,7 @@ WORKDIR /src
 COPY pom.xml .
 RUN mvn -B -q dependency:go-offline
 COPY src src
-RUN mvn -B -q -DskipTests package && cp target/ecommerce-backend-*.jar /app.jar
+RUN mvn -B -q -DskipTests package && cp target/rbctcsworld-shop-backend-*.jar /app.jar
 
 # ---------- runtime stage: JRE only ----------
 FROM eclipse-temurin:21-jre

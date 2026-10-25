@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 <modelVersion>4.0.0</modelVersion><parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.1.1</version><relativePath/></parent>
-<groupId>com.rbctcsworld</groupId><artifactId>ecommerce-backend</artifactId><version>1.0.0</version><properties><java.version>21</java.version><jjwt.version>0.12.6</jjwt.version>
+<groupId>com.rbctcsworld</groupId><artifactId>rbctcsworld-shop-backend</artifactId><version>1.0.0</version><properties><java.version>21</java.version><jjwt.version>0.12.6</jjwt.version>
 <!-- Spring Boot 4.1 (Spring Framework 7, Tomcat 11, Jackson 3, Hibernate 7) is in open-source support.
      Patch releases newer than the ones Boot 4.1.1 manages, pinned on the SAME release line because OSV-Scanner
      found advisories in the managed versions (Tomcat CVSS 9.8, Jackson 7.5). Remove a pin when Boot ships it. -->

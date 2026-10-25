@@ -25,7 +25,7 @@ open backend/target/pit-reports/index.html
 - **কোন টেস্ট দিয়ে চলে:** শুধু দ্রুত unit টেস্ট। Spring integration টেস্ট দিলে প্রতিটা mutant-এর জন্য Spring চালু করতে হতো, তাতে অনেক বেশি সময় লাগত।
 - **কোথায় চলে:**
   - **GitHub CI:** job "Mutation testing (PIT)", প্রতিটা push-এ। Score আর survived mutant-এর তালিকা run-এর পেজে দেখায়।
-  - **অনলাইন রিপোর্ট:** https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/mutation/
+  - **অনলাইন রিপোর্ট:** https://rbchy.github.io/RbcTcsWorld/mutation/
   - **Jenkins:** stage "Mutation testing (PIT)", parameter `RUN_MUTATION` দিয়ে চালু বা বন্ধ। ফল "QA Reports" পাতায় দেখায়।
 - **Gate:** mutation score ≥ **84%** (`pitest.mutationThreshold`)। Coverage-এর মতোই ratchet নিয়ম: বাড়ানো যাবে, কমানো যাবে না।
 

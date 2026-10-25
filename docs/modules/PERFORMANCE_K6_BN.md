@@ -55,7 +55,7 @@
 ## চালানো (Mac)
 ```bash
 brew install k6
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld
 # backend চালু থাকতে হবে (8081)
 k6 run performance/tests/smoke.js
 k6 run performance/tests/flash-sale.js

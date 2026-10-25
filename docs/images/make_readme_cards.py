@@ -53,7 +53,7 @@ def status_board():
          f'18 of 18 CI gates passed; 97.3 percent line coverage; 89.3 percent mutation score; 129 of 129 requirements traced.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, "#f4b04a", 700),
-         text(32, 72, f"RbcTcsWorld E-Commerce Suite · {AS_OF} · every gate green", 13, MUTED)]
+         text(32, 72, f"RbcTcsWorld Shop · {AS_OF} · every gate green", 13, MUTED)]
     tiles = [(f"{total:,}", "automated tests", f"{total - SKIPPED:,} passed · {SKIPPED} skipped"),
              ("18 / 18", "CI gates passed", "GitHub Actions + Jenkins"),
              ("97.3 %", "line coverage", "94.2 % branches (JaCoCo)"),
@@ -98,7 +98,7 @@ def github_stats():
          f'{OPEN_PRS} open, {CI_RUNS} CI workflow runs, about {LOC} lines of code; Java 74 percent, JavaScript 16 percent, TypeScript 4 percent.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "GitHub Stats", 24, "#f4b04a", 700),
-         text(32, 72, f"rbchy/RbcTcsWorld_ECommerceSuite · since 4 Oct 2026 · {AS_OF.split(' · ')[1]}", 13, MUTED)]
+         text(32, 72, f"rbchy/RbcTcsWorld · since 4 Oct 2026 · {AS_OF.split(' · ')[1]}", 13, MUTED)]
     nums = [(f"{commits}", "commits"), (f"{MERGED_PRS}", "merged pull requests"), (f"{OPEN_PRS}", "open pull requests"),
             (f"{CI_RUNS}", "CI workflow runs"), (f"{len(COMMITS_PER_DAY)}", "active days"), (f"~{LOC}", "lines of code")]
     for i, (big, label) in enumerate(nums):

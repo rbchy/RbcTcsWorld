@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Product | RbcTcsWorld E-Commerce Suite (storefront and store back office) |
+| Product | RbcTcsWorld Shop (storefront and store back office) |
 | Build under test | `main` as deployed on the test environment on the session day (write the commit in the [UAT Summary](UAT_SUMMARY.md)) |
 | Prepared by | RB Chowdhury, QA Lead and UAT facilitator |
 | Status | **Ready to run** - no session held yet |

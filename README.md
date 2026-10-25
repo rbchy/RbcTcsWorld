@@ -89,6 +89,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](docs/qa/TEST_STRATEGY.md) ·
    [Risk Register](docs/qa/RISK_REGISTER.md) · [Test Summary Report (GO / NO-GO)](docs/qa/TEST_SUMMARY_REPORT.md)
+   · [UAT Plan](docs/qa/UAT_PLAN.md) (10 tasks for non-tester users, each traced to its requirements)
 5. **Code to read first:** the [pipeline](.github/workflows/ci.yml), the
    [flash-sale concurrency test](automation/src/test/java/com/rbctcsworld/ecommerce/qa/tests/api/InventoryConcurrencyTest.java),
    the [API contract test](automation/src/test/java/com/rbctcsworld/ecommerce/qa/tests/api/ApiContractTest.java) and the
@@ -136,8 +137,8 @@ tests that exist only to move a number.
 ```mermaid
 flowchart TB
   subgraph fast["Fast, every push (seconds)"]
-    U["Unit + integration<br/>453 tests"]
-    M["Mutation testing<br/>486 mutants"]
+    U["Unit + integration<br/>772 tests"]
+    M["Mutation testing<br/>1151 mutants"]
   end
   subgraph service["Against the running app (PostgreSQL)"]
     A["API tests<br/>REST Assured clients"]
@@ -146,15 +147,20 @@ flowchart TB
     B["BDD<br/>52 Cucumber scenarios"]
     S["Security<br/>JWT, RBAC/IDOR matrix, injection"]
   end
-  subgraph ui["Browser (fewest tests)"]
-    W["21 Selenium journeys<br/>Chrome, Firefox, Edge"]
+  subgraph ui["Browser and phone (fewest tests)"]
+    W["59 Selenium UI tests<br/>Chrome, Firefox, Edge, Safari"]
+    P["Playwright<br/>5 browsers and devices"]
     X["Accessibility<br/>axe-core, 23 pages"]
+    R["Appium<br/>Android Chrome, iOS Safari"]
   end
   subgraph nonfunc["Non-functional"]
     K["k6: smoke, flash sale, catalog"]
     Z["ZAP + OSV"]
   end
-  fast --> service --> ui
+  subgraph people["People"]
+    UAT["User acceptance<br/>10 tasks, non-tester users"]
+  end
+  fast --> service --> ui --> people
   service --> nonfunc
 ```
 

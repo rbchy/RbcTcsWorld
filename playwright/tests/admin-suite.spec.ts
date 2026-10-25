@@ -54,6 +54,28 @@ test.describe('Store admin back office', () => {
     await expect(page.getByTestId('customer-state')).toHaveText('Active');
   });
 
+  test('a late, unfiltered coupon list never replaces the search results (DEF-029)', async ({ page }) => {
+    const code = `PWL${Date.now().toString(36).toUpperCase()}`;
+    await page.goto('/#/admin/coupons');
+    await expect(page.getByTestId('coupon-row').first()).toBeVisible();
+    // from now on the unfiltered list answers slowly, as it did on the CI runner that found the defect
+    await page.route('**/api/admin/coupons', async route => {
+      if (route.request().method() === 'GET' && !new URL(route.request().url()).searchParams.get('q')) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      await route.continue();
+    });
+    await page.getByTestId('cf-code').fill(code);
+    await page.getByTestId('cf-value').fill('10');
+    await page.getByTestId('cf-save').click();                 // Save reloads the (unfiltered) list: slow
+    await page.getByTestId('cs-q').fill(code);
+    await page.getByTestId('cs-search').click();               // the filtered answer comes first
+    await expect(page.getByTestId('coupon-row')).toHaveCount(1);
+    await page.waitForTimeout(2000);                           // the slow, unfiltered answer has arrived by now
+    await expect(page.getByTestId('coupon-row')).toHaveCount(1);
+    await expect(page.getByTestId('coupon-row')).toContainText(code);
+  });
+
   test('a coupon is edited (its code stays) and switched off', async ({ page }) => {
     const code = `PW${Date.now().toString(36).toUpperCase()}`;
     await page.goto('/#/admin/coupons');

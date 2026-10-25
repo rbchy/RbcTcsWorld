@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
@@ -41,8 +41,15 @@ export default function AdminCoupons() {
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
 
-  const load = (f = applied) => api.get('/admin/coupons', { params: { q: f.q.trim() || undefined, status: f.status || undefined } })
-    .then(r => setRows(r.data)).catch(e => setError(errorText(e)));
+  // DEF-029: a reload after Save can still be on its way when the admin searches. Only the newest request may fill the
+  // table; an older, unfiltered answer that arrives late is dropped instead of replacing the search results.
+  const latest = useRef(0);
+  const load = (f = applied) => {
+    const ticket = ++latest.current;
+    return api.get('/admin/coupons', { params: { q: f.q.trim() || undefined, status: f.status || undefined } })
+      .then(r => { if (ticket === latest.current) setRows(r.data); })
+      .catch(e => { if (ticket === latest.current) setError(errorText(e)); });
+  };
   useEffect(() => { load(applied); }, [applied]);
 
   const used = editing ? editing.usedCount : 0;

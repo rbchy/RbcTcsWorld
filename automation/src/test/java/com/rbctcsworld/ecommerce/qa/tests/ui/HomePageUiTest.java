@@ -49,7 +49,7 @@ class HomePageUiTest {
     @DisplayName("Storefront loads with title and seeded products")
     void homeLoads() {
         assertAll(
-                () -> assertTrue(home.title().toLowerCase().contains("e-commerce"), "title"),
+                () -> assertTrue(home.title().equals("RbcTcsWorld Shop"), "title"),
                 () -> assertTrue(home.productCount() >= 8, "seeded products visible"));
     }
 

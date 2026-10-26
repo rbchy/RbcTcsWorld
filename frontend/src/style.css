@@ -351,14 +351,14 @@ fieldset.address legend { font-weight: 700; padding: 0 6px; color: var(--ink); }
 
 /* ---------- admin sub-menus ---------- */
 .side-group { margin: 2px 0; }
-.side-group summary { cursor: pointer; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--grp); border-radius: 8px;
+.side-group summary { cursor: pointer; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--ink); border-radius: 8px;
   list-style: none; display: flex; align-items: center; gap: 8px; }
 .side-group summary .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--grp); }
 .side-group summary::-webkit-details-marker { display: none; }
-.side-group summary::after { content: "▾"; color: #a9c1ca; margin-inline-start: auto; }
+.side-group summary::after { content: "▾"; color: var(--muted); margin-inline-start: auto; }
 .side-group:not([open]) summary::after { content: "▸"; }
 [dir="rtl"] .side-group:not([open]) summary::after { content: "◂"; }
-.side-group summary:hover { background: rgba(255, 255, 255, .08); }
+.side-group summary:hover { background: var(--bg); }
 .side-group ul { padding-inline-start: 10px !important; }
 .side-group a { font-size: 14px; padding: 5px 10px; }
 .auth .link { display: block; margin-top: 10px; }

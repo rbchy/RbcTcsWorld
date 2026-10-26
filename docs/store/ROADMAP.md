@@ -1,6 +1,6 @@
 # Roadmap to a live store
 
-Status on 25 Oct 2026: phase 1 in progress. The owner decides phase 0; engineering does phases 1-3 and 5; phase 4 needs
+Status on 26 Oct 2026: phase 1 done, phase 2 next. The owner decides phase 0; engineering does phases 1-3 and 5; phase 4 needs
 an accountant and a lawyer. Running costs are estimates to check against each provider's own price page.
 
 ## 1. What exists and what a live store still needs

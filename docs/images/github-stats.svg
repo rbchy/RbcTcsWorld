@@ -1,89 +1,98 @@
-<svg width="1000" height="380" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub stats: 217 commits on 18 active days since 4 October 2026, 50 merged pull requests, 0 open, 354 CI workflow runs, about 40k lines of code; Java 74 percent, JavaScript 16 percent, TypeScript 4 percent.">
-<rect width="1000" height="380" rx="14" fill="#12313f"/>
-<text x="32" y="48" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#f4b04a" text-anchor="start">GitHub Stats</text>
-<text x="32" y="72" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#9fbac2" text-anchor="start">rbchy/RbcTcsWorld · since 4 Oct 2026 · 23 Oct 2026</text>
-<rect x="32" y="96" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="46" y="126" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">217</text><text x="46" y="145" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">commits</text>
-<rect x="182" y="96" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="196" y="126" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">50</text><text x="196" y="145" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">merged pull requests</text>
-<rect x="32" y="166" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="46" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">0</text><text x="46" y="215" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">open pull requests</text>
-<rect x="182" y="166" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="196" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">354</text><text x="196" y="215" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">CI workflow runs</text>
-<rect x="32" y="236" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="46" y="266" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">18</text><text x="46" y="285" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">active days</text>
-<rect x="182" y="236" width="138" height="60" rx="10" fill="#1b4253"/>
-<text x="196" y="266" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">~40k</text><text x="196" y="285" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9fbac2" text-anchor="start">lines of code</text>
-<text x="360" y="96" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#e8f1f3" text-anchor="start">Commits per day (October 2026)</text>
-<line x1="360" y1="280" x2="968" y2="280" stroke="#9fbac2" stroke-opacity=".4"/>
-<rect x="364.0" y="122.0" width="25.8" height="158.0" rx="3" fill="#4fb3a9"/>
-<text x="376.9" y="117.0" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">31</text>
-<text x="376.9" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">04</text>
-<rect x="397.8" y="254.5" width="25.8" height="25.5" rx="3" fill="#4fb3a9"/>
-<text x="410.7" y="249.5" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">5</text>
-<text x="410.7" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">05</text>
-<rect x="431.6" y="269.8" width="25.8" height="10.2" rx="3" fill="#4fb3a9"/>
-<text x="444.4" y="264.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">2</text>
-<text x="444.4" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">06</text>
-<rect x="465.3" y="162.8" width="25.8" height="117.2" rx="3" fill="#4fb3a9"/>
-<text x="478.2" y="157.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">23</text>
-<text x="478.2" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">07</text>
-<rect x="499.1" y="244.3" width="25.8" height="35.7" rx="3" fill="#4fb3a9"/>
-<text x="512.0" y="239.3" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">7</text>
-<text x="512.0" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">08</text>
-<rect x="532.9" y="269.8" width="25.8" height="10.2" rx="3" fill="#4fb3a9"/>
-<text x="545.8" y="264.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">2</text>
-<text x="545.8" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">09</text>
-<rect x="566.7" y="254.5" width="25.8" height="25.5" rx="3" fill="#4fb3a9"/>
-<text x="579.6" y="249.5" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">5</text>
-<text x="579.6" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">10</text>
-<rect x="600.4" y="188.3" width="25.8" height="91.7" rx="3" fill="#4fb3a9"/>
-<text x="613.3" y="183.3" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">18</text>
-<text x="613.3" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">11</text>
-<rect x="634.2" y="223.9" width="25.8" height="56.1" rx="3" fill="#4fb3a9"/>
-<text x="647.1" y="218.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">11</text>
-<text x="647.1" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">12</text>
-<rect x="668.0" y="229.0" width="25.8" height="51.0" rx="3" fill="#4fb3a9"/>
-<text x="680.9" y="224.0" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">10</text>
-<text x="680.9" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">13</text>
-<rect x="701.8" y="183.2" width="25.8" height="96.8" rx="3" fill="#4fb3a9"/>
-<text x="714.7" y="178.2" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">19</text>
-<text x="714.7" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">14</text>
-<rect x="735.6" y="264.7" width="25.8" height="15.3" rx="3" fill="#4fb3a9"/>
-<text x="748.4" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">3</text>
-<text x="748.4" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">15</text>
-<rect x="769.3" y="142.4" width="25.8" height="137.6" rx="3" fill="#4fb3a9"/>
-<text x="782.2" y="137.4" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">27</text>
-<text x="782.2" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">16</text>
-<rect x="803.1" y="178.1" width="25.8" height="101.9" rx="3" fill="#4fb3a9"/>
-<text x="816.0" y="173.1" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">20</text>
-<text x="816.0" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">17</text>
-<rect x="836.9" y="132.2" width="25.8" height="147.8" rx="3" fill="#4fb3a9"/>
-<text x="849.8" y="127.2" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">29</text>
-<text x="849.8" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">18</text>
-<rect x="870.7" y="274.9" width="25.8" height="5.1" rx="3" fill="#4fb3a9"/>
-<text x="883.6" y="269.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">1</text>
-<text x="883.6" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">19</text>
-<rect x="904.4" y="264.7" width="25.8" height="15.3" rx="3" fill="#4fb3a9"/>
-<text x="917.3" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">3</text>
-<text x="917.3" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">20</text>
-<rect x="938.2" y="274.9" width="25.8" height="5.1" rx="3" fill="#4fb3a9"/>
-<text x="951.1" y="269.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#e8f1f3" text-anchor="middle">1</text>
-<text x="951.1" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9fbac2" text-anchor="middle">23</text>
-<text x="32" y="326" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#e8f1f3" text-anchor="start">Languages</text>
-<rect x="32.0" y="336" width="693.4" height="12" rx="3" fill="#b07219"/>
-<rect x="727.4" y="336" width="146.8" height="12" rx="3" fill="#f1e05a"/>
-<rect x="876.3" y="336" width="34.5" height="12" rx="3" fill="#3178c6"/>
-<rect x="912.8" y="336" width="20.5" height="12" rx="3" fill="#663399"/>
-<rect x="935.2" y="336" width="30.8" height="12" rx="3" fill="#9fbac2"/>
+<svg width="1000" height="380" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub stats: 239 commits on 21 active days since 4 October 2026, 6 merged pull requests, 0 open, 29 CI workflow runs in this repository, about 51k lines of code; Java 74 percent, JavaScript 16 percent, TypeScript 4 percent.">
+<rect width="1000" height="380" rx="14" fill="#262063"/>
+<text x="32" y="48" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#ffd35c" text-anchor="start">GitHub Stats</text>
+<text x="32" y="72" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#b9b3e0" text-anchor="start">rbchy/RbcTcsWorld · 4 to 26 Oct 2026 · git history kept from the E-Commerce Suite; this repository since 25 Oct</text>
+<rect x="32" y="96" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="46" y="126" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">239</text><text x="46" y="145" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">commits</text>
+<rect x="182" y="96" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="196" y="126" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">6</text><text x="196" y="145" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">merged pull requests</text>
+<rect x="32" y="166" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="46" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">0</text><text x="46" y="215" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">open pull requests</text>
+<rect x="182" y="166" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="196" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">29</text><text x="196" y="215" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">CI runs (this repo)</text>
+<rect x="32" y="236" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="46" y="266" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">21</text><text x="46" y="285" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">active days</text>
+<rect x="182" y="236" width="138" height="60" rx="10" fill="#352e86"/>
+<text x="196" y="266" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="start">~51k</text><text x="196" y="285" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#b9b3e0" text-anchor="start">lines of code</text>
+<text x="360" y="96" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#efecff" text-anchor="start">Commits per day (October 2026)</text>
+<line x1="360" y1="280" x2="968" y2="280" stroke="#b9b3e0" stroke-opacity=".4"/>
+<rect x="364.0" y="122.0" width="21.0" height="158.0" rx="3" fill="#8b7cf0"/>
+<text x="374.5" y="117.0" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">31</text>
+<text x="374.5" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">04</text>
+<rect x="393.0" y="254.5" width="21.0" height="25.5" rx="3" fill="#8b7cf0"/>
+<text x="403.4" y="249.5" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">5</text>
+<text x="403.4" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">05</text>
+<rect x="421.9" y="269.8" width="21.0" height="10.2" rx="3" fill="#8b7cf0"/>
+<text x="432.4" y="264.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">2</text>
+<text x="432.4" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">06</text>
+<rect x="450.9" y="162.8" width="21.0" height="117.2" rx="3" fill="#8b7cf0"/>
+<text x="461.3" y="157.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">23</text>
+<text x="461.3" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">07</text>
+<rect x="479.8" y="244.3" width="21.0" height="35.7" rx="3" fill="#8b7cf0"/>
+<text x="490.3" y="239.3" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">7</text>
+<text x="490.3" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">08</text>
+<rect x="508.8" y="269.8" width="21.0" height="10.2" rx="3" fill="#8b7cf0"/>
+<text x="519.2" y="264.8" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">2</text>
+<text x="519.2" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">09</text>
+<rect x="537.7" y="254.5" width="21.0" height="25.5" rx="3" fill="#8b7cf0"/>
+<text x="548.2" y="249.5" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">5</text>
+<text x="548.2" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">10</text>
+<rect x="566.7" y="188.3" width="21.0" height="91.7" rx="3" fill="#8b7cf0"/>
+<text x="577.1" y="183.3" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">18</text>
+<text x="577.1" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">11</text>
+<rect x="595.6" y="223.9" width="21.0" height="56.1" rx="3" fill="#8b7cf0"/>
+<text x="606.1" y="218.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">11</text>
+<text x="606.1" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">12</text>
+<rect x="624.6" y="229.0" width="21.0" height="51.0" rx="3" fill="#8b7cf0"/>
+<text x="635.0" y="224.0" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">10</text>
+<text x="635.0" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">13</text>
+<rect x="653.5" y="183.2" width="21.0" height="96.8" rx="3" fill="#8b7cf0"/>
+<text x="664.0" y="178.2" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">19</text>
+<text x="664.0" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">14</text>
+<rect x="682.5" y="264.7" width="21.0" height="15.3" rx="3" fill="#8b7cf0"/>
+<text x="693.0" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">3</text>
+<text x="693.0" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">15</text>
+<rect x="711.4" y="142.4" width="21.0" height="137.6" rx="3" fill="#8b7cf0"/>
+<text x="721.9" y="137.4" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">27</text>
+<text x="721.9" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">16</text>
+<rect x="740.4" y="178.1" width="21.0" height="101.9" rx="3" fill="#8b7cf0"/>
+<text x="750.9" y="173.1" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">20</text>
+<text x="750.9" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">17</text>
+<rect x="769.3" y="132.2" width="21.0" height="147.8" rx="3" fill="#8b7cf0"/>
+<text x="779.8" y="127.2" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">29</text>
+<text x="779.8" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">18</text>
+<rect x="798.3" y="274.9" width="21.0" height="5.1" rx="3" fill="#8b7cf0"/>
+<text x="808.8" y="269.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">1</text>
+<text x="808.8" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">19</text>
+<rect x="827.2" y="264.7" width="21.0" height="15.3" rx="3" fill="#8b7cf0"/>
+<text x="837.7" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">3</text>
+<text x="837.7" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">20</text>
+<rect x="856.2" y="264.7" width="21.0" height="15.3" rx="3" fill="#8b7cf0"/>
+<text x="866.7" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">3</text>
+<text x="866.7" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">23</text>
+<rect x="885.1" y="274.9" width="21.0" height="5.1" rx="3" fill="#8b7cf0"/>
+<text x="895.6" y="269.9" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">1</text>
+<text x="895.6" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">24</text>
+<rect x="914.1" y="198.5" width="21.0" height="81.5" rx="3" fill="#8b7cf0"/>
+<text x="924.6" y="193.5" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">16</text>
+<text x="924.6" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">25</text>
+<rect x="943.0" y="264.7" width="21.0" height="15.3" rx="3" fill="#8b7cf0"/>
+<text x="953.5" y="259.7" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#efecff" text-anchor="middle">3</text>
+<text x="953.5" y="296" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#b9b3e0" text-anchor="middle">26</text>
+<text x="32" y="326" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#efecff" text-anchor="start">Languages</text>
+<rect x="32.0" y="336" width="689.7" height="12" rx="3" fill="#b07219"/>
+<rect x="723.7" y="336" width="147.8" height="12" rx="3" fill="#f1e05a"/>
+<rect x="873.5" y="336" width="35.4" height="12" rx="3" fill="#3178c6"/>
+<rect x="910.9" y="336" width="23.3" height="12" rx="3" fill="#663399"/>
+<rect x="936.2" y="336" width="29.8" height="12" rx="3" fill="#b4add8"/>
 <circle cx="140" cy="321" r="5" fill="#b07219"/>
-<text x="150" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#e8f1f3" text-anchor="start">Java 74.3 %</text>
+<text x="150" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#efecff" text-anchor="start">Java 73.9 %</text>
 <circle cx="244.6" cy="321" r="5" fill="#f1e05a"/>
-<text x="254.6" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#e8f1f3" text-anchor="start">JavaScript 15.9 %</text>
+<text x="254.6" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#efecff" text-anchor="start">JavaScript 16.0 %</text>
 <circle cx="388.79999999999995" cy="321" r="5" fill="#3178c6"/>
-<text x="398.79999999999995" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#e8f1f3" text-anchor="start">TypeScript 3.9 %</text>
+<text x="398.79999999999995" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#efecff" text-anchor="start">TypeScript 4.0 %</text>
 <circle cx="526.4" cy="321" r="5" fill="#663399"/>
-<text x="536.4" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#e8f1f3" text-anchor="start">CSS 2.4 %</text>
-<circle cx="617.8" cy="321" r="5" fill="#9fbac2"/>
-<text x="627.8" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#e8f1f3" text-anchor="start">Other 3.5 %</text>
+<text x="536.4" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#efecff" text-anchor="start">CSS 2.7 %</text>
+<circle cx="617.8" cy="321" r="5" fill="#b4add8"/>
+<text x="627.8" y="325" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#efecff" text-anchor="start">Other 3.4 %</text>
 </svg>

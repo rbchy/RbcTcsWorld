@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 import { useRoute, useSession } from './session';
-import { Footer, Sidebar, Topbar } from './Layout';
+import { AnnounceBar, Footer, Sidebar, Topbar } from './Layout';
 import { installButtonIcons } from './icons';
 import { useI18n } from './i18n';
 import Home from './pages/Home';
@@ -84,6 +84,7 @@ function App() {
     <div className="shell">
       <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
       {DEMO && <DemoRibbon />}
+      <AnnounceBar />
       <Topbar session={session} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <div className="frame">
         <Sidebar route={route} session={session} open={menuOpen} onNavigate={() => setMenuOpen(false)} />

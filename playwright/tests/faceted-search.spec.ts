@@ -1,7 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from '../support/fixtures';
 
-/** Faceted search in the browser: check-box filters with a count behind every option (REQ-CAT-11..12). */
+/**
+ * Faceted search in the browser: check-box filters with a count behind every option, and the "Shop by category"
+ * tiles above the catalog that select one category (REQ-CAT-11..12).
+ */
 
 test('a category filter narrows the catalog, shows counts and can be cleared @mobile', async ({ page, api }) => {
   const category = `fx${Date.now().toString(36)}`;
@@ -21,6 +24,30 @@ test('a category filter narrows the catalog, shows counts and can be cleared @mo
   await expect(option).not.toBeChecked();
   await expect.poll(() => page.getByTestId('product-card').count()).toBeGreaterThanOrEqual(Math.min(before, 2));
   await expect(page.getByTestId('banner')).toBeVisible();
+});
+
+test('a "Shop by category" tile shows only that category; All products shows everything again @mobile', async ({ page, api }) => {
+  const category = `cx${Date.now().toString(36)}`;
+  const product = await api.createProduct({ category, price: 12, stock: 3 });
+  await page.goto('/#/');
+  const tile = page.locator(`[data-testid="category-chip"][data-value="${category}"]`);
+  const all = page.locator('[data-testid="category-chip"][data-value=""]');
+  await expect(tile).toBeVisible();
+  await expect(tile).toContainText('1');
+  await expect(all).toHaveAttribute('aria-pressed', 'true');
+
+  await tile.click();
+  await expect(tile).toHaveAttribute('aria-pressed', 'true');
+  await expect(all).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('product-card')).toHaveCount(1);
+  await expect(page.getByTestId('product-card')).toHaveAttribute('data-sku', product.sku);
+  await expect(page.locator(`[data-testid="filter-category"][data-value="${category}"]`)).toBeChecked();   // same filter as the panel
+  await expect(page.getByTestId('banner')).toHaveCount(0);
+
+  await all.click();
+  await expect(all).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('banner')).toBeVisible();
+  await expect.poll(() => page.getByTestId('product-card').count()).toBeGreaterThan(1);
 });
 
 test('colour, price and in-stock filters combine; a colour still offers the other colour', async ({ page }) => {

@@ -9,10 +9,10 @@ export default function ShopScene() {
   return (
     <svg className="shop-scene" viewBox="0 0 440 290" direction="ltr" aria-hidden="true" focusable="false" data-testid="banner-art">
       {/* ground */}
-      <ellipse cx="222" cy="270" rx="200" ry="13" fill="#120c36" opacity="0.5" />
+      <ellipse cx="222" cy="270" rx="200" ry="13" fill="#4f47b8" opacity="0.16" />
 
       {/* building */}
-      <rect x="92" y="58" width="260" height="206" rx="6" fill="#f5f3fb" />
+      <rect x="92" y="58" width="260" height="206" rx="6" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
       <rect x="92" y="58" width="260" height="34" rx="6" fill="#120c36" />
       <rect x="148" y="66" width="148" height="18" rx="9" fill="#ffd35c" />
       <text x="222" y="80" textAnchor="middle" fontSize="13" fontWeight="800" letterSpacing="2" fill="#1e1650"
@@ -61,9 +61,9 @@ export default function ShopScene() {
       <g>
         <rect x="30" y="214" width="54" height="50" rx="4" fill="#ffd35c" />
         <rect x="53" y="214" width="8" height="50" fill="#e0b23d" />
-        <rect x="40" y="178" width="38" height="36" rx="4" fill="#f5f3fb" />
+        <rect x="40" y="178" width="38" height="36" rx="4" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
         <rect x="55" y="178" width="7" height="36" fill="#d8d1f0" />
-        <rect x="364" y="226" width="44" height="38" rx="4" fill="#f5f3fb" />
+        <rect x="364" y="226" width="44" height="38" rx="4" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
         <rect x="382" y="226" width="7" height="38" fill="#d9365e" />
       </g>
 
@@ -76,8 +76,8 @@ export default function ShopScene() {
       </g>
 
       {/* sparkles */}
-      <path d="M52 92 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z" fill="#ffd35c" />
-      <path d="M408 160 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#ffd35c" opacity="0.85" />
+      <path d="M52 92 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z" fill="#ffb020" />
+      <path d="M408 160 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#ffb020" opacity="0.85" />
       <circle cx="78" cy="140" r="3.5" fill="#ffd35c" opacity="0.8" />
       <circle cx="420" cy="214" r="3" fill="#ffd35c" />
     </svg>

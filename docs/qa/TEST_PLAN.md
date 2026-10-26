@@ -44,9 +44,9 @@ defect is open, and give a documented go / no-go recommendation.
 
 | Item | Version |
 |---|---|
-| Backend | `ecommerce-backend` 1.0.0, Spring Boot 4.1.1, Flyway V1-V7 |
-| Frontend | `rbctcsworld-ecommerce-frontend` 1.0.0 |
-| Automation | `ecommerce-automation` 1.0.0 (JUnit 5.11, REST Assured 5.5, Selenium 4.49, Cucumber 7.18, Allure 2.29) |
+| Backend | `rbctcsworld-shop-backend` 1.0.0, Spring Boot 4.1.1, Flyway V1-V7 |
+| Frontend | `rbctcsworld-shop-frontend` 1.0.0 |
+| Automation | `rbctcsworld-shop-automation` 1.0.0 (JUnit 5.11, REST Assured 5.5, Selenium 4.49, Cucumber 7.18, Allure 2.29) |
 | Performance | k6 scripts in `performance/` |
 
 ## 4. Approach per feature

@@ -90,7 +90,7 @@ flowchart TB
 ### ২.৩ ফোল্ডারের কাঠামো (frame)
 
 ```text
-RbcTcsWorld_ECommerceSuite/
+RbcTcsWorld/
 ├── backend/          Spring Boot API, unit + integration টেস্ট, PIT profile
 ├── frontend/         React storefront, admin প্যানেল, ৬ ভাষা, PWA
 │   ├── src/          main.jsx (route), Layout.jsx (topbar + sidebar), i18n.js, help.js, pages/
@@ -126,8 +126,8 @@ flowchart TD
 **আগে লাগবে:** Docker Desktop, Git। Development-এর জন্য আরও লাগবে JDK 21, Maven, Node.js 20+।
 
 ```bash
-git clone https://github.com/rbchy/RbcTcsWorld_ECommerceSuite.git
-cd RbcTcsWorld_ECommerceSuite
+git clone https://github.com/rbchy/RbcTcsWorld.git
+cd RbcTcsWorld
 ```
 
 ### ৩.১ Desktop launcher (সবচেয়ে সহজ)
@@ -192,9 +192,9 @@ Mac বন্ধ থাকলেও শপ একটা `https://` লিংক�
 
 ```bash
 # সার্ভারে, একবার
-curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld_ECommerceSuite/main/deploy/setup-vm.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rbchy/RbcTcsWorld/main/deploy/setup-vm.sh | bash
 # চালু বা আপডেট (প্রতিবার merge-এর পর)
-~/RbcTcsWorld_ECommerceSuite/deploy/deploy.sh
+~/RbcTcsWorld/deploy/deploy.sh
 ```
 
 - Demo mode-এ উপরে হলুদ ফিতা থাকে, শুধু টেস্ট কার্ড চলে, আর প্রতি রাত ৩:৩০-এ সব reset হয়।
@@ -417,7 +417,7 @@ python3 docs/qa/check_rtm.py                        # প্রতিটা requ
 | k6 | k6 চালালেই | `performance/reports/<নাম>-report.html` |
 | OSV | `security/osv-scan.sh` | `osv-results.json` |
 | Jenkins QA Reports | যেকোনো Jenkins build | build-এর পাতায় **QA Reports** |
-| GitHub-এর Allure | main-এ merge হলে | https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/ |
+| GitHub-এর Allure | main-এ merge হলে | https://rbchy.github.io/RbcTcsWorld/ |
 
 - Allure-এর `index.html` ফাইল সরাসরি ডাবল-ক্লিকে খুললে সাদা দেখায় (browser `file://` থেকে ডেটা পড়তে দেয় না)। `allure:serve` ব্যবহার করুন।
 - Jenkins-এর QA Reports পাতায় প্রতিটা gate-এর কার্ড থাকে। যে stage চলেনি সেটা "not run" (ধূসর), ফেল করলে লাল। পাতাটা কখনো build-এর চেয়ে বেশি সবুজ দেখায় না (DEF-022)।

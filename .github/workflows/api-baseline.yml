@@ -26,7 +26,7 @@ jobs:
       - name: Start backend and save the OpenAPI description
         run: |
           mvn -B -q -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health >/dev/null && break; sleep 2; done
           mkdir -p docs/api
           curl -sf http://localhost:8081/v3/api-docs | jq -S 'del(.servers)' > docs/api/openapi.json

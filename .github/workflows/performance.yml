@@ -38,7 +38,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health && break; sleep 2; done
       - uses: grafana/setup-k6-action@v1
       - name: k6 ${{ inputs.test }}
@@ -87,7 +87,7 @@ jobs:
       - name: Build and start backend
         run: |
           mvn -B -f backend/pom.xml -DskipTests package
-          nohup java -jar backend/target/ecommerce-backend-1.0.0.jar > backend.log 2>&1 &
+          nohup java -jar backend/target/rbctcsworld-shop-backend-1.0.0.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:8081/actuator/health && break; sleep 2; done
       - name: Install Apache JMeter 5.6.3
         run: |

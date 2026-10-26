@@ -123,7 +123,7 @@
 
 ## নিজে চালিয়ে দেখুন (Mac)
 ```bash
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld
 git pull
 python3 docs/qa/check_rtm.py
 # ফলাফল: RTM: 56 requirements, 281 test references, 56 covered, gaps: none

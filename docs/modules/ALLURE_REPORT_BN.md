@@ -16,14 +16,14 @@
 
 ## নিজের Mac-এ দেখার নিয়ম
 ```bash
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld
 mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile   # backend চালু থাকতে হবে
 mvn -f automation/pom.xml allure:serve                     # ব্রাউজারে রিপোর্ট খুলবে
 ```
 `clean` দেওয়া জরুরি। নাহলে আগের রানের ফলাফল মিশে গিয়ে একই টেস্ট একাধিকবার দেখাবে।
 
 ## অনলাইনে (CI)
-`main`-এ প্রতিটা push-এর পর রিপোর্ট আপডেট হয়: https://rbchy.github.io/RbcTcsWorld_ECommerceSuite/
+`main`-এ প্রতিটা push-এর পর রিপোর্ট আপডেট হয়: https://rbchy.github.io/RbcTcsWorld/
 এছাড়া প্রতিটা CI রানের "Artifacts" অংশে `allure-report` zip হিসেবেও থাকে।
 
 ## ইন্টারভিউতে যা বলবেন

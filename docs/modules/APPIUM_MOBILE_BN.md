@@ -58,7 +58,7 @@ flowchart LR
 
 ```bash
 # ১. শপ চালু (desktop launcher, অথবা)
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite && docker compose --profile app up -d
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld && docker compose --profile app up -d
 
 # ২. Emulator চালু (Virtual Device Manager-এ ▶, অথবা)
 emulator -avd Pixel_6_API_34 &

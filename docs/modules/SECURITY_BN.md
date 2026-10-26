@@ -65,7 +65,7 @@
 
 ## চালানো (Mac)
 ```bash
-cd ~/Eclipse-Workspace-QA/RbcTcsWorld_ECommerceSuite
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld
 git pull
 mvn -f backend/pom.xml spring-boot:run                       # নতুন Spring Boot নামাবে, তাই প্রথমবার একটু সময় লাগবে
 mvn -f automation/pom.xml clean test -Dgroups=security

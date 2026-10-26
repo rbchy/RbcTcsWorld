@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import '@fontsource/plus-jakarta-sans/latin-700.css';
+import '@fontsource/plus-jakarta-sans/latin-800.css';
 import './style.css';
 import { useRoute, useSession } from './session';
 import { AnnounceBar, Footer, Sidebar, Topbar } from './Layout';

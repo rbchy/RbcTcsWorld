@@ -165,7 +165,7 @@ function Banner({ t }) {
   const toCatalog = e => { e.preventDefault(); document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }); };
   return (
     <section className="banner" aria-labelledby="banner-title" data-testid="banner">
-      <Watermark tone="big" />
+      <Watermark tone="bigLight" />
       <div className="banner-main">
         <p className="banner-kicker">{t('bannerKicker')}</p>
         <h2 id="banner-title">{t('bannerTitle')}</h2>

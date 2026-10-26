@@ -66,16 +66,19 @@ export function exitShop() {
 }
 
 /**
- * The shop's mark: a shopping bag with the R on it. Drawn inline so it works offline (desktop app) and in every theme.
+ * The shop's mark: a shopping bag with the R on it, on a white tile so it stands out on the indigo header and footer. Drawn inline so it works offline (desktop app) and in every theme.
  */
-export function BrandMark({ size = 36 }) {
+export function BrandMark({ size = 42 }) {
   return (
     <svg className="brand-mark" width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <rect width="40" height="40" rx="11" fill="#fff" />
+      <g transform="translate(5.6 4.4) scale(0.72)">
       <path d="M13 14 v-3 a7 7 0 0 1 14 0 v3" fill="none" stroke="#ffd35c" strokeWidth="3" strokeLinecap="round" />
       <path d="M6 13 h28 l-2.2 22 a3 3 0 0 1 -3 2.7 h-17.6 a3 3 0 0 1 -3 -2.7 z" fill="#5b2fd6" />
       <path d="M6 13 h28 l-.6 6 h-26.8 z" fill="#d9365e" />
       <text x="20" y="33" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff"
             fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">R</text>
+      </g>
     </svg>
   );
 }

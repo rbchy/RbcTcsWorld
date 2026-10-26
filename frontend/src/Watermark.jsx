@@ -20,7 +20,8 @@ function big(fill) {
 const TONES = {
   dark: tile('rgba(232, 241, 243, 0.07)'),     // on the harbor-blue banners
   light: tile('rgba(18, 49, 63, 0.06)'),       // on white (report sheets)
-  big: big('rgba(232, 241, 243, 0.11)'),       // one large name across the storefront banner
+  big: big('rgba(232, 241, 243, 0.11)'),       // one large name across a dark banner
+  bigLight: big('rgba(91, 47, 214, 0.07)'),    // the same on the light storefront banner
 };
 
 /**

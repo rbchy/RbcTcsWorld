@@ -1,85 +1,68 @@
 import React from 'react';
 
+const FONT = 'Plus Jakarta Sans, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+
 /**
- * The storefront banner picture: the RbcTcsWorld shop front with a striped awning, goods in the window, an open
- * door, parcels ready to go out and a -10% badge for the welcome offer. Drawn in the shop's own colours
- * (midnight indigo, violet, coral, sunflower). Purely decorative, so screen readers skip it.
+ * The storefront banner picture: an RbcTcsWorld van on a winding road to a customer's home, a map pin over the
+ * house, a parcel at the door and "free over $50" on the way: everyday goods, delivered to your door.
+ * It fills the right half of the banner (slice keeps the sky and hills edge to edge at any banner size).
+ * Purely decorative, so screen readers skip it.
  */
 export default function ShopScene() {
   return (
-    <svg className="shop-scene" viewBox="0 0 440 290" direction="ltr" aria-hidden="true" focusable="false" data-testid="banner-art">
-      {/* ground */}
-      <ellipse cx="222" cy="270" rx="200" ry="13" fill="#4f47b8" opacity="0.16" />
+    <svg className="shop-scene" viewBox="0 0 460 300" preserveAspectRatio="xMidYMid slice" direction="ltr"
+         aria-hidden="true" focusable="false" data-testid="banner-art">
+      {/* sun and clouds */}
+      <circle cx="372" cy="70" r="46" fill="#ffd35c" opacity="0.22" />
+      <circle cx="372" cy="70" r="30" fill="#ffd35c" />
+      <g fill="#fff">
+        <ellipse cx="96" cy="62" rx="34" ry="13" /><ellipse cx="120" cy="54" rx="22" ry="13" />
+        <ellipse cx="250" cy="42" rx="26" ry="10" /><ellipse cx="268" cy="36" rx="16" ry="10" />
+      </g>
 
-      {/* building */}
-      <rect x="92" y="58" width="260" height="206" rx="6" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
-      <rect x="92" y="58" width="260" height="34" rx="6" fill="#120c36" />
-      <rect x="148" y="66" width="148" height="18" rx="9" fill="#ffd35c" />
-      <text x="222" y="80" textAnchor="middle" fontSize="13" fontWeight="800" letterSpacing="2" fill="#1e1650"
-            fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">SHOP</text>
+      {/* hills */}
+      <path d="M-40 206 q140 -64 270 -12 t270 -22 v140 h-540 z" fill="#d9f0e4" />
+      <path d="M-40 236 q160 -44 290 0 t250 -10 v90 h-540 z" fill="#c4e7d5" />
 
-      {/* awning: coral and white stripes with a scalloped edge */}
+      {/* road */}
+      <path d="M-30 300 C 80 258, 160 272, 240 240 S 360 202, 400 198" fill="none" stroke="#b9c3d6" strokeWidth="32" strokeLinecap="round" />
+      <path d="M-30 300 C 80 258, 160 272, 240 240 S 360 202, 400 198" fill="none" stroke="#fff" strokeWidth="3" strokeDasharray="12 12" />
+
+      {/* home */}
       <g>
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-          <rect key={i} x={84 + i * 27.6} y="92" width="27.6" height="30" fill={i % 2 ? '#fff' : '#d9365e'} />
-        ))}
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-          <path key={`s${i}`} d={`M${84 + i * 27.6} 122 a13.8 11 0 0 0 27.6 0 z`} fill={i % 2 ? '#fff' : '#d9365e'} />
-        ))}
-        <rect x="84" y="88" width="276" height="6" rx="3" fill="#120c36" />
+        <rect x="352" y="150" width="76" height="52" rx="3" fill="#fff" />
+        <path d="M344 154 l46 -36 l46 36 z" fill="#d9365e" />
+        <rect x="380" y="172" width="20" height="30" rx="2" fill="#4f47b8" />
+        <rect x="362" y="164" width="14" height="14" rx="2" fill="#bfe0ff" />
+        <rect x="406" y="164" width="14" height="14" rx="2" fill="#bfe0ff" />
+      </g>
+      <rect x="330" y="186" width="24" height="18" rx="2" fill="#ffd35c" />
+      <rect x="340" y="186" width="4" height="18" fill="#e0b23d" />
+
+      {/* map pin over the home, and the route to it */}
+      <path d="M390 54 a22 22 0 0 1 22 22 c0 18 -22 38 -22 38 s-22 -20 -22 -38 a22 22 0 0 1 22 -22 z" fill="#5b2fd6" />
+      <circle cx="390" cy="76" r="8" fill="#fff" />
+      <path d="M390 116 q-40 30 -120 52" fill="none" stroke="#5b2fd6" strokeWidth="2" strokeDasharray="4 6" opacity="0.6" />
+
+      {/* the van */}
+      <g transform="translate(120 170) rotate(-8)">
+        <rect x="0" y="0" width="112" height="58" rx="8" fill="#5b2fd6" />
+        <path d="M112 14 h26 l18 22 v22 h-44 z" fill="#4f47b8" />
+        <path d="M118 20 h18 l12 16 h-30 z" fill="#d9ecff" />
+        <rect x="8" y="10" width="92" height="22" rx="5" fill="#fff" />
+        <text x="54" y="26" textAnchor="middle" fontSize="12" fontWeight="800" fill="#4f47b8" fontFamily={FONT}>RbcTcsWorld</text>
+        <rect x="12" y="38" width="22" height="12" rx="2" fill="#ffd35c" />
+        <rect x="38" y="38" width="22" height="12" rx="2" fill="#ffd35c" opacity="0.8" />
+        <circle cx="30" cy="60" r="13" fill="#1e1650" /><circle cx="30" cy="60" r="5" fill="#e8e5f5" />
+        <circle cx="128" cy="60" r="13" fill="#1e1650" /><circle cx="128" cy="60" r="5" fill="#e8e5f5" />
+        <path d="M-36 14 h24 M-46 28 h30 M-30 42 h18" stroke="#9aa6c4" strokeWidth="4" strokeLinecap="round" />
       </g>
 
-      {/* shop window with shelves of goods */}
-      <rect x="110" y="146" width="132" height="96" rx="6" fill="#1e1650" />
-      <rect x="116" y="152" width="120" height="84" rx="4" fill="#ece8fb" />
-      <rect x="116" y="192" width="120" height="5" fill="#b9addf" />
-      <rect x="116" y="231" width="120" height="5" fill="#b9addf" />
-      {/* top shelf: a mug, a book, a box */}
-      <rect x="126" y="170" width="18" height="22" rx="3" fill="#d9365e" />
-      <path d="M144 175 h4 a5 5 0 0 1 0 10 h-4" fill="none" stroke="#d9365e" strokeWidth="3" />
-      <rect x="160" y="164" width="16" height="28" rx="2" fill="#5b2fd6" />
-      <rect x="179" y="168" width="14" height="24" rx="2" fill="#ffd35c" />
-      <rect x="203" y="172" width="24" height="20" rx="2" fill="#1e1650" />
-      <rect x="213" y="172" width="4" height="20" fill="#ffd35c" />
-      {/* bottom shelf: a t-shirt and a bottle */}
-      <path d="M128 208 l8 -6 h12 l8 6 l-4 7 h-3 v16 h-14 v-16 h-3 z" fill="#5b2fd6" />
-      <rect x="176" y="206" width="12" height="25" rx="4" fill="#1e1650" />
-      <rect x="179" y="201" width="6" height="6" rx="1" fill="#1e1650" />
-      <circle cx="210" cy="221" r="10" fill="#ffd35c" />
-      <path d="M205 221 l4 4 l7 -8" fill="none" stroke="#1e1650" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-
-      {/* door, open sign */}
-      <rect x="260" y="146" width="74" height="118" rx="5" fill="#5b2fd6" />
-      <rect x="268" y="154" width="58" height="56" rx="4" fill="#ece8fb" opacity="0.92" />
-      <circle cx="318" cy="234" r="4" fill="#ffd35c" />
-      <path d="M284 154 l13 14 l13 -14" fill="none" stroke="#120c36" strokeWidth="2" />
-      <rect x="276" y="168" width="42" height="22" rx="4" fill="#d9365e" />
-      <text x="297" y="183" textAnchor="middle" fontSize="11" fontWeight="800" fill="#fff"
-            fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">OPEN</text>
-
-      {/* parcels ready to go */}
-      <g>
-        <rect x="30" y="214" width="54" height="50" rx="4" fill="#ffd35c" />
-        <rect x="53" y="214" width="8" height="50" fill="#e0b23d" />
-        <rect x="40" y="178" width="38" height="36" rx="4" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
-        <rect x="55" y="178" width="7" height="36" fill="#d8d1f0" />
-        <rect x="364" y="226" width="44" height="38" rx="4" fill="#fff" stroke="#d8d1f0" strokeWidth="2" />
-        <rect x="382" y="226" width="7" height="38" fill="#d9365e" />
+      {/* free shipping tag */}
+      <g transform="rotate(8 70 120)">
+        <rect x="40" y="104" width="96" height="30" rx="15" fill="#fff" />
+        <text x="88" y="124" textAnchor="middle" fontSize="13" fontWeight="800" fill="#1d6b3a" fontFamily={FONT}>Free over $50</text>
       </g>
-
-      {/* -10% badge for the welcome offer */}
-      <g transform="rotate(12 386 74)">
-        <circle cx="386" cy="74" r="34" fill="#d9365e" />
-        <circle cx="386" cy="74" r="28" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 4" />
-        <text x="386" y="82" textAnchor="middle" fontSize="21" fontWeight="900" fill="#fff"
-              fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">-10%</text>
-      </g>
-
-      {/* sparkles */}
-      <path d="M52 92 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z" fill="#ffb020" />
-      <path d="M408 160 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#ffb020" opacity="0.85" />
-      <circle cx="78" cy="140" r="3.5" fill="#ffd35c" opacity="0.8" />
-      <circle cx="420" cy="214" r="3" fill="#ffd35c" />
     </svg>
   );
 }

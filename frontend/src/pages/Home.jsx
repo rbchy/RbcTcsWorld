@@ -157,7 +157,7 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
 
 /**
  * The startup banner: the welcome offer with its code on a coupon ticket, a way in (log in / create account) for
- * visitors, a picture of the shop front and the RbcTcsWorld name as a large watermark behind it all.
+ * visitors, a delivery picture (the van on its way to a home) and the RbcTcsWorld name as a watermark behind the text.
  */
 function Banner({ t }) {
   const session = getSession();

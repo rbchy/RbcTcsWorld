@@ -83,7 +83,7 @@ public final class InvoicePdf {
         Page p = new Page();
         pages.add(p);
 
-        p.rect(0, 722, PAGE_W, 70, "0.71 0.33 0.04");
+        p.rect(0, 722, PAGE_W, 70, "0.36 0.18 0.84");
         p.text(50, 752, "F2", 24, "RbcTcsWorld");
         p.text(50, 733, "F1", 10, "Everyday goods, delivered to your door");
         p.right(562, 752, "F2", 22, "INVOICE");
@@ -140,7 +140,7 @@ public final class InvoicePdf {
 
         int last = pages.size();
         for (int i = 0; i < last; i++) {
-            pages.get(i).text(50, 30, "F1", 8, "RbcTcsWorld E-Commerce  |  " + o.orderNumber() + "  |  page " + (i + 1) + " of " + last);
+            pages.get(i).text(50, 30, "F1", 8, "RbcTcsWorld Shop  |  " + o.orderNumber() + "  |  page " + (i + 1) + " of " + last);
         }
         return assemble(pages);
     }

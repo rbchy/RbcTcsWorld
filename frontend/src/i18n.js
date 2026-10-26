@@ -186,6 +186,9 @@ const T = {
   adminBadge: ['Admin', 'অ্যাডমিন', 'Admin', 'Admin', 'مسؤول', '管理员'],
   installApp: ['Install app', 'অ্যাপ ইনস্টল করুন', 'Instalar app', 'Installer l’app', 'تثبيت التطبيق', '安装应用'],
   // ---- banner / catalog ----
+  bannerKicker: ['Welcome offer', 'স্বাগত অফার', 'Oferta de bienvenida', 'Offre de bienvenue', 'عرض الترحيب', '新人优惠'],
+  shopByCategory: ['Shop by category', 'ক্যাটাগরি অনুযায়ী কেনাকাটা', 'Comprar por categoría', 'Acheter par catégorie', 'تسوق حسب الفئة', '按类别选购'],
+  allProducts: ['All products', 'সব পণ্য', 'Todos los productos', 'Tous les produits', 'كل المنتجات', '全部商品'],
   bannerTitle: ['10% off your first order', 'প্রথম অর্ডারে ১০% ছাড়', '10% de descuento en tu primer pedido', '10 % de remise sur votre première commande', 'خصم 10% على طلبك الأول', '首单立减 10%'],
   bannerText: ['Use the code at checkout. Shipping is free from $50.', 'চেকআউটে কোডটা দিন। $50-এর বেশি অর্ডারে শিপিং ফ্রি।', 'Usa el código al pagar. Envío gratis desde $50.', 'Saisissez le code au paiement. Livraison offerte dès 50 $.', 'أدخل الرمز عند الدفع. الشحن مجاني من 50 دولارًا.', '结账时输入此代码。满 $50 免运费。'],
   bannerCode: ['Code', 'কোড', 'Código', 'Code', 'الرمز', '代码'],

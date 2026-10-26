@@ -65,6 +65,35 @@ export function exitShop() {
   setTimeout(() => window.close(), 150);
 }
 
+/**
+ * The shop's mark: a shopping bag with the R on it. Drawn inline so it works offline (desktop app) and in every theme.
+ */
+export function BrandMark({ size = 36 }) {
+  return (
+    <svg className="brand-mark" width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <path d="M13 14 v-3 a7 7 0 0 1 14 0 v3" fill="none" stroke="#ffd35c" strokeWidth="3" strokeLinecap="round" />
+      <path d="M6 13 h28 l-2.2 22 a3 3 0 0 1 -3 2.7 h-17.6 a3 3 0 0 1 -3 -2.7 z" fill="#5b2fd6" />
+      <path d="M6 13 h28 l-.6 6 h-26.8 z" fill="#d9365e" />
+      <text x="20" y="33" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff"
+            fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">R</text>
+    </svg>
+  );
+}
+
+/** The thin bar above the header: the three promises every page makes (same words as the footer). */
+export function AnnounceBar() {
+  const { t } = useI18n();
+  return (
+    <div className="announce" data-testid="announce-bar">
+      <ul>
+        <li><Icon name="truck" size={16} />{t('footFreeShipping')}</li>
+        <li className="hide-phone"><Icon name="returnArrow" size={16} />{t('footReturns')}</li>
+        <li className="hide-phone"><Icon name="lock" size={16} />{t('footSecure')}</li>
+      </ul>
+    </div>
+  );
+}
+
 export function Topbar({ session, onMenu, menuOpen }) {
   const { t, lang, setLanguage } = useI18n();
   const install = useInstallPrompt();
@@ -76,8 +105,8 @@ export function Topbar({ session, onMenu, menuOpen }) {
         <span aria-hidden="true" className="burger" />{menuOpen ? t('closeMenu') : t('menu')}
       </button>
       <a href="#/" className="brand" data-testid="nav-home">
-        <span className="brand-mark" aria-hidden="true">R</span>
-        <span className="brand-text">RbcTcsWorld<small>{t('tagline')}</small></span>
+        <BrandMark />
+        <span className="brand-text"><span>RbcTcsWorld <b className="brand-shop">Shop</b></span><small>{t('tagline')}</small></span>
       </a>
       <div className="top-actions">
         <label className="lang">
@@ -239,7 +268,7 @@ export function Footer({ session }) {
       <div className="foot-stripe" aria-hidden="true" />
       <div className="foot-grid">
         <section className="foot-brand" aria-labelledby="foot-brand">
-          <p className="brand foot-logo" id="foot-brand"><span className="brand-mark" aria-hidden="true">R</span>RbcTcsWorld</p>
+          <p className="brand foot-logo" id="foot-brand"><BrandMark size={32} />RbcTcsWorld Shop</p>
           <p>{t('tagline')}</p>
           <ul className="foot-promises">
             <li><Icon name="truck" />{t('footFreeShipping')}</li>
@@ -279,7 +308,7 @@ export function Footer({ session }) {
         </nav>
       </div>
       <div className="foot-bottom">
-        <p>© {year} RbcTcsWorld. {t('footDemo')}</p>
+        <p>© {year} RbcTcsWorld Shop. {t('footDemo')}</p>
         <p className="pay-methods">
           <span>{t('footWeAccept')}</span>
           <span className="pay-chip"><Icon name="card" size={16} />{t('footCards')}</span>

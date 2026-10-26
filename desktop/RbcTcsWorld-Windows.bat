@@ -1,5 +1,5 @@
 @echo off
-REM RbcTcsWorld E-Commerce - double-click to start the whole store and open it (Windows, Docker Desktop).
+REM RbcTcsWorld Shop - double-click to start the whole store and open it (Windows, Docker Desktop).
 cd /d "%~dp0.."
 docker info >nul 2>&1
 if errorlevel 1 (

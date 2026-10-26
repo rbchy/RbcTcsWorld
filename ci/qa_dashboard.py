@@ -197,7 +197,7 @@ for title, status, big, lines, refs in cards:
 page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QA Reports - build {esc(BUILD)}</title><link rel="stylesheet" href="style.css"></head>
-<body><header class="{overall}"><h1>RbcTcsWorld E-Commerce - QA Reports</h1>
+<body><header class="{overall}"><h1>RbcTcsWorld Shop - QA Reports</h1>
 <p>Build {esc(BUILD)}{(' | commit ' + esc(COMMIT)) if COMMIT else ''} | {esc(time.strftime('%Y-%m-%d %H:%M'))} |
 {total_tests} automated tests | overall: <strong>{esc(verdict)}</strong></p></header>
 <main>{''.join(parts)}</main>

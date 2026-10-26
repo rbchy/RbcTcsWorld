@@ -71,7 +71,7 @@ class InvoicePdfTest {
                 "(Ship to)", "(Ada Lovelace)", "(12 Main St, Apt 4)", "(Pittsburgh, PA 15213)",
                 "(SKU-1)", "(Wireless Mouse)", "($19.99)", "($59.97)",
                 "(Subtotal)", "(Discount \\(WELCOME10\\))", "(-$6.00)", "(Shipping)", "($5.99)", "(Tax)", "($3.24)", "(Total)", "($69.20)",
-                "(RbcTcsWorld E-Commerce  |  ORD-20261018-ABC123  |  page 1 of 1)");
+                "(RbcTcsWorld Shop  |  ORD-20261018-ABC123  |  page 1 of 1)");
     }
 
     @Test

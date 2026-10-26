@@ -1,5 +1,5 @@
 #!/bin/bash
-# RbcTcsWorld E-Commerce - double-click to start the whole store (database, backend, storefront) and open it.
+# RbcTcsWorld Shop - double-click to start the whole store (database, backend, storefront) and open it.
 # First start builds the images (a few minutes); later starts take seconds.
 cd "$(dirname "$0")/.." || exit 1
 URL="http://localhost:5173"

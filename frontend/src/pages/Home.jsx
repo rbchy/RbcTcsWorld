@@ -92,10 +92,11 @@ export default function Home() {
   return (
     <>
       <header className="page-head">
-        <h1>RbcTcsWorld E-Commerce</h1>
+        <h1>RbcTcsWorld Shop</h1>
         <input data-testid="search-input" type="search" aria-label={t('searchProducts')} placeholder={t('searchProducts')} value={q} onChange={e => setQ(e.target.value)} />
       </header>
       {!q && !isFiltered(filters) && <Banner t={t} />}
+      {facets?.categories?.length > 0 && <CategoryRow t={t} categories={facets.categories} filters={filters} onChange={setFilters} />}
       {error && <p data-testid="error-banner" className="error">{error}</p>}
       {flash && <p data-testid="flash" className="ok">{flash}</p>}
       <p className="muted small" id="catalog" data-testid="catalog-total">{t('showing', { n: products.length, total })}</p>
@@ -155,8 +156,8 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
 }
 
 /**
- * The startup banner: the welcome-offer parcel label, a way in (log in / create account) for visitors,
- * a picture of the shop and the RbcTcsWorld name as a large watermark behind it all.
+ * The startup banner: the welcome offer with its code on a coupon ticket, a way in (log in / create account) for
+ * visitors, a picture of the shop front and the RbcTcsWorld name as a large watermark behind it all.
  */
 function Banner({ t }) {
   const session = getSession();
@@ -166,14 +167,10 @@ function Banner({ t }) {
     <section className="banner" aria-labelledby="banner-title" data-testid="banner">
       <Watermark tone="big" />
       <div className="banner-main">
-        <div className="label-card">
-          <div className="barcode" aria-hidden="true" />
-          <div className="label-body">
-            <h2 id="banner-title">{t('bannerTitle')}</h2>
-            <p>{t('bannerText')}</p>
-            <p className="coupon"><span>{t('bannerCode')}</span> <strong data-testid="banner-code">WELCOME10</strong></p>
-          </div>
-        </div>
+        <p className="banner-kicker">{t('bannerKicker')}</p>
+        <h2 id="banner-title">{t('bannerTitle')}</h2>
+        <p className="banner-text">{t('bannerText')}</p>
+        <p className="coupon"><span>{t('bannerCode')}</span> <strong data-testid="banner-code">WELCOME10</strong></p>
         <div className="banner-actions">
           {visitor && <a className="banner-btn" href="#/login" data-testid="banner-login">{t('navLogin')}</a>}
           {visitor && <a className="banner-btn ghost" href="#/register" data-testid="banner-register">{t('navRegister')}</a>}
@@ -182,6 +179,42 @@ function Banner({ t }) {
       </div>
       <ShopScene />
     </section>
+  );
+}
+
+/** One picture per category for the "Shop by category" row; anything else gets the shopping bag. */
+const CATEGORY_ICONS = { electronics: 'power', home: 'warehouse', books: 'receipt', clothing: 'tag' };
+
+/**
+ * Shop by category: one tile per category, like the department row of a big store. A tile selects only that
+ * category (the same filter as the check-box in the filter panel); "All products" clears it again.
+ */
+function CategoryRow({ t, categories, filters, onChange }) {
+  const only = filters.categories.length === 1 ? filters.categories[0] : null;
+  const pick = value => onChange({ ...filters, categories: value && only !== value ? [value] : [] });
+  return (
+    <nav className="category-row" aria-labelledby="category-row-title" data-testid="category-row">
+      <h2 id="category-row-title">{t('shopByCategory')}</h2>
+      <ul>
+        <li>
+          <button type="button" className="cat-tile" aria-pressed={filters.categories.length === 0}
+                  data-testid="category-chip" data-value="" onClick={() => pick(null)}>
+            <span className="cat-icon" aria-hidden="true"><Icon name="grid" /></span>
+            <span className="cat-name">{t('allProducts')}</span>
+          </button>
+        </li>
+        {categories.map((c, i) => (
+          <li key={c.value}>
+            <button type="button" className={`cat-tile tone-${i % 4}`} aria-pressed={only === c.value}
+                    data-testid="category-chip" data-value={c.value} onClick={() => pick(c.value)}>
+              <span className="cat-icon" aria-hidden="true"><Icon name={CATEGORY_ICONS[c.value.toLowerCase()] || 'bag'} /></span>
+              <span className="cat-name">{c.value}</span>
+              <span className="cat-count">{c.count}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 

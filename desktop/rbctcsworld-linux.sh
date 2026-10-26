@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# RbcTcsWorld E-Commerce - start everything and open the browser (Linux). Stop: docker compose --profile app down
+# RbcTcsWorld Shop - start everything and open the browser (Linux). Stop: docker compose --profile app down
 set -e
 cd "$(dirname "$0")/.."
 docker info >/dev/null 2>&1 || { echo "Docker is not running (sudo systemctl start docker)"; exit 1; }

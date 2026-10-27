@@ -5,8 +5,8 @@
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 ![Tests](https://img.shields.io/badge/automated%20tests-1497-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-97.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-89.3%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
+[![Coverage](https://img.shields.io/badge/line%20coverage-97.5%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-87.6%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld/)
 
 **RbcTcsWorld Shop is an online store on its way to selling for real.** Everyday goods, delivered to your door:
@@ -29,7 +29,7 @@ Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github
 
 ## 🚦 Project Status Board
 
-<img src="docs/images/project-status.svg" alt="Project status board: 1,497 automated tests (1,494 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.3 % line coverage, 89.3 % mutation score, 129 of 129 requirements traced; road to launch: phase 1 done, phase 0 in progress, phase 2 next" width="100%">
+<img src="docs/images/project-status.svg" alt="Project status board: 1,570 automated tests (1,567 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.5 % line coverage, 87.6 % mutation score, 131 of 131 requirements traced; road to launch: phase 1 done, phase 0 in progress, phase 2 in review" width="100%">
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
@@ -43,10 +43,10 @@ the board is redrawn after a release with [`docs/images/make_readme_cards.py`](d
 
 ```mermaid
 pie showData
-    title 1,497 automated tests by level
-    "Backend unit + integration" : 772
-    "API, DB, BDD, Selenium UI" : 444
-    "Playwright (5 browsers/devices)" : 273
+    title 1,570 automated tests by level
+    "Backend unit + integration" : 830
+    "API, DB, BDD, Selenium UI" : 447
+    "Playwright (5 browsers/devices)" : 285
     "Appium (Android + iOS)" : 8
 ```
 
@@ -91,7 +91,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 |---|---|
 | Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
-| Inherited quality bar | 1,497 automated tests, 18 CI quality gates, 97.3 % line coverage, 89.3 % mutation score, 129 traced requirements |
+| Quality bar | 1,570 automated tests, 18 CI quality gates, 97.5 % line coverage, 87.6 % mutation score, 131 traced requirements |
 | Phase 2 (in review) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
 | Next | **Phase 3 - tax, shipping, e-mail** from the store's domain |
 | Not decided yet | what the store sells, where the products come from (phase 0, owner) |
@@ -139,10 +139,10 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 772 / 772 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 444 / 444 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.3 % / 94.2 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 89.3 % (test strength 94.7 %) | PIT |
+| 1 | Backend unit + integration | 100 % pass | 830 / 830 | JUnit 5, Mockito, H2 + Flyway |
+| 2 | API, database, BDD, UI | 100 % pass | 447 / 447 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.5 % / 94.5 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 87.6 % (test strength 94.7 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 23 pages | axe-core, WCAG 2.1 A + AA |
@@ -154,7 +154,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 13 | Traceability | every requirement has a test | 131 / 131 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 270 / 270 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 282 / 282 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
 

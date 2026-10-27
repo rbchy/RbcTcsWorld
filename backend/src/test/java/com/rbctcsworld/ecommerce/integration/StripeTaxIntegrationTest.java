@@ -25,6 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,7 +113,8 @@ class StripeTaxIntegrationTest {
 
     @Test
     void whenTheTaxProviderIsDownNoOrderIsPlacedAndTheCartStays() throws Exception {
-        when(taxes.calculate(any())).thenThrow(new PaymentUnavailableException("Tax calculation is not available right now."));
+        // doThrow: when(taxes.calculate(..)) would run the answer from setUp with a null request while restubbing
+        doThrow(new PaymentUnavailableException("Tax calculation is not available right now.")).when(taxes).calculate(any());
         mvc.perform(as(post("/api/orders"), customer).content(TestAddresses.ORDER_BODY))
                 .andExpect(status().isServiceUnavailable());
         mvc.perform(as(get("/api/cart"), customer)).andExpect(status().isOk())

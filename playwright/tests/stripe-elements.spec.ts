@@ -7,6 +7,10 @@ import { ADDRESS } from '../pages/checkout-page';
  * form (config), the shop's card-payment endpoints answer as with Stripe, and Stripe.js is a small stand-in that
  * records what the storefront asks of it. The backend side of the flow is covered by StripeElementsIntegrationTest.
  */
+// In WebKit a page controlled by the store's service worker sends its requests through it, past page.route; the
+// stand-ins below must see every request, so this file runs without the service worker.
+test.use({ serviceWorkers: 'block' });
+
 const FAKE_STRIPE_JS = `
   window.__stripe = { calls: [], result: {} };
   window.Stripe = function (key) {

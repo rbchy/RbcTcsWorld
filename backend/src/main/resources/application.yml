@@ -48,6 +48,8 @@ app:
     provider: ${PAYMENT_PROVIDER:mock}            # mock (test cards, default) | stripe
     stripe:
       api-base: ${STRIPE_API_BASE:https://api.stripe.com}   # stripe-mock: http://localhost:12111
+      publishable-key: ${STRIPE_PUBLISHABLE_KEY:}   # pk_test_... turns on Stripe Elements (the card goes to Stripe, never here)
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}     # whsec_... checks that payment results really come from Stripe
       secret-key: ${STRIPE_SECRET_KEY:}           # sk_test_... ; a live key is refused outside 'prod'
       currency: usd
       timeout-seconds: 10

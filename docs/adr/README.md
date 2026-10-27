@@ -16,5 +16,6 @@
 | [0008](0008-playwright-beside-selenium.md) | Selenium-এর পাশে Playwright | network mocking, WebKit, visual টেস্ট, trace: প্রতিটা টুল যা ভালো পারে |
 | [0009](0009-public-demo-on-one-server.md) | Oracle-এর ফ্রি সার্ভারে demo, Caddy HTTPS, demo mode | ফ্রি, সবসময় চালু, গোপন তথ্য নিরাপদ |
 | [0010](0010-from-portfolio-to-live-store.md) | আসল দোকান portfolio কোড থেকে, কিন্তু আলাদা repo-তে | portfolio স্থির থাকে, দোকানের নিজের ইতিহাস; দায়িত্ব (PCI, backup, ট্যাক্স) এখন মালিকের |
+| [0011](0011-stripe-elements-and-webhooks.md) | কার্ড Stripe Elements-এ; অর্ডার PAID শুধু Stripe-এর কথায় (webhook/confirm) | দোকান কখনো কার্ড নম্বর দেখে না (PCI SAQ A); ব্রাউজারের কথায় টাকা ধরা হয় না; একবারই পেমেন্ট |
 
 **Interview-এ:** "Architecture-এর প্রতিটা বড় সিদ্ধান্তের ADR আছে: কী বিকল্প ছিল, কেন এটা বেছেছি, আর কী দাম দিতে হয়েছে (যেমন logout-এর পরেও ১৫ মিনিট access token কাজ করে, সেটা জেনে-বুঝে মেনে নেওয়া)।"

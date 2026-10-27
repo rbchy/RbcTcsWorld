@@ -18,10 +18,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * The two Stripe API calls this shop needs, over plain HTTP (no SDK): our own request building and
+ * The Stripe API calls this shop needs, over plain HTTP (no SDK): our own request building and
  * response parsing is exactly what the contract tests check against stripe-mock and recorded answers.
  *
- *  - POST /v1/payment_intents  (create + confirm in one call)
+ *  - POST /v1/payment_intents       create + confirm in one call (the shop's own card form, test cards only)
+ *  - POST /v1/payment_intents       create without a card, for Stripe Elements (the browser confirms it)
+ *  - GET  /v1/payment_intents/{id}  how a payment ended
  *  - POST /v1/refunds
  *
  * Stripe expects form encoding, amounts in the smallest unit (cents) and an Idempotency-Key on every
@@ -33,6 +35,14 @@ class StripeClient {
     }
 
     record Refund(String id, String status, long amount) {
+    }
+
+    /** A PaymentIntent for Stripe Elements: clientSecret goes to the browser, which confirms the payment there. */
+    record HostedIntent(String id, String status, long amount, String clientSecret) {
+    }
+
+    /** What GET /v1/payment_intents/{id} tells: the status, the amount, our order id and the last error. */
+    record IntentState(String id, String status, long amount, String orderId, String errorCode, String declineCode) {
     }
 
     private static final ObjectMapper JSON = JsonMapper.builder().build();
@@ -63,6 +73,28 @@ class StripeClient {
         return new PaymentIntent(text(n, "id"), text(n, "status"), n.path("amount").asLong(), text(n, "currency"));
     }
 
+    /**
+     * No payment_method and no confirm: the card is entered in Stripe's own form in the browser. The card methods
+     * Stripe offers come from the Dashboard (automatic_payment_methods); redirects are allowed for those that need them.
+     */
+    HostedIntent createHostedIntent(long amountCents, String currency, Long orderId, String idempotencyKey) {
+        Map<String, String> form = new LinkedHashMap<>();
+        form.put("amount", Long.toString(amountCents));
+        form.put("currency", currency);
+        form.put("automatic_payment_methods[enabled]", "true");
+        form.put("metadata[order_id]", String.valueOf(orderId));
+        JsonNode n = post("/v1/payment_intents", form, idempotencyKey);
+        return new HostedIntent(text(n, "id"), text(n, "status"), n.path("amount").asLong(), text(n, "client_secret"));
+    }
+
+    IntentState retrieveIntent(String paymentIntentId) {
+        JsonNode n = send(HttpRequest.newBuilder(URI.create(base + "/v1/payment_intents/"
+                + URLEncoder.encode(paymentIntentId, StandardCharsets.UTF_8))).GET());
+        JsonNode error = n.path("last_payment_error");
+        return new IntentState(text(n, "id"), text(n, "status"), n.path("amount").asLong(),
+                text(n.path("metadata"), "order_id"), text(error, "code"), text(error, "decline_code"));
+    }
+
     Refund createRefund(String paymentIntentId, long amountCents, Long orderId, String idempotencyKey) {
         Map<String, String> form = new LinkedHashMap<>();
         form.put("payment_intent", paymentIntentId);
@@ -80,13 +112,14 @@ class StripeClient {
     }
 
     private JsonNode post(String path, Map<String, String> form, String idempotencyKey) {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(base + path))
-                .timeout(timeout)
-                .header("Authorization", "Bearer " + secretKey)
+        return send(HttpRequest.newBuilder(URI.create(base + path))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Idempotency-Key", idempotencyKey)
-                .POST(HttpRequest.BodyPublishers.ofString(encode(form)))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(encode(form))));
+    }
+
+    private JsonNode send(HttpRequest.Builder builder) {
+        HttpRequest request = builder.timeout(timeout).header("Authorization", "Bearer " + secretKey).build();
         HttpResponse<String> response;
         try {
             response = http.send(request, HttpResponse.BodyHandlers.ofString());

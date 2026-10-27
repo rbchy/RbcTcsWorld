@@ -196,6 +196,45 @@ class StripeClientTest {
     }
 
     @Test
+    void hostedIntentForStripeElementsCarriesNoCardAndReturnsTheClientSecret() throws IOException {
+        answer(200, "payment_intent_hosted_created.json");
+
+        StripeClient.HostedIntent pi = client().createHostedIntent(2450, "usd", 42L, "order-42-elements-2450");
+
+        assertThat(last.method()).isEqualTo("POST");
+        assertThat(last.path()).isEqualTo("/v1/payment_intents");
+        assertThat(last.idempotencyKey()).isEqualTo("order-42-elements-2450");
+        assertThat(last.form()).containsExactly(Map.entry("amount", "2450"), Map.entry("currency", "usd"),
+                Map.entry("automatic_payment_methods[enabled]", "true"), Map.entry("metadata[order_id]", "42"));
+        assertThat(last.form()).doesNotContainKeys("payment_method", "confirm");          // the browser confirms it
+        assertThat(pi).isEqualTo(new StripeClient.HostedIntent("pi_3QhostedELEMENTS0A1b2C3", "requires_payment_method",
+                2450, "pi_3QhostedELEMENTS0A1b2C3_secret_Zx9Yw8Vu7T"));
+    }
+
+    @Test
+    void retrieveReadsStatusAmountOrderAndTheLastError() throws IOException {
+        answer(200, "payment_intent_failed_retrieved.json");
+
+        StripeClient.IntentState state = client().retrieveIntent("pi_3QhostedELEMENTS0A1b2C3");
+
+        assertThat(last.method()).isEqualTo("GET");
+        assertThat(last.path()).isEqualTo("/v1/payment_intents/pi_3QhostedELEMENTS0A1b2C3");
+        assertThat(last.auth()).isEqualTo("Bearer sk_test_123");
+        assertThat(last.idempotencyKey()).isNull();                                       // a GET changes nothing
+        assertThat(state).isEqualTo(new StripeClient.IntentState("pi_3QhostedELEMENTS0A1b2C3", "requires_payment_method",
+                2450, "42", "card_declined", "insufficient_funds"));
+    }
+
+    @Test
+    void retrieveOfASucceededPaymentHasNoError() throws IOException {
+        answer(200, "payment_intent_succeeded.json");
+        StripeClient.IntentState state = client().retrieveIntent("pi_3QabcDEFghIJkl0A1b2C3d4E");
+        assertThat(state.status()).isEqualTo("succeeded");
+        assertThat(state.errorCode()).isNull();
+        assertThat(state.declineCode()).isNull();
+    }
+
+    @Test
     void formKeysWithBracketsAreEncoded() {
         assertThat(StripeClient.encode(new LinkedHashMap<>(Map.of("metadata[order_id]", "4 2"))))
                 .isEqualTo("metadata%5Border_id%5D=4+2");

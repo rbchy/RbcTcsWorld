@@ -20,13 +20,16 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 
 The most urgent change is card handling. Today the card number reaches the backend, which is acceptable for test cards
 only; with real cards it would put the server under the full PCI DSS card-data rules. Stripe Elements removes that.
-`StripePaymentGateway.java` already says so in its header.
+Phase 2 does exactly that (ADR-0011).
 
 ## 2. Phases
 
 1. **Phase 0 - decide (owner, 1-2 weeks):** what to sell, where it comes from, the brand. Nothing else can be planned in detail without it.
 2. **Phase 1 - foundation (engineering, 1-2 days):** this repository as an independent unit with the full history of its code, its links and project names pointing here, this roadmap and ADR-0010.
 3. **Phase 2 - safe card payments (engineering, 1-2 weeks):** Stripe Elements, webhooks, refunds, all tested in Stripe test mode with the existing contract-test layers.
+   *Built:* Stripe Elements card form, signed webhooks, exactly-once settlement, live keys refuse card numbers
+   ([ADR-0011](../adr/0011-stripe-elements-and-webhooks.md), [test-mode guide](../modules/STRIPE_ELEMENTS_BN.md)).
+   Left for the owner: a manual run in Stripe test mode with `stripe listen` before live keys are used.
 4. **Phase 3 - tax, shipping, e-mail (engineering, 2-3 weeks):** real tax calculation, carrier rates and labels, mail from the store's domain.
 5. **Phase 4 - business and legal (owner and professionals, alongside phases 2-3):** LLC and EIN, sales tax license, business bank account, Stripe live verification; engineering builds the policy pages, a lawyer reviews them.
 6. **Phase 5 - production server (engineering, 1 week):** demo mode off, daily backups, alerts, a restore drill.

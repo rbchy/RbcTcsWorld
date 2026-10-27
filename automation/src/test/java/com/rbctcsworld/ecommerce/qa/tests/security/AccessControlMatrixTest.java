@@ -48,6 +48,10 @@ class AccessControlMatrixTest {
             "GET,    /api/wishlist,                         401, 200, 200",
             "GET,    /api/reviews/mine,                     401, 200, 200",
             "POST,   /api/checkout/quote,                   401, 400, 400",
+            "GET,    /api/payments/config,                  401, 200, 200",
+            "POST,   /api/orders/99999999/card-payment,     401, 404, 404",
+            // Stripe has no login: it proves itself with a signature, so everyone without one gets 400
+            "POST,   /api/payments/stripe/webhook,          400, 400, 400",
             "GET,    /api/admin/orders,                     401, 403, 200",
             "GET,    /api/admin/returns,                    401, 403, 200",
             "GET,    /api/admin/reviews,                    401, 403, 200",

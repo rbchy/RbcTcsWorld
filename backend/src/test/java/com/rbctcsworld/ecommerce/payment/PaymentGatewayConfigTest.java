@@ -37,7 +37,37 @@ class PaymentGatewayConfigTest {
     void aLiveKeyOnlyRunsWithTheProdProfile() {
         assertThatThrownBy(() -> create("stripe", "sk_live_123", false)).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("LIVE");
-        assertThatCode(() -> create("stripe", "sk_live_123", true)).doesNotThrowAnyException();
+        assertThatCode(() -> PaymentGatewayConfig.create("stripe", "http://localhost:12111", "sk_live_123", "usd",
+                Duration.ofSeconds(5), true, "pk_live_123")).doesNotThrowAnyException();
+    }
+
+    private static PaymentGateway withPublishable(String secret, String publishable, boolean prod) {
+        return PaymentGatewayConfig.create("stripe", "http://localhost:12111", secret, "usd", Duration.ofSeconds(5), prod, publishable);
+    }
+
+    @Test
+    void aPublishableKeyTurnsOnStripeElements() {
+        assertThat(withPublishable("sk_test_1", " pk_test_1 ", false).publishableKey()).isEqualTo("pk_test_1");
+        assertThat(withPublishable("sk_test_1", "", false).publishableKey()).isNull();      // blank = the shop's own form
+        assertThat(withPublishable("sk_test_1", null, false).publishableKey()).isNull();
+    }
+
+    @Test
+    void thePublishableKeyMustBeFromTheSameModeAsTheSecretKey() {
+        assertThatThrownBy(() -> withPublishable("sk_test_1", "pk_live_1", false)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("pk_test_");
+        assertThatThrownBy(() -> withPublishable("sk_live_1", "pk_test_1", true)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("pk_live_");
+        assertThatThrownBy(() -> withPublishable("sk_test_1", "sk_test_2", false)).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void aLiveKeyNeedsTheSecureCardFormAndRefusesCardNumbers() {
+        assertThatThrownBy(() -> withPublishable("sk_live_1", null, true)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("STRIPE_PUBLISHABLE_KEY");
+        PaymentGateway live = withPublishable("sk_live_1", "pk_live_1", true);
+        assertThat(live.refusesCardNumbers()).isTrue();
+        assertThat(withPublishable("sk_test_1", "pk_test_1", false).refusesCardNumbers()).isFalse();
     }
 
     @Test
@@ -51,9 +81,9 @@ class PaymentGatewayConfigTest {
         MockEnvironment prod = new MockEnvironment();
         prod.setActiveProfiles("prod");
         PaymentGatewayConfig config = new PaymentGatewayConfig();
-        assertThat(config.paymentGateway("stripe", "http://localhost:12111", "sk_live_1", "usd", 5, prod))
+        assertThat(config.paymentGateway("stripe", "http://localhost:12111", "sk_live_1", "usd", 5, "pk_live_1", prod))
                 .isInstanceOf(StripePaymentGateway.class);
-        assertThatThrownBy(() -> config.paymentGateway("stripe", "http://localhost:12111", "sk_live_1", "usd", 5, new MockEnvironment()))
+        assertThatThrownBy(() -> config.paymentGateway("stripe", "http://localhost:12111", "sk_live_1", "usd", 5, "pk_live_1", new MockEnvironment()))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

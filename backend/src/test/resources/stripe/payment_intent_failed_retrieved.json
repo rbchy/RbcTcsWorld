@@ -1,0 +1,16 @@
+{
+  "id": "pi_3QhostedELEMENTS0A1b2C3",
+  "object": "payment_intent",
+  "amount": 2450,
+  "currency": "usd",
+  "status": "requires_payment_method",
+  "client_secret": "pi_3QhostedELEMENTS0A1b2C3_secret_Zx9Yw8Vu7T",
+  "last_payment_error": {
+    "type": "card_error",
+    "code": "card_declined",
+    "decline_code": "insufficient_funds",
+    "message": "Your card has insufficient funds."
+  },
+  "livemode": false,
+  "metadata": { "order_id": "42" }
+}

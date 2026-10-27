@@ -152,7 +152,8 @@ public class OrderService {
         return markPaid(order);
     }
 
-    private OrderResponse markPaid(CustomerOrder order) {
+    /** Package-private for CardPaymentService (Stripe Elements), which pays the order after Stripe confirmed it. */
+    OrderResponse markPaid(CustomerOrder order) {
         String from = order.getStatus();
         order.markPaid();
         events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));

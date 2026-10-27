@@ -1,6 +1,9 @@
 package com.rbctcsworld.ecommerce.payment;
 
+import com.rbctcsworld.ecommerce.common.exception.ConflictException;
 import com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException;
+import com.rbctcsworld.ecommerce.payment.PaymentGateway.HostedPayment;
+import com.rbctcsworld.ecommerce.payment.PaymentGateway.HostedStatus;
 import com.rbctcsworld.ecommerce.payment.PaymentGateway.GatewayResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,5 +162,91 @@ class StripePaymentGatewayTest {
     @Test
     void nameIsStripe() {
         assertThat(gateway.name()).isEqualTo("stripe");
+    }
+
+    // ---------- Stripe Elements: the card goes to Stripe, this server only creates and reads the payment ----------
+
+    private StripePaymentGateway elements(boolean live) {
+        return new StripePaymentGateway(stripe, "usd", live ? "pk_live_1" : "pk_test_1", live);
+    }
+
+    @Test
+    void withoutAPublishableKeyThereIsNoSecureCardForm() {
+        assertThat(gateway.publishableKey()).isNull();
+        assertThat(gateway.refusesCardNumbers()).isFalse();
+        assertThatThrownBy(() -> gateway.startHostedPayment(42L, AMOUNT)).isInstanceOf(ConflictException.class)
+                .hasMessage(PaymentGateway.HOSTED_NOT_AVAILABLE);
+        verifyNoInteractions(stripe);
+    }
+
+    @Test
+    void hostedPaymentIsCreatedWithoutACardOncePerOrderAndAmount() {
+        when(stripe.createHostedIntent(2450, "usd", 42L, "order-42-elements-2450"))
+                .thenReturn(new StripeClient.HostedIntent("pi_h", "requires_payment_method", 2450, "pi_h_secret_1"));
+
+        StripePaymentGateway g = elements(false);
+
+        assertThat(g.startHostedPayment(42L, AMOUNT)).isEqualTo(new HostedPayment("pi_h", "pi_h_secret_1"));
+        assertThat(g.publishableKey()).isEqualTo("pk_test_1");
+        assertThat(g.refusesCardNumbers()).isFalse();                          // test mode: the shop's form still works
+    }
+
+    @Test
+    void hostedStartWhenStripeIsDownIs503() {
+        when(stripe.createHostedIntent(anyLong(), anyString(), any(), anyString()))
+                .thenThrow(new StripeException(0, "api_connection_error", null, null, "down", null));
+        assertThatThrownBy(() -> elements(false).startHostedPayment(42L, AMOUNT))
+                .isInstanceOf(PaymentUnavailableException.class).hasMessage(StripePaymentGateway.UNAVAILABLE);
+    }
+
+    @Test
+    void hostedStatusComesFromStripeWithAShortReason() {
+        when(stripe.retrieveIntent("pi_f")).thenReturn(new StripeClient.IntentState("pi_f", "requires_payment_method", 2450,
+                "42", "card_declined", "insufficient_funds"));
+        when(stripe.retrieveIntent("pi_ok")).thenReturn(new StripeClient.IntentState("pi_ok", "succeeded", 2450, "7", null, null));
+        when(stripe.retrieveIntent("pi_x")).thenReturn(new StripeClient.IntentState("pi_x", "processing", 100, "not-ours", null, "expired_card"));
+
+        StripePaymentGateway g = elements(false);
+
+        HostedStatus failed = g.hostedPaymentStatus("pi_f");
+        assertThat(failed).isEqualTo(new HostedStatus("pi_f", "requires_payment_method", 2450, 42L, "Insufficient funds"));
+        assertThat(failed.succeeded()).isFalse();
+        HostedStatus ok = g.hostedPaymentStatus("pi_ok");
+        assertThat(ok).isEqualTo(new HostedStatus("pi_ok", "succeeded", 2450, 7L, null));
+        assertThat(ok.succeeded()).isTrue();
+        assertThat(g.hostedPaymentStatus("pi_x")).isEqualTo(new HostedStatus("pi_x", "processing", 100, null, "Card has expired"));
+    }
+
+    @Test
+    void hostedStatusWhenStripeIsDownIs503() {
+        when(stripe.retrieveIntent("pi_1")).thenThrow(new StripeException(500, "api_error", null, null, "boom", null));
+        assertThatThrownBy(() -> elements(false).hostedPaymentStatus("pi_1")).isInstanceOf(PaymentUnavailableException.class);
+    }
+
+    @Test
+    void theOrderIdIsReadFromTheMetadataOnlyWhenItIsANumber() {
+        assertThat(StripePaymentGateway.orderId("42")).isEqualTo(42L);
+        assertThat(StripePaymentGateway.orderId("abc")).isNull();
+        assertThat(StripePaymentGateway.orderId(null)).isNull();
+    }
+
+    @Test
+    void aLiveKeyRefusesCardNumbersWithoutCallingStripe() {
+        StripePaymentGateway live = elements(true);
+
+        assertThat(live.refusesCardNumbers()).isTrue();
+        assertThat(live.charge(1L, "4242424242424242", AMOUNT))
+                .isEqualTo(GatewayResult.decline("Enter the card in the secure card form", null));
+        assertThat(live.tokenize("4242424242424242")).isNull();
+        verifyNoInteractions(stripe);
+    }
+
+    @Test
+    void theMockGatewayHasNoSecureCardForm() {
+        MockPaymentGateway mock = new MockPaymentGateway();
+        assertThat(mock.publishableKey()).isNull();
+        assertThat(mock.refusesCardNumbers()).isFalse();
+        assertThatThrownBy(() -> mock.startHostedPayment(1L, AMOUNT)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> mock.hostedPaymentStatus("pi_1")).isInstanceOf(ConflictException.class);
     }
 }

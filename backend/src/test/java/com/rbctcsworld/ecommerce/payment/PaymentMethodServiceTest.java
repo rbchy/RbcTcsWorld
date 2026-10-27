@@ -159,4 +159,18 @@ class PaymentMethodServiceTest {
         assertThat(service.list("ada@test.com")).singleElement().satisfies(r -> assertThat(r.expired()).isTrue());
         verify(repo, never()).delete(any());
     }
+
+    @Test
+    void aLiveKeyNeverTakesACardNumberIntoTheWallet() {
+        MockPaymentGateway live = new MockPaymentGateway() {
+            @Override
+            public boolean refusesCardNumbers() {
+                return true;
+            }
+        };
+        PaymentMethodService liveWallet = new PaymentMethodService(repo, users, live, CLOCK);
+        assertThatThrownBy(() -> liveWallet.add("ada@test.com", card("4242424242424242", 12, 2030, false)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(PaymentService.SECURE_FORM_ONLY);
+        verify(repo, never()).save(any());
+    }
 }

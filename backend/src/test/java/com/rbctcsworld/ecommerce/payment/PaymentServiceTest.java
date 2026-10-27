@@ -219,4 +219,42 @@ class PaymentServiceTest {
         assertThat(mock.charge(1L, MockPaymentGateway.DECLINED_CARD, AMOUNT).reference()).isNull();
         assertThat(mock.refund(1L, "mock_ch_1", AMOUNT, 1).reference()).startsWith("mock_re_");
     }
+
+    // ---------- Stripe Elements / live key ----------
+
+    /** A gateway with a live Stripe key: card numbers must never be accepted. */
+    private static final class LiveGateway extends MockPaymentGateway {
+        @Override
+        public boolean acceptsCardNumbers() {
+            return false;
+        }
+    }
+
+    @Test
+    void aLiveKeyRefusesCardNumbersBeforeAnythingIsCharged() {
+        PaymentService live = new PaymentService(new LiveGateway(), transactions, CLOCK);
+        assertThatThrownBy(() -> live.charge(1L, AMOUNT, card("4242424242424242", 12, 2030)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(PaymentService.SECURE_FORM_ONLY);
+        verify(transactions, never()).save(any());
+    }
+
+    @Test
+    void aHostedPaymentIsRecordedWithoutAnyCardDigits() {
+        when(transactions.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentTransaction ok = service.recordHosted(5L, AMOUNT, true, "ignored when it succeeded", "pi_ok");
+        PaymentTransaction failed = service.recordHosted(5L, AMOUNT, false, "Insufficient funds", "pi_f");
+
+        assertThat(ok.getStatus()).isEqualTo(PaymentTransaction.SUCCEEDED);
+        assertThat(ok.getType()).isEqualTo(PaymentTransaction.CHARGE);
+        assertThat(ok.getFailureReason()).isNull();
+        assertThat(ok.getCardLast4()).isNull();                         // the card never reached this server
+        assertThat(ok.getProviderReference()).isEqualTo("pi_ok");
+        assertThat(ok.getProvider()).isEqualTo("mock");
+        assertThat(ok.getOrderId()).isEqualTo(5L);
+        assertThat(ok.getAmount()).isEqualByComparingTo(AMOUNT);
+        assertThat(failed.getStatus()).isEqualTo(PaymentTransaction.FAILED);
+        assertThat(failed.getFailureReason()).isEqualTo("Insufficient funds");
+        assertThat(failed.getProviderReference()).isEqualTo("pi_f");
+    }
 }

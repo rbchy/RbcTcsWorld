@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { PriceTable } from './Checkout';
 import { addressLine } from '../usStates';
@@ -13,12 +13,15 @@ export default function OrderDetail({ id }) {
   const [ret, setRet] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [cardForm, setCardForm] = useState('shop');   // 'stripe-elements' when the shop takes cards through Stripe
 
   const load = async () => {
     try {
-      const [o, t, p] = await Promise.all([
-        api.get(`/orders/${id}`), api.get(`/orders/${id}/tracking`), api.get(`/orders/${id}/payments`)]);
-      setOrder(o.data); setTracking(t.data); setPayments(p.data);
+      // the card-form setting comes with the order, so the payment form appears at once (no second wait)
+      const [o, t, p, c] = await Promise.all([
+        api.get(`/orders/${id}`), api.get(`/orders/${id}/tracking`), api.get(`/orders/${id}/payments`),
+        api.get('/payments/config').catch(() => ({ data: { cardForm: 'shop' } }))]);
+      setOrder(o.data); setTracking(t.data); setPayments(p.data); setCardForm(c.data.cardForm);
       api.get(`/orders/${id}/return`).then(r => setRet(r.data)).catch(() => setRet(null));
     } catch (e) {
       setError(errorText(e));
@@ -68,8 +71,10 @@ export default function OrderDetail({ id }) {
         </div>
         <div>
           <button className="secondary" data-testid="download-invoice" onClick={downloadInvoice}>{t('downloadInvoice')}</button>
-          {s === 'PLACED' && <PayForm onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')}
-                                      onPaySaved={body => act(() => api.post(`/orders/${id}/pay-saved`, body), 'Payment received. Thank you!')} />}
+          {s === 'PLACED' && <PayForm orderId={id} cardForm={cardForm}
+                                      onPay={card => act(() => api.post(`/orders/${id}/pay`, card), 'Payment received. Thank you!')}
+                                      onPaySaved={body => act(() => api.post(`/orders/${id}/pay-saved`, body), 'Payment received. Thank you!')}
+                                      onPaid={() => { setError(''); setNotice('Payment received. Thank you!'); load(); }} />}
           {(s === 'PLACED' || s === 'PAID') && (
             <button className="secondary" data-testid="cancel-order"
                     onClick={() => act(() => api.post(`/orders/${id}/cancel`), 'Order cancelled')}>Cancel order</button>
@@ -106,7 +111,85 @@ export default function OrderDetail({ id }) {
   );
 }
 
-function PayForm({ onPay, onPaySaved }) {
+/** Which card form to show: Stripe's own (the card goes to Stripe, never to this shop) or the shop's form (test cards). */
+function PayForm({ orderId, cardForm, onPay, onPaySaved, onPaid }) {
+  if (cardForm === 'stripe-elements') return <StripeCardForm orderId={orderId} onPaid={onPaid} />;
+  return <ShopCardForm onPay={onPay} onPaySaved={onPaySaved} />;
+}
+
+/** Stripe.js, loaded once and only when the secure card form is used (never for the shop's own form). */
+let stripeScript = null;
+function loadStripe() {
+  if (window.Stripe) return Promise.resolve(window.Stripe);
+  stripeScript = stripeScript || new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = () => resolve(window.Stripe);
+    s.onerror = () => { stripeScript = null; reject(new Error('The secure card form could not be loaded. Check the connection and try again.')); };
+    document.head.appendChild(s);
+  });
+  return stripeScript;
+}
+
+/**
+ * Stripe Elements (REQ-PAY-09): the card is typed into Stripe's own frame and confirmed with Stripe. This shop only
+ * creates the payment and then asks the server, which asks Stripe, whether it succeeded - the browser's word is not enough.
+ */
+function StripeCardForm({ orderId, onPaid }) {
+  const box = useRef(null);
+  const [stripe, setStripe] = useState(null);
+  const [elements, setElements] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const { data } = await api.post(`/orders/${orderId}/card-payment`);
+        const Stripe = await loadStripe();
+        if (!live) return;
+        const s = Stripe(data.publishableKey);
+        const els = s.elements({ clientSecret: data.clientSecret });
+        els.create('payment').mount(box.current);
+        setStripe(s); setElements(els);
+      } catch (e) {
+        if (live) setError(e.response ? errorText(e) : e.message);
+      }
+    })();
+    return () => { live = false; };
+  }, [orderId]);
+
+  const pay = async e => {
+    e.preventDefault();
+    setBusy(true); setError('');
+    const result = await stripe.confirmPayment({ elements, redirect: 'if_required',
+      confirmParams: { return_url: `${window.location.origin}/#/orders/${orderId}` } });
+    if (result.error) {                    // declined, wrong CVC, 3-D Secure cancelled...: Stripe's own words
+      setError(result.error.message); setBusy(false); return;
+    }
+    try {
+      const r = await api.post(`/orders/${orderId}/card-payment/confirm`);
+      if (r.data.status === 'PAID') onPaid();
+      else setError('Your bank is still processing the payment. This page will show it as paid once it is confirmed.');
+    } catch (err) {
+      setError(errorText(err));
+    }
+    setBusy(false);
+  };
+
+  return (
+    <form className="pay" data-testid="stripe-pay-form" onSubmit={pay}>
+      <h2>Pay</h2>
+      <div ref={box} className="stripe-element" data-testid="stripe-card-element" />
+      {error && <p className="error" data-testid="stripe-pay-error">{error}</p>}
+      <button data-testid="stripe-pay-button" type="submit" disabled={!stripe || busy}>{busy ? 'Paying...' : 'Pay now'}</button>
+      <p className="muted small" data-testid="stripe-secure-note">The card is entered in Stripe's secure form. This shop never sees or stores the card number.</p>
+    </form>
+  );
+}
+
+function ShopCardForm({ onPay, onPaySaved }) {
   const { t } = useI18n();
   const [card, setCard] = useState({ cardNumber: '', expiryMonth: '12', expiryYear: '2030', cvv: '' });
   const [saveCard, setSaveCard] = useState(false);

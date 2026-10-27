@@ -62,6 +62,9 @@ public class PaymentMethodService {
     }
 
     private SavedPaymentMethod save(Long userId, String rawNumber, int month, int year, boolean makeDefault) {
+        if (!gateway.acceptsCardNumbers()) {
+            throw new BusinessRuleException(PaymentService.SECURE_FORM_ONLY);
+        }
         String number = rawNumber.replace(" ", "");
         if (number.length() < 13 || number.length() > 19 || !MockPaymentGateway.luhnValid(number)) {
             throw new BusinessRuleException("Invalid card number");

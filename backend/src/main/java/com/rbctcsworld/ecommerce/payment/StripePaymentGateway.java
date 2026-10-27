@@ -11,9 +11,11 @@ import java.util.Map;
 /**
  * Payments through Stripe (PaymentIntents + Refunds), app.payment.provider=stripe.
  *
- * Card numbers never go to Stripe: in a real shop the browser hands the card to Stripe (Stripe Elements)
- * and the backend only sees a PaymentMethod id. This demo keeps its own card form, so the backend maps
- * Stripe's published test cards to Stripe's ready-made test PaymentMethods. Any other number is refused.
+ * Two card forms:
+ *  - Stripe Elements (with a publishable key): the browser hands the card to Stripe; this server creates the
+ *    PaymentIntent without card data and later reads how it ended. The card number never reaches this server.
+ *  - the shop's own form (test mode only): the backend maps Stripe's published test cards to Stripe's ready-made
+ *    test PaymentMethods; any other number is refused. With a LIVE key card numbers are refused altogether.
  *
  * Outcomes:
  *  - status "succeeded"        -> approved, the PaymentIntent id is kept for refunds
@@ -37,14 +39,72 @@ public class StripePaymentGateway implements PaymentGateway {
 
     private final StripeClient stripe;
     private final String currency;
+    private final String publishableKey;
+    private final boolean live;
 
     StripePaymentGateway(StripeClient stripe, String currency) {
+        this(stripe, currency, null, false);
+    }
+
+    /** publishableKey (pk_...) enables Stripe Elements; live = a live secret key, which refuses card numbers. */
+    StripePaymentGateway(StripeClient stripe, String currency, String publishableKey, boolean live) {
         this.stripe = stripe;
         this.currency = currency;
+        this.publishableKey = publishableKey;
+        this.live = live;
+    }
+
+    @Override
+    public boolean acceptsCardNumbers() {
+        return !live;
+    }
+
+    @Override
+    public String publishableKey() {
+        return publishableKey;
+    }
+
+    /** The same order and amount give the same PaymentIntent: reloading the payment page never makes a second one. */
+    @Override
+    public HostedPayment startHostedPayment(Long orderId, BigDecimal amount) {
+        if (publishableKey == null) {
+            return PaymentGateway.super.startHostedPayment(orderId, amount);
+        }
+        long cents = cents(amount);
+        try {
+            StripeClient.HostedIntent intent = stripe.createHostedIntent(cents, currency, orderId,
+                    "order-" + orderId + "-elements-" + cents);
+            return new HostedPayment(intent.id(), intent.clientSecret());
+        } catch (StripeException e) {
+            throw unavailable("payment start", orderId, e);
+        }
+    }
+
+    @Override
+    public HostedStatus hostedPaymentStatus(String reference) {
+        try {
+            StripeClient.IntentState s = stripe.retrieveIntent(reference);
+            return new HostedStatus(s.id(), s.status(), s.amount(), orderId(s.orderId()),
+                    s.errorCode() == null && s.declineCode() == null ? null : reason(s.declineCode(), s.errorCode()));
+        } catch (StripeException e) {
+            throw unavailable("status check", null, e);
+        }
+    }
+
+    /** Our order id from the PaymentIntent's metadata; null when missing or not a number (not one of ours). */
+    static Long orderId(String metadata) {
+        try {
+            return metadata == null ? null : Long.valueOf(metadata);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override
     public GatewayResult charge(Long orderId, String cardNumber, BigDecimal amount) {
+        if (live) {   // PaymentService checks acceptsCardNumbers first; this is the last line of defence
+            return GatewayResult.decline("Enter the card in the secure card form", null);
+        }
         String paymentMethod = TEST_PAYMENT_METHODS.get(cardNumber);
         if (paymentMethod == null) {
             return GatewayResult.decline("Use a Stripe test card, e.g. 4242 4242 4242 4242", null);
@@ -55,7 +115,7 @@ public class StripePaymentGateway implements PaymentGateway {
     /** In test mode the "token" of a card is its Stripe test PaymentMethod; live mode would attach a real one. */
     @Override
     public String tokenize(String cardNumber) {
-        return TEST_PAYMENT_METHODS.get(cardNumber);
+        return live ? null : TEST_PAYMENT_METHODS.get(cardNumber);
     }
 
     @Override
@@ -111,7 +171,12 @@ public class StripePaymentGateway implements PaymentGateway {
 
     /** Short, customer-safe reasons - the same texts as the mock gateway for the same test cards. */
     static String reason(StripeException e) {
-        String code = e.declineCode() != null ? e.declineCode() : e.code();
+        return reason(e.declineCode(), e.code());
+    }
+
+    /** decline_code wins over code; both may be null. Public for the webhook, which gets them from the event. */
+    public static String reason(String declineCode, String errorCode) {
+        String code = declineCode != null ? declineCode : errorCode;
         if (code == null) return "Card declined";
         return switch (code) {
             case "insufficient_funds" -> "Insufficient funds";

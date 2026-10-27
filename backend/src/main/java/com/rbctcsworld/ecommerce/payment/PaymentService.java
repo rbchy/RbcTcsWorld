@@ -26,6 +26,9 @@ import java.util.List;
 @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = PaymentDeclinedException.class)
 public class PaymentService {
 
+    /** A live Stripe key: card numbers must never reach this server, only the hosted card form may be used. */
+    public static final String SECURE_FORM_ONLY = "Enter the card in the secure card form";
+
     private final PaymentGateway gateway;
     private final PaymentTransactionRepository transactions;
     private final Clock clock;
@@ -42,6 +45,9 @@ public class PaymentService {
      * (FAILED "Provider unavailable" recorded), otherwise a SUCCEEDED transaction with the provider's id.
      */
     public PaymentTransaction charge(Long orderId, BigDecimal amount, PayRequest card) {
+        if (!gateway.acceptsCardNumbers()) {
+            throw new BusinessRuleException(SECURE_FORM_ONLY);
+        }
         String number = card.cardNumber().replace(" ", "");
         if (number.length() < 13 || number.length() > 19 || !MockPaymentGateway.luhnValid(number)) {
             throw new BusinessRuleException("Invalid card number");
@@ -80,6 +86,17 @@ public class PaymentService {
         }
         return transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE,
                 PaymentTransaction.SUCCEEDED, amount, last4, null, gateway.name(), result.reference()));
+    }
+
+    /**
+     * Records how a hosted payment (Stripe Elements) ended. No card digits: the card never reached this server.
+     * Provider = this gateway, reference = the provider's payment id (kept for refunds).
+     */
+    public PaymentTransaction recordHosted(Long orderId, BigDecimal amount, boolean succeeded, String failureReason,
+                                           String reference) {
+        return transactions.save(new PaymentTransaction(orderId, PaymentTransaction.CHARGE,
+                succeeded ? PaymentTransaction.SUCCEEDED : PaymentTransaction.FAILED, amount, null,
+                succeeded ? null : failureReason, gateway.name(), reference));
     }
 
     /**

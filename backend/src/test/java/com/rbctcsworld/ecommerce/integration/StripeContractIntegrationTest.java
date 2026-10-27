@@ -79,6 +79,29 @@ class StripeContractIntegrationTest {
         assertThat(gateway.refund(42L, charge.reference(), new BigDecimal("10.00"), 1).reference()).startsWith("re_");
     }
 
+    @Test
+    void ourStripeElementsPaymentIntentIsAValidStripeRequestWithoutACard() {
+        StripeTestSupport.Hosted pi = StripeTestSupport.createHostedIntent(url, KEY, 2719, 42L);
+        assertThat(pi.id()).startsWith("pi_");
+        assertThat(pi.amount()).isEqualTo(2719);
+        assertThat(pi.clientSecret()).isNotBlank();                    // what the browser needs to confirm it
+    }
+
+    @Test
+    void ourPaymentIntentLookupIsAValidStripeRequest() {
+        StripeTestSupport.State state = StripeTestSupport.retrieveIntent(url, KEY, "pi_123");
+        assertThat(state.id()).startsWith("pi_");
+        assertThat(state.status()).isNotBlank();
+    }
+
+    @Test
+    void theStripeElementsGatewayTalksToStripe() {
+        PaymentGateway gateway = com.rbctcsworld.ecommerce.payment.StripeTestSupport.elementsGateway(url, KEY);
+        PaymentGateway.HostedPayment started = gateway.startHostedPayment(42L, new BigDecimal("27.19"));
+        assertThat(started.reference()).startsWith("pi_");
+        assertThat(gateway.hostedPaymentStatus(started.reference()).reference()).startsWith("pi_");
+    }
+
     // ---------- the mock really checks: otherwise the tests above would prove nothing ----------
 
     @Test

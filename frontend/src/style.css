@@ -690,3 +690,6 @@ article, .card { border-radius: 16px; }
   .top-cta { padding: 7px 9px; }
   .top-icon, .top-btn { padding: 7px 7px; }
 }
+
+/* Stripe Elements: Stripe draws the card fields inside this box (its own frame) */
+.stripe-element { min-height: 44px; margin: 6px 0 14px; }

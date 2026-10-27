@@ -59,6 +59,11 @@ services:
       NOTIFICATIONS_CHANNEL: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
+      # payments: mock unless set; Stripe test keys turn on Stripe Elements (docs/modules/STRIPE_ELEMENTS_BN.md)
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     ports: ["8081:8081"]
     depends_on:
       postgres:

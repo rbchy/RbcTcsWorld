@@ -25,7 +25,8 @@ public final class OrderDtos {
 
     /** "Review your order" page: what the customer WOULD pay. Nothing is saved or reserved. */
     public record QuoteResponse(List<OrderLine> items, int totalQuantity, BigDecimal subtotal, String couponCode,
-                                BigDecimal discount, BigDecimal shippingFee, BigDecimal tax, BigDecimal total) {
+                                BigDecimal discount, BigDecimal shippingFee, BigDecimal tax, BigDecimal total,
+                                boolean taxEstimated) {
     }
 
     public record OrderResponse(Long id, String orderNumber, Long customerId, String status,

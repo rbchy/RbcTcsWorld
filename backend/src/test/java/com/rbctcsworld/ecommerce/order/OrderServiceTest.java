@@ -58,6 +58,7 @@ class OrderServiceTest {
     @Mock PaymentService payments;
     @Mock org.springframework.context.ApplicationEventPublisher events;
     @Spy PricingService pricing = new PricingService(new BigDecimal("0.06"), new BigDecimal("50.00"), new BigDecimal("5.99"));
+    @Spy com.rbctcsworld.ecommerce.tax.TaxCalculator taxes = new com.rbctcsworld.ecommerce.tax.FlatRateTaxCalculator(new BigDecimal("0.06"));
     @InjectMocks OrderService service;
 
     private Product mouse;
@@ -294,5 +295,102 @@ class OrderServiceTest {
         assertThat(r.status()).isEqualTo(OrderStatus.PAID);
         assertThat(r.paidAt()).isNotNull();
         assertThat(r.createdAt()).isEqualTo(LocalDateTime.of(2026, 10, 1, 9, 30));
+    }
+
+    // ---- tax from the tax provider (store phase 3: Stripe Tax) ----
+
+    @Test
+    void theOrderTakesTheTaxProvidersTaxAndKeepsItsCalculationForTheRecord() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L))
+                .thenReturn(List.of(new CartItem(7L, keyboard, 1), new CartItem(7L, mouse, 2)));
+        org.mockito.Mockito.doReturn(new com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxQuote(new BigDecimal("7.77"), "taxcalc_1", false))
+                .when(taxes).calculate(any());
+
+        OrderResponse r = service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+
+        assertThat(r.tax()).isEqualByComparingTo("7.77");
+        assertThat(r.total()).isEqualByComparingTo("97.77");             // 90.00 + free shipping + 7.77
+        ArgumentCaptor<CustomerOrder> saved = ArgumentCaptor.forClass(CustomerOrder.class);
+        verify(orders).save(saved.capture());
+        assertThat(saved.getValue().getTaxCalculationId()).isEqualTo("taxcalc_1");
+
+        ArgumentCaptor<com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest> asked =
+                ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest.class);
+        verify(taxes).calculate(asked.capture());
+        ShippingAddress a = com.rbctcsworld.ecommerce.TestAddresses.ADDRESS.normalized();
+        assertThat(asked.getValue().address()).isEqualTo(
+                new com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxAddress(a.line1(), a.city(), a.state(), a.zip()));
+        assertThat(asked.getValue().shipping()).isEqualByComparingTo("0.00");
+        assertThat(asked.getValue().lines()).extracting(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine::reference)
+                .containsExactly("SKU-M", "SKU-K");
+        assertThat(asked.getValue().lines()).extracting(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine::quantity)
+                .containsExactly(2, 1);
+        assertThat(asked.getValue().merchandise()).isEqualByComparingTo("90.00");
+    }
+
+    @Test
+    void theTaxProviderSeesTheLinesAfterTheDiscount() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, keyboard, 1)));
+        when(coupons.validate(eq("save10"), eq(7L), any()))
+                .thenReturn(new Coupon("SAVE10", Coupon.PERCENT, new BigDecimal("10"), null, null, null, null));
+
+        service.placeOrder(EMAIL, "save10", com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+
+        ArgumentCaptor<com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest> asked =
+                ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest.class);
+        verify(taxes).calculate(asked.capture());
+        assertThat(asked.getValue().merchandise()).isEqualByComparingTo("45.00");   // 50.00 - 10 %
+        assertThat(asked.getValue().shipping()).isEqualByComparingTo("5.99");
+    }
+
+    @Test
+    void whenTheTaxCannotBeCalculatedNothingIsSavedReservedOrCleared() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+        org.mockito.Mockito.doThrow(new com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException("down"))
+                .when(taxes).calculate(any());
+
+        assertThatThrownBy(() -> service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS))
+                .isInstanceOf(com.rbctcsworld.ecommerce.common.exception.PaymentUnavailableException.class);
+        verify(orders, never()).save(any());
+        verifyNoInteractions(inventory);
+        verify(cartItems, never()).deleteByUserId(any());
+    }
+
+    @Test
+    void theFlatRateKeepsNoCalculation() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+        service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+        ArgumentCaptor<CustomerOrder> saved = ArgumentCaptor.forClass(CustomerOrder.class);
+        verify(orders).save(saved.capture());
+        assertThat(saved.getValue().getTaxCalculationId()).isNull();
+    }
+
+    @Test
+    void aQuoteWithoutAnAddressSaysWhenTheTaxIsOnlyAnEstimate() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+        assertThat(service.quote(EMAIL, null, null).taxEstimated()).isFalse();          // flat rate: exact
+
+        org.mockito.Mockito.doReturn(new com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxQuote(new BigDecimal("1.50"), null, true))
+                .when(taxes).calculate(any());
+        OrderDtos.QuoteResponse q = service.quote(EMAIL, null, null);
+        assertThat(q.taxEstimated()).isTrue();
+        assertThat(q.tax()).isEqualByComparingTo("1.50");
+        assertThat(q.total()).isEqualByComparingTo("27.49");                             // 20.00 + 5.99 + 1.50
+    }
+
+    @Test
+    void aQuoteWithAnAddressAsksForTheTaxOfThatAddress() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 3)));
+        ShippingAddress typed = new ShippingAddress("Ada", " 12 Main St ", null, " Pittsburgh ", " pa ", " 15213 ", null);
+
+        service.quote(EMAIL, null, typed);
+
+        ArgumentCaptor<com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest> asked =
+                ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest.class);
+        verify(taxes).calculate(asked.capture());
+        assertThat(asked.getValue().address()).isEqualTo(
+                new com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxAddress("12 Main St", "Pittsburgh", "PA", "15213"));
+        assertThat(asked.getValue().lines()).containsExactly(
+                new com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine("SKU-M", new BigDecimal("60.00"), 3));
     }
 }

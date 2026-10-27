@@ -1,0 +1,32 @@
+# ADR 0012: Sales tax from Stripe Tax behind a TaxCalculator interface
+
+- **Status:** Accepted
+- **Date:** 2026-10 (store Phase 3, part 1 of 3)
+
+## Context
+Every order paid a flat 6 % on the merchandise. A real US store owes the rate of the delivery address (state, county,
+city, special districts), some products are taxed differently, some states tax shipping, and every sale must be in a
+report for filing. Keeping such a table ourselves is a full-time job.
+
+## Decision
+- **`TaxCalculator` interface**, chosen by `TAX_PROVIDER`:
+  - `flat` (default): the old 6 % on the merchandise, so every existing test, the demo and all figures stay the same.
+  - `stripe`: Stripe Tax, on the same Stripe account and key as payments (one vendor, one contract, about 0.5 % per sale).
+- **What Stripe Tax gets:** every line (SKU, quantity, amount after the order discount, spread over the lines by amount,
+  rounding rest on the last line), the shipping cost, and the delivery address. Prices are tax-exclusive, as US shops show.
+- **Never a guessed tax on an order.** Without an address (the price preview) the flat rate gives an estimate and the
+  API says so (`taxEstimated`). When the order is placed the address is known; an address Stripe cannot place is 400,
+  any other Stripe failure is 503, both before anything is saved, reserved or cleared.
+- **The sale is recorded after payment.** The calculation id is kept on the order (`tax_calculation_id`). After the
+  payment commits, a listener records it with Stripe (`create_from_calculation`, idempotency key from the order number).
+  An outage there is logged and never fails the payment: the money has already moved.
+- Same start rules as payments: a typo, a missing key, or a live key outside the `prod` profile stops the start.
+
+## Consequences
+- Correct tax for every US address with no table to maintain; the Stripe Dashboard has the filing report.
+- Placing an order needs Stripe to answer when `TAX_PROVIDER=stripe`. That is accepted, because the alternative is a
+  wrong tax on a real invoice.
+- Not done yet: refunds and returns do not yet send a tax reversal to Stripe, and product tax codes all use the account
+  default. Both are needed before live sales of mixed product types.
+- The owner must register in each state where the store collects tax (Phase 4); Stripe only calculates where the account
+  has a registration.

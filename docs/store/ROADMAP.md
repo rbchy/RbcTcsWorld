@@ -28,9 +28,11 @@ Phase 2 does exactly that (ADR-0011).
 2. **Phase 1 - foundation (engineering, 1-2 days):** this repository as an independent unit with the full history of its code, its links and project names pointing here, this roadmap and ADR-0010.
 3. **Phase 2 - safe card payments (engineering, 1-2 weeks):** Stripe Elements, webhooks, refunds, all tested in Stripe test mode with the existing contract-test layers.
    *Built:* Stripe Elements card form, signed webhooks, exactly-once settlement, live keys refuse card numbers
-   ([ADR-0011](../adr/0011-stripe-elements-and-webhooks.md), [test-mode guide](../modules/STRIPE_ELEMENTS_BN.md)).
+   ([ADR-0011](../adr/0011-stripe-elements-and-webhooks.md), [test-mode guide](../modules/STRIPE_ELEMENTS_BN.md)). Merged.
    Left for the owner: a manual run in Stripe test mode with `stripe listen` before live keys are used.
 4. **Phase 3 - tax, shipping, e-mail (engineering, 2-3 weeks):** real tax calculation, carrier rates and labels, mail from the store's domain.
+   *Chosen:* Stripe Tax, Shippo, Amazon SES; the domain is a placeholder until the owner buys one.
+   *Built so far:* Stripe Tax behind `TAX_PROVIDER` ([ADR-0012](../adr/0012-stripe-tax.md), [guide](../modules/STRIPE_TAX_BN.md)).
 5. **Phase 4 - business and legal (owner and professionals, alongside phases 2-3):** LLC and EIN, sales tax license, business bank account, Stripe live verification; engineering builds the policy pages, a lawyer reviews them.
 6. **Phase 5 - production server (engineering, 1 week):** demo mode off, daily backups, alerts, a restore drill.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.

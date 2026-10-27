@@ -56,6 +56,10 @@ public class CustomerOrder {
     @Column(name = "coupon_code", length = 40)
     private String couponCode;
 
+    /** Stripe Tax calculation (taxcalc_...) the tax came from; recorded as a sale once paid. Null with the flat rate. */
+    @Column(name = "tax_calculation_id", length = 64)
+    private String taxCalculationId;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
@@ -219,4 +223,10 @@ public class CustomerOrder {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getCancelledAt() { return cancelledAt; }
     public List<OrderItem> getItems() { return items; }
+
+    public String getTaxCalculationId() { return taxCalculationId; }
+
+    public void recordTaxCalculation(String calculationId) {
+        this.taxCalculationId = calculationId;
+    }
 }

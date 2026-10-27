@@ -1,0 +1,8 @@
+{
+  "id": "tax_1QexampleTransaction",
+  "object": "tax.transaction",
+  "currency": "usd",
+  "livemode": false,
+  "reference": "RBC-20261027-ABC",
+  "type": "transaction"
+}

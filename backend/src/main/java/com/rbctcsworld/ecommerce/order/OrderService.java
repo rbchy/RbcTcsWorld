@@ -24,6 +24,11 @@ import com.rbctcsworld.ecommerce.pricing.PricingService;
 import com.rbctcsworld.ecommerce.pricing.PricingService.PriceBreakdown;
 import com.rbctcsworld.ecommerce.product.Product;
 import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
+import com.rbctcsworld.ecommerce.tax.TaxCalculator;
+import com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxAddress;
+import com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine;
+import com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxQuote;
+import com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,10 +68,12 @@ public class OrderService {
     private final PaymentService payments;
     private final PaymentMethodService paymentMethods;
     private final ApplicationEventPublisher events;
+    private final TaxCalculator taxes;
 
     public OrderService(OrderRepository orders, CartItemRepository cartItems, UserRepository users,
                         InventoryService inventory, PricingService pricing, CouponService coupons,
-                        PaymentService payments, PaymentMethodService paymentMethods, ApplicationEventPublisher events) {
+                        PaymentService payments, PaymentMethodService paymentMethods, ApplicationEventPublisher events,
+                        TaxCalculator taxes) {
         this.orders = orders;
         this.cartItems = cartItems;
         this.users = users;
@@ -76,22 +83,29 @@ public class OrderService {
         this.payments = payments;
         this.paymentMethods = paymentMethods;
         this.events = events;
+        this.taxes = taxes;
     }
 
     // ---------------------------------------------------------------- checkout
 
-    /** Price preview for the current cart (+ optional coupon). Read-only: nothing is reserved or redeemed. */
+    /**
+     * Price preview for the current cart (+ optional coupon, + optional delivery address for the exact tax).
+     * Read-only: nothing is reserved or redeemed. Without an address a tax provider may only estimate the tax.
+     */
     @Transactional(readOnly = true)
-    public QuoteResponse quote(String email, String couponCode) {
+    public QuoteResponse quote(String email, String couponCode, ShippingAddress address) {
         AppUser user = user(email);
         List<CartItem> lines = cartLines(user);
         List<OrderLine> orderLines = lines.stream().map(OrderService::toLine).toList();
         BigDecimal subtotal = orderLines.stream().map(OrderLine::lineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         Coupon coupon = hasText(couponCode) ? coupons.validate(couponCode, user.getId(), subtotal) : null;
-        PriceBreakdown p = pricing.price(subtotal, coupon == null ? BigDecimal.ZERO : coupon.discountFor(subtotal));
+        PriceBreakdown base = pricing.price(subtotal, coupon == null ? BigDecimal.ZERO : coupon.discountFor(subtotal));
+        List<TaxLine> taxLines = orderLines.stream().map(l -> new TaxLine(l.sku(), l.lineTotal(), l.quantity())).toList();
+        TaxQuote tax = taxes.calculate(taxRequest(taxLines, base, address == null ? null : address.normalized()));
+        PriceBreakdown p = base.withTax(tax.tax());
         int qty = orderLines.stream().mapToInt(OrderLine::quantity).sum();
         return new QuoteResponse(orderLines, qty, p.subtotal(), coupon == null ? null : coupon.getCode(),
-                p.discount(), p.shippingFee(), p.tax(), p.total());
+                p.discount(), p.shippingFee(), p.tax(), p.total(), tax.estimated());
     }
 
     public OrderResponse placeOrder(String email, String couponCode, ShippingAddress address) {
@@ -109,8 +123,13 @@ public class OrderService {
         }
 
         Coupon coupon = hasText(couponCode) ? coupons.validate(couponCode, user.getId(), order.getSubtotal()) : null;
-        PriceBreakdown price = pricing.price(order.getSubtotal(),
+        PriceBreakdown base = pricing.price(order.getSubtotal(),
                 coupon == null ? BigDecimal.ZERO : coupon.discountFor(order.getSubtotal()));
+        List<TaxLine> taxLines = order.getItems().stream()
+                .map(i -> new TaxLine(i.getSku(), i.getLineTotal(), i.getQuantity())).toList();
+        TaxQuote tax = taxes.calculate(taxRequest(taxLines, base, address.normalized()));   // 400 / 503 before anything is saved
+        PriceBreakdown price = base.withTax(tax.tax());
+        order.recordTaxCalculation(tax.calculationId());
         order.applyPricing(price.discount(), price.shippingFee(), price.tax(), price.total(),
                 coupon == null ? null : coupon.getCode());
         orders.save(order); // gets the id used by stock movements / redemption
@@ -216,6 +235,11 @@ public class OrderService {
             throw new BusinessRuleException("Cart is empty");
         }
         return lines;
+    }
+
+    private static TaxRequest taxRequest(List<TaxLine> lines, PriceBreakdown price, ShippingAddress a) {
+        TaxAddress to = a == null ? null : new TaxAddress(a.line1(), a.city(), a.state(), a.zip());
+        return new TaxRequest(TaxRequest.discounted(lines, price.discount()), price.shippingFee(), to);
     }
 
     private static OrderLine toLine(CartItem ci) {

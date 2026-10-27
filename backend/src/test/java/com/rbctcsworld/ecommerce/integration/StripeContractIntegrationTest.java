@@ -2,6 +2,7 @@ package com.rbctcsworld.ecommerce.integration;
 
 import com.rbctcsworld.ecommerce.payment.PaymentGateway;
 import com.rbctcsworld.ecommerce.payment.StripeTestSupport;
+import com.rbctcsworld.ecommerce.tax.StripeTaxTestSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -120,5 +121,18 @@ class StripeContractIntegrationTest {
     @Test
     void stripeRejectsRequestsWithoutAKey() throws Exception {
         assertThat(raw("amount=2450&currency=usd", false).statusCode()).isEqualTo(401);
+    }
+
+    // ---------- Stripe Tax (store phase 3) ----------
+
+    @Test
+    void ourTaxCalculationIsAValidStripeRequest() {
+        StripeTaxTestSupport.Calc c = StripeTaxTestSupport.calculate(url, KEY);
+        assertThat(c.id()).startsWith("taxcalc_");
+    }
+
+    @Test
+    void ourTaxSaleRecordIsAValidStripeRequest() {
+        assertThat(StripeTaxTestSupport.recordSale(url, KEY, "taxcalc_contract")).startsWith("tax_");
     }
 }

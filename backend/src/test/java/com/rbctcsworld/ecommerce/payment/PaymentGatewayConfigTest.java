@@ -66,8 +66,8 @@ class PaymentGatewayConfigTest {
         assertThatThrownBy(() -> withPublishable("sk_live_1", null, true)).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("STRIPE_PUBLISHABLE_KEY");
         PaymentGateway live = withPublishable("sk_live_1", "pk_live_1", true);
-        assertThat(live.acceptsCardNumbers()).isFalse();
-        assertThat(withPublishable("sk_test_1", "pk_test_1", false).acceptsCardNumbers()).isTrue();
+        assertThat(live.refusesCardNumbers()).isTrue();
+        assertThat(withPublishable("sk_test_1", "pk_test_1", false).refusesCardNumbers()).isFalse();
     }
 
     @Test

@@ -225,8 +225,8 @@ class PaymentServiceTest {
     /** A gateway with a live Stripe key: card numbers must never be accepted. */
     private static final class LiveGateway extends MockPaymentGateway {
         @Override
-        public boolean acceptsCardNumbers() {
-            return false;
+        public boolean refusesCardNumbers() {
+            return true;
         }
     }
 

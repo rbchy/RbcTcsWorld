@@ -62,7 +62,7 @@ public class PaymentMethodService {
     }
 
     private SavedPaymentMethod save(Long userId, String rawNumber, int month, int year, boolean makeDefault) {
-        if (!gateway.acceptsCardNumbers()) {
+        if (gateway.refusesCardNumbers()) {
             throw new BusinessRuleException(PaymentService.SECURE_FORM_ONLY);
         }
         String number = rawNumber.replace(" ", "");

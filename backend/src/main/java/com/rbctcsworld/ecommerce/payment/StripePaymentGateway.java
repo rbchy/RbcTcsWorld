@@ -55,8 +55,8 @@ public class StripePaymentGateway implements PaymentGateway {
     }
 
     @Override
-    public boolean acceptsCardNumbers() {
-        return !live;
+    public boolean refusesCardNumbers() {
+        return live;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class StripePaymentGateway implements PaymentGateway {
 
     @Override
     public GatewayResult charge(Long orderId, String cardNumber, BigDecimal amount) {
-        if (live) {   // PaymentService checks acceptsCardNumbers first; this is the last line of defence
+        if (live) {   // PaymentService checks refusesCardNumbers first; this is the last line of defence
             return GatewayResult.decline("Enter the card in the secure card form", null);
         }
         String paymentMethod = TEST_PAYMENT_METHODS.get(cardNumber);

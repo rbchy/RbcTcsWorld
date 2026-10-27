@@ -45,7 +45,7 @@ public class PaymentService {
      * (FAILED "Provider unavailable" recorded), otherwise a SUCCEEDED transaction with the provider's id.
      */
     public PaymentTransaction charge(Long orderId, BigDecimal amount, PayRequest card) {
-        if (!gateway.acceptsCardNumbers()) {
+        if (gateway.refusesCardNumbers()) {
             throw new BusinessRuleException(SECURE_FORM_ONLY);
         }
         String number = card.cardNumber().replace(" ", "");

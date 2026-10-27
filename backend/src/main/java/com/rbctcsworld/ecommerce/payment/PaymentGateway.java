@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  *  - the shop's own card form: the number reaches this server and {@link #charge} sends it on (mock, Stripe test mode);
  *  - a hosted card form (Stripe Elements): the browser gives the card to the provider, this server only creates the
  *    payment ({@link #startHostedPayment}) and later asks how it ended ({@link #hostedPaymentStatus}). The card
- *    number never reaches this server. A live Stripe key allows only this way ({@link #acceptsCardNumbers}).
+ *    number never reaches this server. A live Stripe key allows only this way ({@link #refusesCardNumbers}).
  */
 public interface PaymentGateway {
 
@@ -40,9 +40,9 @@ public interface PaymentGateway {
     /** Short name stored with every transaction: mock | stripe. */
     String name();
 
-    /** False when card numbers must not reach this server (a live Stripe key): only the hosted card form may be used. */
-    default boolean acceptsCardNumbers() {
-        return true;
+    /** True when card numbers must not reach this server (a live Stripe key): only the hosted card form may be used. */
+    default boolean refusesCardNumbers() {
+        return false;
     }
 
     /** The provider's public key for the hosted card form (Stripe pk_...), or null when there is no hosted form. */

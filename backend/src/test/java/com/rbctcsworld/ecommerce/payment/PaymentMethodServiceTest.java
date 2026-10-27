@@ -164,8 +164,8 @@ class PaymentMethodServiceTest {
     void aLiveKeyNeverTakesACardNumberIntoTheWallet() {
         MockPaymentGateway live = new MockPaymentGateway() {
             @Override
-            public boolean acceptsCardNumbers() {
-                return false;
+            public boolean refusesCardNumbers() {
+                return true;
             }
         };
         PaymentMethodService liveWallet = new PaymentMethodService(repo, users, live, CLOCK);

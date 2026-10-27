@@ -57,7 +57,6 @@ class StripeElementsIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         when(stripe.name()).thenReturn("stripe");
-        when(stripe.acceptsCardNumbers()).thenReturn(true);
         when(stripe.publishableKey()).thenReturn("pk_test_it");
         when(stripe.startHostedPayment(anyLong(), any())).thenAnswer(i -> new HostedPayment(
                 "pi_it_" + i.getArgument(0), "pi_it_" + i.getArgument(0) + "_secret"));

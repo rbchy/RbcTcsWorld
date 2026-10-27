@@ -173,7 +173,7 @@ class StripePaymentGatewayTest {
     @Test
     void withoutAPublishableKeyThereIsNoSecureCardForm() {
         assertThat(gateway.publishableKey()).isNull();
-        assertThat(gateway.acceptsCardNumbers()).isTrue();
+        assertThat(gateway.refusesCardNumbers()).isFalse();
         assertThatThrownBy(() -> gateway.startHostedPayment(42L, AMOUNT)).isInstanceOf(ConflictException.class)
                 .hasMessage(PaymentGateway.HOSTED_NOT_AVAILABLE);
         verifyNoInteractions(stripe);
@@ -188,7 +188,7 @@ class StripePaymentGatewayTest {
 
         assertThat(g.startHostedPayment(42L, AMOUNT)).isEqualTo(new HostedPayment("pi_h", "pi_h_secret_1"));
         assertThat(g.publishableKey()).isEqualTo("pk_test_1");
-        assertThat(g.acceptsCardNumbers()).isTrue();                          // test mode: the shop's form still works
+        assertThat(g.refusesCardNumbers()).isFalse();                          // test mode: the shop's form still works
     }
 
     @Test
@@ -234,7 +234,7 @@ class StripePaymentGatewayTest {
     void aLiveKeyRefusesCardNumbersWithoutCallingStripe() {
         StripePaymentGateway live = elements(true);
 
-        assertThat(live.acceptsCardNumbers()).isFalse();
+        assertThat(live.refusesCardNumbers()).isTrue();
         assertThat(live.charge(1L, "4242424242424242", AMOUNT))
                 .isEqualTo(GatewayResult.decline("Enter the card in the secure card form", null));
         assertThat(live.tokenize("4242424242424242")).isNull();
@@ -245,7 +245,7 @@ class StripePaymentGatewayTest {
     void theMockGatewayHasNoSecureCardForm() {
         MockPaymentGateway mock = new MockPaymentGateway();
         assertThat(mock.publishableKey()).isNull();
-        assertThat(mock.acceptsCardNumbers()).isTrue();
+        assertThat(mock.refusesCardNumbers()).isFalse();
         assertThatThrownBy(() -> mock.startHostedPayment(1L, AMOUNT)).isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> mock.hostedPaymentStatus("pi_1")).isInstanceOf(ConflictException.class);
     }

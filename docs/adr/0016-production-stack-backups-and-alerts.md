@@ -26,7 +26,7 @@ or a deleted server, and the owner must hear about a problem before customers do
   one message and a recovery is another. A server that is off cannot report itself, so the guide adds a free
   outside uptime check.
 - **Proven in CI** on every push (job "Production stack"): the stack starts with the live settings; only 80/443
-  are open; a customer's order is backed up, encrypted and found in a MinIO bucket; a damaged backup is refused by
+  are open; a customer's order is backed up, encrypted and found in an S3 bucket (moto); a damaged backup is refused by
   the drill with an alert; the off-site copy restores; `restore.sh` removes an account created after the backup and
   keeps the customer; the health check alerts once for a stopped container and reports the recovery.
 

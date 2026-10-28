@@ -598,24 +598,21 @@ jobs:
       DC: docker compose -f deploy/production/docker-compose.yml --env-file deploy/production/.env
     steps:
       - uses: actions/checkout@v5
-      - name: Off-site bucket (MinIO, S3-compatible) and a receiver for the alerts
+      - name: Off-site bucket (moto, an S3-compatible server) and a receiver for the alerts
         run: |
           exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
-          # the first image tag that exists (pinned first); the notice says which one ran
-          pick() { for t in "$@"; do docker pull -q "$t" >/dev/null 2>&1 && { echo "$t"; return 0; }; done; return 1; }
-          minio=$(pick minio/minio:RELEASE.2025-09-07T16-13-09Z minio/minio:RELEASE.2025-04-22T22-12-26Z minio/minio:latest) \
-            || { echo "::error::no MinIO image could be pulled"; exit 1; }
-          awscli=$(pick amazon/aws-cli:2.31.3 amazon/aws-cli:2.27.50 amazon/aws-cli:latest) \
-            || { echo "::error::no AWS CLI image could be pulled"; exit 1; }
-          echo "::notice title=Images::$minio, $awscli"
-          echo "AWS_CLI_IMAGE=$awscli" >> "$GITHUB_ENV"
-          echo "S3=docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret -e AWS_DEFAULT_REGION=us-east-1 $awscli --endpoint-url http://127.0.0.1:9000 s3" >> "$GITHUB_ENV"
-          docker run -d --name minio -p 127.0.0.1:9000:9000 -e MINIO_ROOT_USER=ci-backup -e MINIO_ROOT_PASSWORD=ci-backup-secret \
-            "$minio" server /data
-          for i in $(seq 1 60); do curl -fs http://127.0.0.1:9000/minio/health/live && break; sleep 1; done
-          out=$(docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret \
-                -e AWS_DEFAULT_REGION=us-east-1 "$awscli" --endpoint-url http://127.0.0.1:9000 s3 mb s3://rbctcsworld-backups 2>&1) \
-            || { echo "::error title=Bucket::$out"; docker logs minio 2>&1 | tail -5; exit 1; }
+          # the S3 API the backups talk to, on 127.0.0.1:9000 (moto: Python, no container image needed)
+          pip install --quiet 'moto[server]>=5.1,<6'
+          nohup moto_server -H 127.0.0.1 -p 9000 > "$RUNNER_TEMP/moto.log" 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:9000/ > /dev/null && break; sleep 1; done
+          # the AWS CLI the server uses: the official image when Docker Hub has it, else the runner's own "aws"
+          if docker pull -q amazon/aws-cli:2.31.3 >/dev/null 2>&1; then
+            echo "AWS_CLI_IMAGE=amazon/aws-cli:2.31.3" >> "$GITHUB_ENV"; cli="image amazon/aws-cli:2.31.3"
+          else cli="installed $(aws --version 2>&1 | cut -d' ' -f1)"; fi
+          echo "::notice title=S3::moto server, AWS CLI: $cli"
+          echo "S3=env AWS_ACCESS_KEY_ID=ci-backup AWS_SECRET_ACCESS_KEY=ci-backup-secret AWS_DEFAULT_REGION=us-east-1 aws --endpoint-url http://127.0.0.1:9000 s3" >> "$GITHUB_ENV"
+          AWS_ACCESS_KEY_ID=ci-backup AWS_SECRET_ACCESS_KEY=ci-backup-secret AWS_DEFAULT_REGION=us-east-1 \
+            aws --endpoint-url http://127.0.0.1:9000 s3 mb s3://rbctcsworld-backups
           mkdir -p "$RUNNER_TEMP/backups"
           nohup python3 .github/scripts/alert-receiver.py "$RUNNER_TEMP/alerts.txt" > /dev/null 2>&1 &
           touch "$RUNNER_TEMP/alerts.txt"
@@ -725,7 +722,7 @@ jobs:
         run: |
           exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           $DC down -v || true
-          docker rm -f minio rbctcsworld-drill || true
+          docker rm -f rbctcsworld-drill || true
 
   security-scan:
     name: Security scan (OWASP ZAP API scan + OSV dependency scan)

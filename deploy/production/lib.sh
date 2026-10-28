@@ -12,13 +12,23 @@ BACKUP_DIR="${BACKUP_DIR:-$HOME/backups}"
 compose() { docker compose -f "$ROOT/deploy/production/docker-compose.yml" --env-file "$ENV_FILE" "$@"; }
 log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $*"; }
 
-# aws s3 <args> against the off-site bucket (any S3-compatible storage: AWS S3, Oracle Object Storage, Backblaze B2,
-# MinIO). Runs the official AWS CLI image, so nothing has to be installed on the server.
+# aws s3 <args> against the off-site bucket (any S3-compatible storage: AWS S3, Oracle Object Storage, Backblaze B2).
+# Uses an installed "aws" when there is one, otherwise the official AWS CLI image, so nothing has to be installed.
+# Paths are written as /backups/<file>; with the installed CLI they are mapped to BACKUP_DIR.
 s3() {
-  docker run --rm --network host -v "$BACKUP_DIR:/backups" \
-    -e AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" -e AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
-    -e AWS_DEFAULT_REGION="${BACKUP_S3_REGION:-us-east-1}" \
-    "${AWS_CLI_IMAGE:-amazon/aws-cli:2.31.3}" ${BACKUP_S3_ENDPOINT:+--endpoint-url "$BACKUP_S3_ENDPOINT"} s3 "$@"
+  local endpoint=()
+  [ -n "${BACKUP_S3_ENDPOINT:-}" ] && endpoint=(--endpoint-url "$BACKUP_S3_ENDPOINT")
+  if [ -z "${AWS_CLI_IMAGE:-}" ] && command -v aws >/dev/null 2>&1; then
+    local args=() a
+    for a in "$@"; do args+=("${a/#\/backups\//$BACKUP_DIR/}"); done
+    AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
+      AWS_DEFAULT_REGION="${BACKUP_S3_REGION:-us-east-1}" aws "${endpoint[@]}" s3 "${args[@]}"
+  else
+    docker run --rm --network host -v "$BACKUP_DIR:/backups" \
+      -e AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" -e AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
+      -e AWS_DEFAULT_REGION="${BACKUP_S3_REGION:-us-east-1}" \
+      "${AWS_CLI_IMAGE:-amazon/aws-cli:2.31.3}" "${endpoint[@]}" s3 "$@"
+  fi
 }
 offsite() { [ -n "${BACKUP_S3_BUCKET:-}" ]; }
 s3_url() { echo "s3://$BACKUP_S3_BUCKET/${BACKUP_S3_PREFIX:-rbctcsworld}/$1"; }

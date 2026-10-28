@@ -158,7 +158,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 326 / 326 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
-| 19 | Production stack | live settings, only 80/443 open, encrypted off-site backup, restore drill, restore, health alerts | all steps pass | Docker Compose, MinIO (S3), shell + cron |
+| 19 | Production stack | live settings, only 80/443 open, encrypted off-site backup, restore drill, restore, health alerts | all steps pass | Docker Compose, moto (S3 API), shell + cron |
 
 Thresholds are set just under the measured value on purpose: they stop regressions without inviting
 tests that exist only to move a number. How the test layers fit together and what each one found is described in

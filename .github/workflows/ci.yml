@@ -602,9 +602,10 @@ jobs:
         run: |
           exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           # the S3 API the backups talk to, on 127.0.0.1:9000 (moto: Python, no container image needed)
-          pip install --quiet 'moto[server]>=5.1,<6'
-          nohup moto_server -H 127.0.0.1 -p 9000 > "$RUNNER_TEMP/moto.log" 2>&1 &
-          for i in $(seq 1 30); do curl -fs http://127.0.0.1:9000/ > /dev/null && break; sleep 1; done
+          python3 -m venv "$RUNNER_TEMP/moto" && "$RUNNER_TEMP/moto/bin/pip" install --quiet 'moto[server]>=5.1,<6'
+          nohup "$RUNNER_TEMP/moto/bin/python" -m moto.server -H 127.0.0.1 -p 9000 > "$RUNNER_TEMP/moto.log" 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:9000/ && break; sleep 1; done
+          curl -s -o /dev/null http://127.0.0.1:9000/ || { tail -20 "$RUNNER_TEMP/moto.log"; echo "::error::moto did not start"; exit 1; }
           # the AWS CLI the server uses: the official image when Docker Hub has it, else the runner's own "aws"
           if docker pull -q amazon/aws-cli:2.31.3 >/dev/null 2>&1; then
             echo "AWS_CLI_IMAGE=amazon/aws-cli:2.31.3" >> "$GITHUB_ENV"; cli="image amazon/aws-cli:2.31.3"

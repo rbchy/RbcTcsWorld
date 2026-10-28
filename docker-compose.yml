@@ -63,6 +63,14 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       SES_CONFIGURATION_SET: ${SES_CONFIGURATION_SET:-}
       SES_SNS_TOPIC_ARN: ${SES_SNS_TOPIC_ARN:-}
+      # the business behind the store, shown on the policy pages (docs/modules/PHASE4_BUSINESS_LEGAL_BN.md)
+      STORE_LEGAL_NAME: ${STORE_LEGAL_NAME:-}
+      STORE_STREET: ${STORE_STREET:-}
+      STORE_CITY: ${STORE_CITY:-}
+      STORE_STATE: ${STORE_STATE:-}
+      STORE_ZIP: ${STORE_ZIP:-}
+      STORE_CONTACT_EMAIL: ${STORE_CONTACT_EMAIL:-}
+      STORE_POLICIES_REVIEWED: ${STORE_POLICIES_REVIEWED:-false}
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
       # payments: mock unless set; Stripe test keys turn on Stripe Elements (docs/modules/STRIPE_ELEMENTS_BN.md)

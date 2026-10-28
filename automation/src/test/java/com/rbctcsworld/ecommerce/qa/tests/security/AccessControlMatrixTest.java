@@ -40,6 +40,7 @@ class AccessControlMatrixTest {
             "GET,    /api/products,                         200, 200, 200",
             "GET,    /api/products/{pid}/reviews,             200, 200, 200",
             "GET,    /api/tracking/UPS-000000000000,        404, 404, 404",
+            "GET,    /api/store/legal,                      200, 200, 200",
             "POST,   /api/products,                         401, 403, 400",
             "PUT,    /api/products/{pid},                     401, 403, 400",
             "DELETE, /api/products/99999999,                401, 403, 404",

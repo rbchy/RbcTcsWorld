@@ -18,7 +18,7 @@ import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 /**
  * Access rules:
- *  - anyone may register/login, browse products (GET) and track a parcel by tracking number;
+ *  - anyone may register/login, browse products (GET), track a parcel by tracking number and read the store's legal details;
  *  - Stripe may post webhooks without a login: CardPaymentController checks their signature;
  *  - Shippo may post tracking webhooks without a login: ShippoWebhookController checks the secret token;
  *  - Amazon SNS may post SES bounce/complaint reports without a login: SesEventController checks SNS's signature;
@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v3/api-docs", "/v3/api-docs/**").permitAll()   // OpenAPI spec (used by OWASP ZAP)
                 .requestMatchers(HttpMethod.GET, "/api/tracking/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/store/legal").permitAll()   // who runs the store, for the policy pages
                 .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()   // Stripe proves itself by signature
                 .requestMatchers(HttpMethod.POST, "/api/shipping/shippo/webhook").permitAll()   // Shippo: secret token in the URL
                 .requestMatchers(HttpMethod.POST, "/api/notifications/ses/events").permitAll()  // Amazon SNS: signed messages

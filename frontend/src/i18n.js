@@ -564,6 +564,20 @@ const T = {
   helpSearch: ['Search help', 'সাহায্যে খুঁজুন', 'Buscar en la ayuda', 'Rechercher dans l’aide', 'ابحث في المساعدة', '搜索帮助'],
   helpNone: ['No help topic matches this search.', 'এই খোঁজে কোনো বিষয় পাওয়া যায়নি।', 'Ningún tema coincide con la búsqueda.', 'Aucun sujet ne correspond à cette recherche.', 'لا يوجد موضوع مطابق للبحث.', '没有匹配的帮助主题。'],
   topics: ['Topics', 'বিষয়', 'Temas', 'Sujets', 'المواضيع', '主题'],
+  // ---- policies and cookie notice ----
+  secLegal: ['Policies', 'নীতিমালা', 'Políticas', 'Politiques', 'السياسات', '政策'],
+  navPrivacy: ['Privacy policy', 'গোপনীয়তা নীতি', 'Política de privacidad', 'Politique de confidentialité', 'سياسة الخصوصية', '隐私政策'],
+  navTerms: ['Terms of service', 'ব্যবহারের শর্তাবলি', 'Términos del servicio', 'Conditions d’utilisation', 'شروط الخدمة', '服务条款'],
+  navReturnPolicy: ['Return and refund policy', 'ফেরত ও রিফান্ড নীতি', 'Política de devoluciones y reembolsos', 'Politique de retour et de remboursement', 'سياسة الإرجاع والاسترداد', '退货和退款政策'],
+  navShippingPolicy: ['Shipping policy', 'শিপিং নীতি', 'Política de envío', 'Politique de livraison', 'سياسة الشحن', '配送政策'],
+  legalInEnglish: ['This policy is in English, the language of the business that runs the shop.', 'এই নীতিটি ইংরেজিতে, কারণ দোকান যে ব্যবসা চালায় তার ভাষা ইংরেজি।', 'Esta política está en inglés, el idioma de la empresa que gestiona la tienda.', 'Cette politique est en anglais, la langue de l’entreprise qui gère la boutique.', 'هذه السياسة باللغة الإنجليزية، لغة الشركة التي تدير المتجر.', '本政策为英文，即经营本店的企业所使用的语言。'],
+  legalUnavailable: ['The policy cannot be loaded right now. Please try again in a moment.', 'নীতিটি এখন খোলা যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।', 'La política no se puede cargar ahora. Inténtelo de nuevo en un momento.', 'La politique ne peut pas être chargée pour le moment. Réessayez dans un instant.', 'تعذر تحميل السياسة الآن. حاول مرة أخرى بعد قليل.', '暂时无法加载该政策，请稍后再试。'],
+  cookieText: ['This shop keeps only what it needs to work in your browser: your sign-in and your language. No advertising or tracking cookies.', 'দোকানটা চলার জন্য যেটুকু দরকার, শুধু সেটুকুই আপনার ব্রাউজারে রাখে: আপনার সাইন-ইন আর ভাষা। বিজ্ঞাপন বা নজরদারির কোনো cookie নেই।', 'Esta tienda guarda en su navegador solo lo necesario para funcionar: su sesión y su idioma. Sin cookies de publicidad ni de seguimiento.', 'Cette boutique ne garde dans votre navigateur que le nécessaire : votre connexion et votre langue. Aucun cookie publicitaire ni de suivi.', 'يحتفظ هذا المتجر في متصفحك فقط بما يحتاجه للعمل: تسجيل دخولك ولغتك. لا توجد ملفات تعريف ارتباط للإعلانات أو التتبع.', '本店只在您的浏览器中保存运行所需的信息：您的登录状态和语言。不使用广告或跟踪 Cookie。'],
+  cookieMore: ['How we handle your data', 'আপনার তথ্য আমরা কীভাবে রাখি', 'Cómo tratamos sus datos', 'Comment nous traitons vos données', 'كيف نتعامل مع بياناتك', '我们如何处理您的数据'],
+  cookieOk: ['OK', 'ঠিক আছে', 'De acuerdo', 'OK', 'حسنًا', '知道了'],
+  cookieLabel: ['Cookies and browser storage', 'Cookie আর ব্রাউজারে রাখা তথ্য', 'Cookies y almacenamiento del navegador', 'Cookies et stockage du navigateur', 'ملفات تعريف الارتباط وتخزين المتصفح', 'Cookie 和浏览器存储'],
+  agreeOrder: ['By placing your order you agree to our', 'অর্ডার দিলে আপনি আমাদের এগুলোতে সম্মত হচ্ছেন:', 'Al realizar el pedido acepta nuestros', 'En passant commande, vous acceptez nos', 'بتقديم طلبك فإنك توافق على', '下单即表示您同意我们的'],
+  agreeRegister: ['By creating an account you agree to our', 'অ্যাকাউন্ট খুললে আপনি আমাদের এগুলোতে সম্মত হচ্ছেন:', 'Al crear una cuenta acepta nuestros', 'En créant un compte, vous acceptez nos', 'بإنشاء حساب فإنك توافق على', '创建账户即表示您同意我们的'],
 };
 
 const read = () => {

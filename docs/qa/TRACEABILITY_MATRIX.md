@@ -189,6 +189,14 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | REQ-ADM-07 | Advanced search: catalog by category, price range and "in stock only" combined with name, sort and paging (400 for a range that makes no sense); admin orders by period, total range, carrier and coupon, exportable as CSV | `ProductServiceTest#withoutExtraFiltersTheCatalogQueryStaysTheSame`, `ProductServiceTest#anyExtraFilterUsesTheFilteredQueryWithTheSamePaging`, `ProductServiceTest#thePriceRangeMustMakeSense`, `ProductServiceTest#theFilterKnowsWhenItIsEmpty`, `ProductServiceTest#categoriesComeFromTheProductsOnSale`, `ProductSearchIntegrationTest#categoryPriceRangeAndStockCombine`, `ProductSearchIntegrationTest#aPriceRangeThatMakesNoSenseIsRefused`, `AdminSuiteApiTest#advancedProductSearch`, `playwright/tests/admin-suite.spec.ts` | U I A UI | Pass |
 | REQ-ADM-08 | Only the store admin reaches customers, coupons, reports and payments (customer 403, anonymous 401); store admins cannot be disabled through the customer endpoints | `AdminCustomersCouponsIntegrationTest#storeAdminsAreNotCustomersAndCustomersCannotUseTheseEndpoints`, `ReportsIntegrationTest#wrongReportRequestsAreRefusedClearly`, `AdminSuiteApiTest#customersAreRefused` | I A S | Pass |
 
+## Legal and policies
+
+| ID | Requirement | Tests | Levels | Status |
+|---|---|---|---|---|
+| REQ-LEG-01 | Privacy policy, terms of service, return and refund policy and shipping policy are public pages, one click from the footer of every page; they quote the return window, shipping fee and free-shipping threshold from the shop's own settings (GET /api/store/legal, no login) and the business details from configuration; until the business details are complete and a lawyer has reviewed them, every policy shows placeholders and says it is a draft ("reviewed" can never be true while a detail is missing) | `LegalInfoControllerTest#aRegisteredBusinessIsShownAsConfigured`, `LegalInfoControllerTest#beforeTheBusinessIsRegisteredEverythingIsEmptyAndThePoliciesAreDrafts`, `LegalInfoControllerTest#anyMissingDetailKeepsThePoliciesDrafts`, `LegalInfoControllerTest#completeButNotYetReviewedIsADraft`, `LegalInfoIntegrationTest#anyoneCanReadTheStoresLegalDetailsAndTheyMatchTheShopsRules`, `AccessControlMatrixTest#matrix`, `playwright/tests/legal.spec.ts`, `playwright/tests/a11y.spec.ts` | U I A UI | Pass |
+| REQ-LEG-02 | Cookie notice: says the shop keeps only what it needs in the browser (sign-in, language) and no advertising or tracking cookies, links to the privacy policy, never covers the content, and "OK" hides it for good in that browser | `playwright/tests/legal.spec.ts` | UI | Pass |
+| REQ-LEG-03 | Creating an account names the terms and privacy policy it agrees to, placing an order the terms, return policy and privacy policy (links); in another language the pages say the policy is in English | `playwright/tests/legal.spec.ts` | UI | Pass |
+
 ## Non-functional
 
 | ID | Requirement | Tests | Levels | Status |
@@ -217,21 +225,16 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 |---|---|---|---|
 | Identity and access | 16 | 16 | - |
 | Catalog | 14 | 14 | - |
-| Identity and access | 16 | 16 | - |
-| Catalog | 14 | 14 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
-| Pricing, coupons, payments | 13 | 13 | - |
-| Catalog | 13 | 13 | - |
-| Cart | 3 | 3 | - |
-| Orders and inventory | 16 | 16 | - |
-| Pricing, coupons, payments | 13 | 13 | - |
+| Pricing, coupons, payments | 16 | 16 | - |
 | Address book | 3 | 3 | - |
-| Fulfilment and returns | 6 | 6 | - |
-| Customer e-mails | 4 | 4 | - |
+| Fulfilment and returns | 8 | 8 | - |
+| Customer e-mails | 6 | 6 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 14 | 14 | - |
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
+| Legal and policies | 3 | 3 | - |
 | Non-functional | 17 | 17 | - |
-| **Total** | **128** | **128 (100 %)** | **0** |
+| **Total** | **139** | **139 (100 %)** | **0** |

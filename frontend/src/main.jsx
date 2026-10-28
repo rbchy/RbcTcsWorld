@@ -4,7 +4,8 @@ import '@fontsource/plus-jakarta-sans/latin-700.css';
 import '@fontsource/plus-jakarta-sans/latin-800.css';
 import './style.css';
 import { useRoute, useSession } from './session';
-import { AnnounceBar, Footer, Sidebar, Topbar } from './Layout';
+import { AnnounceBar, CookieNotice, Footer, Sidebar, Topbar } from './Layout';
+import Legal, { POLICIES } from './pages/Legal';
 import { installButtonIcons } from './icons';
 import { useI18n } from './i18n';
 import Home from './pages/Home';
@@ -69,6 +70,7 @@ function App() {
   else if (route === '/forgot-password') page = <ForgotPassword />;
   else if (route.startsWith('/reset-password')) page = <ResetPassword token={new URLSearchParams(route.split('?')[1] || '').get('token')} />;
   else if (route === '/help' || route.startsWith('/help/')) page = <Help />;
+  else if (POLICIES[route.slice(1)]) page = <Legal page={route.slice(1)} />;
   else if (route === '/goodbye') page = <Goodbye session={session} />;
   else if (ADMIN[route]) { const P = ADMIN[route]; page = <AdminOnly session={session}><P /></AdminOnly>; }
   else if (route === '/cart') page = <Cart />;
@@ -86,6 +88,7 @@ function App() {
     <div className="shell">
       <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
       {DEMO && <DemoRibbon />}
+      <CookieNotice />
       <AnnounceBar />
       <Topbar session={session} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <div className="frame">

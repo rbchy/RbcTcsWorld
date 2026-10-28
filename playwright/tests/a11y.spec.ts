@@ -7,6 +7,8 @@ const PAGES = [
   { name: 'goodbye', path: '/#/goodbye', ready: 'goodbye' },
   { name: 'help', path: '/#/help', ready: 'help-topic' },
   { name: 'forgot password', path: '/#/forgot-password', ready: 'forgot-email' },
+  { name: 'privacy policy', path: '/#/privacy', ready: 'legal-effective' },
+  { name: 'return policy', path: '/#/returns-policy', ready: 'legal-return-days' },
 ];
 
 test.describe('Accessibility (WCAG 2.1 AA, axe-core)', () => {

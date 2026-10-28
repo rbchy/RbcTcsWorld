@@ -257,6 +257,26 @@ export function Sidebar({ route, session, open, onNavigate }) {
   );
 }
 
+/**
+ * What the shop keeps in the browser, said once (REQ-LEG-02). Only strictly necessary storage is used (sign-in,
+ * language), so this is a notice, not a consent form. It sits in the page flow under the page content, above the
+ * footer: never over anything, and nothing above it moves (a bar above the header pushed the sticky header over menu
+ * links that tests and keyboard users scroll to). "OK" hides it for good in this browser.
+ */
+const COOKIE_KEY = 'cookieNotice';
+export function CookieNotice() {
+  const { t } = useI18n();
+  const [seen, setSeen] = React.useState(() => { try { return localStorage.getItem(COOKIE_KEY) === 'ok'; } catch { return false; } });
+  if (seen) return null;
+  const ok = () => { try { localStorage.setItem(COOKIE_KEY, 'ok'); } catch { /* private mode: hidden for this page only */ } setSeen(true); };
+  return (
+    <section className="cookie-notice" aria-label={t('cookieLabel')} data-testid="cookie-notice">
+      <p>{t('cookieText')} <a href="#/privacy" data-testid="cookie-more">{t('cookieMore')}</a></p>
+      <button type="button" onClick={ok} data-testid="cookie-ok">{t('cookieOk')}</button>
+    </section>
+  );
+}
+
 /** The bottom of every page: where to go next, how the shop works, and a way back to the top. */
 export function Footer({ session }) {
   const { t } = useI18n();
@@ -307,6 +327,15 @@ export function Footer({ session }) {
             <li><a href="#/help" data-testid="foot-help">{t('navHelp')}</a></li>
             <li><a href="#/help">{t('footShippingHelp')}</a></li>
             <li><a href="#/help">{t('footReturnsHelp')}</a></li>
+          </ul>
+        </nav>
+        <nav aria-labelledby="foot-legal">
+          <h2 id="foot-legal">{t('secLegal')}</h2>
+          <ul>
+            <li><a href="#/privacy" data-testid="foot-privacy">{t('navPrivacy')}</a></li>
+            <li><a href="#/terms" data-testid="foot-terms">{t('navTerms')}</a></li>
+            <li><a href="#/returns-policy" data-testid="foot-returns-policy">{t('navReturnPolicy')}</a></li>
+            <li><a href="#/shipping-policy" data-testid="foot-shipping-policy">{t('navShippingPolicy')}</a></li>
           </ul>
         </nav>
       </div>

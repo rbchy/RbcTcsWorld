@@ -164,6 +164,10 @@ export default function Login({ redirect = '/', initialMode = 'login' }) {
         <button data-testid="auth-submit" type="submit" disabled={busy} className="block">
           {mode === 'login' ? t('loginBtn') : t('registerBtn')}
         </button>
+        {mode === 'register' && (
+          <p className="hint agree" data-testid="agree-register">{t('agreeRegister')} <a href="#/terms">{t('navTerms')}</a>
+            {' · '}<a href="#/privacy">{t('navPrivacy')}</a></p>
+        )}
       </form>
       {mode === 'login' && (
         <button className="link" data-testid="forgot-link" onClick={() => go('/forgot-password')}>{t('forgotLink')}</button>

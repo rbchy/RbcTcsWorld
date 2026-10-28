@@ -121,6 +121,8 @@ export default function Checkout() {
               )}
             </fieldset>
             <button data-testid="place-order" type="submit">Place order</button>
+            <p className="hint agree" data-testid="agree-order">{t('agreeOrder')} <a href="#/terms">{t('navTerms')}</a>
+              {' · '}<a href="#/returns-policy">{t('navReturnPolicy')}</a>{' · '}<a href="#/privacy">{t('navPrivacy')}</a></p>
             {guest && <p className="hint" data-testid="guest-hint">{t('guestHint')} <a href="#/forgot-password">{t('forgotLink')}</a></p>}
           </form>
         </>

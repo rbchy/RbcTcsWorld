@@ -13,7 +13,7 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 | E-mail | Amazon SES from the store's domain, bounce suppression (phase 3, done); Mailpit until the domain exists | a mail service, the store's own domain, SPF and DKIM | Engineering + owner (domain) |
 | Products | 10 sample products with drawn pictures | real products, photos, descriptions, suppliers | Owner; engineering adds photo upload |
 | Hosting | one free Oracle server, demo mode, nightly reset | demo mode off, daily backups, monitoring and alerts, a tested restore | Engineering |
-| Legal | none | business registration (LLC, EIN), privacy policy, terms, return policy, cookie notice | Owner + lawyer; engineering builds the pages |
+| Legal | policy pages and cookie notice (drafts, phase 4) | business registration (LLC, EIN), sales tax license, a lawyer's review of the policies | Owner + lawyer |
 | Customer service | none | contact form, response times | Owner |
 | Search engines | none | page titles and descriptions, sitemap, Search Console | Engineering |
 | Already strong | orders, no overselling, returns and refunds, coupons, accounts with two-factor sign-in, audit trail, six languages, 1,489 tests, 18 CI gates | the same test rules for every new feature | - |
@@ -38,6 +38,9 @@ Phase 2 does exactly that (ADR-0011).
    complaint suppression ([ADR-0014](../adr/0014-amazon-ses-mail.md), [guide](../modules/AMAZON_SES_MAIL_BN.md)).
    Left for the owner: buy the domain, verify it in SES, request SES production access.
 5. **Phase 4 - business and legal (owner and professionals, alongside phases 2-3):** LLC and EIN, sales tax license, business bank account, Stripe live verification; engineering builds the policy pages, a lawyer reviews them.
+   *Engineering part built:* privacy policy, terms, return and shipping policies that quote the shop's own settings, a
+   cookie notice, agreement links at sign-up and checkout ([ADR-0015](../adr/0015-policies-from-the-shops-settings.md)).
+   *Owner's part, step by step with fees (Bangla):* [PHASE4_BUSINESS_LEGAL_BN.md](../modules/PHASE4_BUSINESS_LEGAL_BN.md).
 6. **Phase 5 - production server (engineering, 1 week):** demo mode off, daily backups, alerts, a restore drill.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
 

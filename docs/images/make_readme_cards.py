@@ -9,12 +9,12 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #11 (commit 49584a9, 28 Oct 2026) ----
-AS_OF = "PR #11 @ 49584a9 · 28 Oct 2026"
+# ---- from the GitHub Actions run of PR #13 (commit 667e829, 29 Oct 2026) ----
+AS_OF = "PR #13 @ 667e829 · 29 Oct 2026"
 LEVELS = [  # (label, tests, colour)
-    ("Backend unit + integration", 993, "#4fb3a9"),
-    ("API · DB · BDD · Selenium UI", 450, "#f4b04a"),
-    ("Playwright (5 browsers/devices)", 297, "#8fb8de"),
+    ("Backend unit + integration", 1004, "#4fb3a9"),
+    ("API · DB · BDD · Selenium UI", 451, "#f4b04a"),
+    ("Playwright (5 browsers/devices)", 329, "#8fb8de"),
     ("Appium phones", 8, "#e58a8a"),
 ]
 SKIPPED = 3
@@ -28,12 +28,12 @@ GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.3 %", "Mutation
 COMMITS_PER_DAY = [("04", 31), ("05", 5), ("06", 2), ("07", 23), ("08", 7), ("09", 2), ("10", 5), ("11", 18),
                    ("12", 11), ("13", 10), ("14", 19), ("15", 3), ("16", 27), ("17", 20), ("18", 29), ("19", 1),
                    ("20", 3), ("23", 3), ("24", 1), ("25", 16), ("26", 3)]
-MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 10, 1, 29, "51k"
+MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 11, 2, 29, "51k"
 LANGUAGES = [("Java", 73.9, "#b07219"), ("JavaScript", 16.0, "#f1e05a"), ("TypeScript", 4.0, "#3178c6"),
              ("CSS", 2.7, "#663399"), ("Other", 3.4, "#b4add8")]  # Gherkin, Shell, Python, Makefile, HTML, Docker
 # the road to launch (docs/store/ROADMAP.md): (phase, short name, state) - state: done | now | next | later
 PHASES = [("0", "Products and brand", "now"), ("1", "Foundation", "done"), ("2", "Safe card payments", "done"),
-          ("3", "Tax, shipping, e-mail", "done"), ("4", "Business and legal", "next"), ("5", "Production server", "later"),
+          ("3", "Tax, shipping, e-mail", "done"), ("4", "Business and legal", "now"), ("5", "Production server", "later"),
           ("6", "UAT and launch", "later")]
 
 # the store's colours: indigo frame, sunflower titles
@@ -57,8 +57,8 @@ def status_board():
     w, h = 1000, 700
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
          f'aria-label="Project status board: {total} automated tests, {total - SKIPPED} passed and {SKIPPED} skipped by design; '
-         f'18 of 18 CI gates passed; 97.3 percent line coverage; 88.1 percent mutation score; 136 of 136 requirements traced; '
-         f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal next.">',
+         f'18 of 18 CI gates passed; 97.3 percent line coverage; 88.1 percent mutation score; 139 of 139 requirements traced; '
+         f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal in progress.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, TITLE, 700),
          text(32, 72, f"RbcTcsWorld Shop · {AS_OF} · every gate green", 13, MUTED)]
@@ -66,7 +66,7 @@ def status_board():
              ("18 / 18", "CI gates passed", "GitHub Actions + Jenkins"),
              ("97.3 %", "line coverage", "94.8 % branches (JaCoCo)"),
              ("88.1 %", "mutation score", "test strength 94.7 % (PIT)"),
-             ("136 / 136", "requirements traced", "checked on every push")]
+             ("139 / 139", "requirements traced", "checked on every push")]
     tw = (w - 64 - 4 * 12) / 5
     for i, (big, label, sub) in enumerate(tiles):
         p.append(tile(32 + i * (tw + 12), 92, tw, big, label, sub))

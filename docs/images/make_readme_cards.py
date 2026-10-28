@@ -9,12 +9,12 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #11 (commit 49584a9, 28 Oct 2026) ----
-AS_OF = "PR #11 @ 49584a9 · 28 Oct 2026"
+# ---- from the GitHub Actions run of PR #13 (commit 667e829, 29 Oct 2026) ----
+AS_OF = "PR #13 @ 667e829 · 29 Oct 2026"
 LEVELS = [  # (label, tests, colour)
-    ("Backend unit + integration", 993, "#4fb3a9"),
-    ("API · DB · BDD · Selenium UI", 450, "#f4b04a"),
-    ("Playwright (5 browsers/devices)", 297, "#8fb8de"),
+    ("Backend unit + integration", 1004, "#4fb3a9"),
+    ("API · DB · BDD · Selenium UI", 451, "#f4b04a"),
+    ("Playwright (5 browsers/devices)", 329, "#8fb8de"),
     ("Appium phones", 8, "#e58a8a"),
 ]
 SKIPPED = 3
@@ -28,7 +28,7 @@ GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.3 %", "Mutation
 COMMITS_PER_DAY = [("04", 31), ("05", 5), ("06", 2), ("07", 23), ("08", 7), ("09", 2), ("10", 5), ("11", 18),
                    ("12", 11), ("13", 10), ("14", 19), ("15", 3), ("16", 27), ("17", 20), ("18", 29), ("19", 1),
                    ("20", 3), ("23", 3), ("24", 1), ("25", 16), ("26", 3)]
-MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 10, 1, 29, "51k"
+MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 11, 2, 29, "51k"
 LANGUAGES = [("Java", 73.9, "#b07219"), ("JavaScript", 16.0, "#f1e05a"), ("TypeScript", 4.0, "#3178c6"),
              ("CSS", 2.7, "#663399"), ("Other", 3.4, "#b4add8")]  # Gherkin, Shell, Python, Makefile, HTML, Docker
 # the road to launch (docs/store/ROADMAP.md): (phase, short name, state) - state: done | now | next | later

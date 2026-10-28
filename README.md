@@ -29,7 +29,7 @@ Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github
 
 ## 🚦 Project Status Board
 
-<img src="docs/images/project-status.svg" alt="Project status board: 1,748 automated tests (1,745 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.3 % line coverage, 88.1 % mutation score, 136 of 136 requirements traced; road to launch: phases 1 and 2 done, phases 0 and 3 in progress" width="100%">
+<img src="docs/images/project-status.svg" alt="Project status board: 1,748 automated tests (1,745 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.3 % line coverage, 88.1 % mutation score, 136 of 136 requirements traced; road to launch: phases 1, 2 and 3 done, phase 0 in progress, phase 4 next" width="100%">
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
@@ -93,7 +93,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
 | Quality bar | 1,748 automated tests, 18 CI quality gates, 97.3 % line coverage, 88.1 % mutation score, 136 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
-| Phase 3 (in progress) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
+| Phase 3 (done) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
 | Not decided yet | what the store sells, where the products come from (phase 0, owner) |
 
 ## Roadmap to launch
@@ -104,9 +104,9 @@ The details, owners and running costs are in [docs/store/ROADMAP.md](docs/store/
 |---|---|---|---|
 | 0 | Decide the products, suppliers and brand | Owner | in progress |
 | 1 | This repository: history, links, project names, README, roadmap, decision record, store look | Engineering | **done** |
-| 2 | Card payments through Stripe Elements and webhooks (card numbers never reach our server) | Engineering | next |
-| 3 | Real sales tax, shipping rates and labels, e-mail from the store's domain | Engineering | planned |
-| 4 | Business registration, sales tax license, privacy policy, terms, return policy | Owner + professionals | planned |
+| 2 | Card payments through Stripe Elements and webhooks (card numbers never reach our server) | Engineering | **done** |
+| 3 | Real sales tax, shipping rates and labels, e-mail from the store's domain | Engineering | **done** (accounts and domain: owner) |
+| 4 | Business registration, sales tax license, privacy policy, terms, return policy | Owner + professionals | next |
 | 5 | Production server: demo mode off, daily backups, monitoring, restore drill | Engineering | planned |
 | 6 | User acceptance test with real cards and refunds, then launch | Owner + Engineering | planned |
 
@@ -169,10 +169,11 @@ tests that exist only to move a number. How the test layers fit together and wha
 These are the gaps between the demo and a live store, in the order the roadmap closes them. Stating them is part of
 the plan, not a footnote.
 
-- **Card numbers reach the backend today** (the shop's own card form, Stripe test cards only). With real cards that
-  would put the server under the full PCI DSS rules; phase 2 moves the card form to Stripe Elements.
-- **Tax is one flat 6 %** and shipping a flat $5.99 with made-up tracking numbers (phase 3).
-- **E-mails land in Mailpit**, a test inbox; a mail service, the store's own domain, SPF and DKIM come in phase 3.
+- **The live services are built but not switched on.** Stripe Elements (phase 2), Stripe Tax, Shippo and Amazon SES
+  (phase 3) work in test mode; each needs the owner's account, keys and, for e-mail, the store's own domain. Until
+  then the store runs on test cards, a flat 6 % tax, made-up tracking numbers and Mailpit.
+- **Before real shipping and mixed products:** product weights and sizes for labels, product tax codes, a tax reversal
+  on refunds, and an admin view of bounced e-mail addresses (listed in ADR-0012, 0013 and 0014).
 - **The server runs in demo mode** with a nightly reset; daily backups, alerts and a tested restore come in phase 5.
 - **No business or legal pages yet:** LLC, sales tax license, privacy policy, terms and return policy (phase 4).
 - **Products are samples** with drawn pictures until the owner decides what to sell (phase 0).

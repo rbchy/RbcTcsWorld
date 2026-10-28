@@ -647,8 +647,8 @@ jobs:
             ! nc -z -w 2 127.0.0.1 "$port" || { echo "::error::port $port is published"; exit 1; }
           done
           CURL_OPTS=-k deploy/smoke.sh --production https://localhost
-          out=$(env -u PAYMENT_PROVIDER docker compose -f deploy/production/docker-compose.yml \
-                --env-file <(grep -v '^PAYMENT_PROVIDER=' deploy/production/.env) config 2>&1 || true)
+          grep -v '^PAYMENT_PROVIDER=' deploy/production/.env > "$RUNNER_TEMP/missing.env"
+          out=$(docker compose -f deploy/production/docker-compose.yml --env-file "$RUNNER_TEMP/missing.env" config 2>&1 || true)
           echo "$out" | grep -q "set PAYMENT_PROVIDER" || { echo "$out" | tail -5; exit 1; }
           echo "::notice title=Production::only 80/443 open, no demo ribbon, a missing setting stops the start"
       - name: A customer orders; the backup is encrypted, checked and copied off the server

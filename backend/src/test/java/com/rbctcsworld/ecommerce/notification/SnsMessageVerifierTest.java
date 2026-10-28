@@ -29,7 +29,8 @@ class SnsMessageVerifierTest {
     }
 
     private static JsonNode with(String json, String field, String value) {
-        return SnsTestSigner.json(json.replaceFirst("\\"" + field + "\\"\\s*:\\s*\\"[^\\"]*\\"", "\\"" + field + "\\": \\"" + value + "\\""));
+        return SnsTestSigner.json(json.replaceFirst("\"" + field + "\"\\s*:\\s*\"[^\"]*\"",
+                java.util.regex.Matcher.quoteReplacement("\"" + field + "\": \"" + value + "\"")));
     }
 
     @Test
@@ -78,9 +79,9 @@ class SnsMessageVerifierTest {
         String bounce = SnsTestSigner.fixture("sns_bounce.json");
         assertThatThrownBy(() -> verifier.verify(with(bounce, "Signature", "not base64 !!"))).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> verifier.verify(with(bounce, "Signature", "AAAA"))).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> verifier.verify(SnsTestSigner.json(bounce.replaceFirst("\\"Signature\\"", "\\"Sig\\""))))
+        assertThatThrownBy(() -> verifier.verify(SnsTestSigner.json(bounce.replaceFirst("\"Signature\"", "\"Sig\""))))
                 .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> verifier.verify(SnsTestSigner.json(bounce.replaceFirst("\\"Type\\"", "\\"Kind\\""))))
+        assertThatThrownBy(() -> verifier.verify(SnsTestSigner.json(bounce.replaceFirst("\"Type\"", "\"Kind\""))))
                 .isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> verifier.verify(SnsTestSigner.json("{}"))).isInstanceOf(BusinessRuleException.class);
     }

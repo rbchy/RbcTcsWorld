@@ -9,8 +9,8 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #13 (commit 667e829, 29 Oct 2026) ----
-AS_OF = "PR #13 @ 667e829 · 29 Oct 2026"
+# ---- from the GitHub Actions run of PR #14 (commit b0ecef6, 29 Oct 2026) ----
+AS_OF = "PR #14 @ b0ecef6 · 29 Oct 2026"
 LEVELS = [  # (label, tests, colour)
     ("Backend unit + integration", 1004, "#4fb3a9"),
     ("API · DB · BDD · Selenium UI", 451, "#f4b04a"),

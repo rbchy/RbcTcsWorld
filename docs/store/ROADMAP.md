@@ -7,10 +7,10 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 
 | Area | In the code today | Needed before launch | Who |
 |---|---|---|---|
-| Card payments | Stripe PaymentIntents and refunds, but only Stripe test cards, through the shop's own card form | Stripe Elements in the browser (the card goes straight to Stripe, never to our server), webhooks for payment results, 3-D Secure, live keys | Engineering; owner opens the Stripe account |
-| Sales tax | one flat rate (6 %) on every order | correct rate by state and product (for example Stripe Tax), Pennsylvania sales tax license | Engineering; owner + accountant |
-| Shipping | made-up tracking numbers, flat $5.99 | carrier rates and labels (for example Shippo or EasyPost) | Engineering; owner opens the account |
-| E-mail | delivered into Mailpit (test inbox) | a mail service, the store's own domain, SPF and DKIM | Engineering + owner (domain) |
+| Card payments | Stripe Elements and signed webhooks (phase 2, done); test mode until the owner's live keys | Stripe Elements in the browser (the card goes straight to Stripe, never to our server), webhooks for payment results, 3-D Secure, live keys | Engineering; owner opens the Stripe account |
+| Sales tax | Stripe Tax by delivery address (phase 3, done); flat 6 % until switched on | correct rate by state and product (for example Stripe Tax), Pennsylvania sales tax license | Engineering; owner + accountant |
+| Shipping | Shippo labels and carrier tracking (phase 3, done); made-up numbers until switched on | carrier rates and labels (for example Shippo or EasyPost) | Engineering; owner opens the account |
+| E-mail | Amazon SES from the store's domain, bounce suppression (phase 3, done); Mailpit until the domain exists | a mail service, the store's own domain, SPF and DKIM | Engineering + owner (domain) |
 | Products | 10 sample products with drawn pictures | real products, photos, descriptions, suppliers | Owner; engineering adds photo upload |
 | Hosting | one free Oracle server, demo mode, nightly reset | demo mode off, daily backups, monitoring and alerts, a tested restore | Engineering |
 | Legal | none | business registration (LLC, EIN), privacy policy, terms, return policy, cookie notice | Owner + lawyer; engineering builds the pages |
@@ -32,7 +32,7 @@ Phase 2 does exactly that (ADR-0011).
    Left for the owner: a manual run in Stripe test mode with `stripe listen` before live keys are used.
 4. **Phase 3 - tax, shipping, e-mail (engineering, 2-3 weeks):** real tax calculation, carrier rates and labels, mail from the store's domain.
    *Chosen:* Stripe Tax, Shippo, Amazon SES; the domain is a placeholder until the owner buys one.
-   *Built so far:* Stripe Tax behind `TAX_PROVIDER` ([ADR-0012](../adr/0012-stripe-tax.md), [guide](../modules/STRIPE_TAX_BN.md));
+   *Done (Oct 2026):* Stripe Tax behind `TAX_PROVIDER` ([ADR-0012](../adr/0012-stripe-tax.md), [guide](../modules/STRIPE_TAX_BN.md));
    Shippo labels and carrier tracking behind `SHIPPING_PROVIDER` ([ADR-0013](../adr/0013-shippo-labels-and-tracking.md),
    [guide](../modules/SHIPPO_SHIPPING_BN.md)); order e-mail from the store's domain through Amazon SES with bounce and
    complaint suppression ([ADR-0014](../adr/0014-amazon-ses-mail.md), [guide](../modules/AMAZON_SES_MAIL_BN.md)).

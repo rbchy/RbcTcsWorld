@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.admin;
 
+import com.rbctcsworld.ecommerce.fulfillment.FulfillmentDtos.LabelResponse;
 import com.rbctcsworld.ecommerce.fulfillment.FulfillmentDtos.ShipRequest;
 import com.rbctcsworld.ecommerce.fulfillment.FulfillmentService;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
@@ -20,7 +21,9 @@ import java.util.List;
 /**
  * Warehouse + customer-service back office (ADMIN only via SecurityConfig /api/admin/**).
  * POST /api/admin/orders/{id}/ship {carrier}   200 | 400 | 404 | 409 not PAID
+ *                                              (400 also: no rate / address refused; 503 shipping provider down)
  * POST /api/admin/orders/{id}/deliver          200 | 404 | 409 not SHIPPED
+ * GET  /api/admin/orders/{id}/label            200 the label to print | 404 no label
  * GET  /api/admin/returns?status=REQUESTED     200
  * POST /api/admin/returns/{id}/approve {note?} 200 | 404 | 409 already resolved
  * POST /api/admin/returns/{id}/reject  {note?} 200 | 404 | 409 already resolved
@@ -45,6 +48,11 @@ public class AdminFulfillmentController {
     @PostMapping("/orders/{id}/deliver")
     public OrderResponse deliver(@PathVariable Long id) {
         return fulfillment.deliver(id);
+    }
+
+    @GetMapping("/orders/{id}/label")
+    public LabelResponse label(@PathVariable Long id) {
+        return fulfillment.label(id);
     }
 
     @GetMapping("/returns")

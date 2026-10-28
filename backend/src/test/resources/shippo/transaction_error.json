@@ -1,0 +1,13 @@
+{
+  "object_id": "915d94940ea54c3a80cbfa328722f5a1",
+  "object_state": "INVALID",
+  "status": "ERROR",
+  "rate": "rate_usps_ground",
+  "tracking_number": "",
+  "label_url": "",
+  "messages": [
+    {"source": "USPS", "code": "", "text": "The address as submitted could not be found."},
+    {"source": "USPS", "code": "", "text": "Please check for missing or incorrect information."}
+  ],
+  "test": true
+}

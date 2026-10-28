@@ -46,6 +46,25 @@ app:
     shipping-fee: 5.99
   tax:
     provider: ${TAX_PROVIDER:flat}    # flat = tax-rate above | stripe = Stripe Tax (uses STRIPE_SECRET_KEY)
+  shipping:
+    provider: ${SHIPPING_PROVIDER:simulated}   # simulated (made-up tracking numbers) | shippo (real labels)
+    shippo:
+      api-base: ${SHIPPO_API_BASE:https://api.goshippo.com}
+      token: ${SHIPPO_TOKEN:}                  # shippo_test_... (test labels are free); shippo_live_ only with 'prod'
+      webhook-token: ${SHIPPO_WEBHOOK_TOKEN:}  # secret in the track_updated webhook URL: ...?token=<this>
+      timeout-seconds: 20
+    from:                                      # the return address on every label - PLACEHOLDER until the store has one
+      name: ${SHIP_FROM_NAME:RbcTcsWorld Shop}
+      street: ${SHIP_FROM_STREET:965 Mission St}
+      city: ${SHIP_FROM_CITY:San Francisco}
+      state: ${SHIP_FROM_STATE:CA}
+      zip: ${SHIP_FROM_ZIP:94103}
+      phone: ${SHIP_FROM_PHONE:4155550100}
+    parcel:                                    # one box per order until products carry their own weight and size
+      length-in: 10
+      width-in: 8
+      height-in: 4
+      ounces-per-item: 16
   payment:
     provider: ${PAYMENT_PROVIDER:mock}            # mock (test cards, default) | stripe
     stripe:

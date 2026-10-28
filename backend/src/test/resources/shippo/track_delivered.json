@@ -1,0 +1,6 @@
+{
+  "carrier": "usps",
+  "tracking_number": "9400111899223197428490",
+  "tracking_status": {"object_id": "ce4b1bc5a1c04f2e9d1f0a5b3c8b0f2d", "status": "DELIVERED", "status_details": "Your shipment has been delivered.", "status_date": "2026-10-30T15:21:00Z"},
+  "tracking_history": []
+}

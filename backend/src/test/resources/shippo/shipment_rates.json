@@ -1,0 +1,18 @@
+{
+  "object_id": "5e40ead7cffe4cc1ad45108696162e42",
+  "object_owner": "shippotle@shippo.com",
+  "status": "SUCCESS",
+  "address_from": {"object_id": "d799c2679e644279b59fe661ac8fa488", "is_complete": true, "city": "San Francisco", "state": "CA", "zip": "94103", "country": "US"},
+  "address_to": {"object_id": "42bba4cb0d2b4d1c8d7a5e1fbf09e4d5", "is_complete": true, "city": "Pittsburgh", "state": "PA", "zip": "15213", "country": "US"},
+  "parcels": [{"object_id": "7df2ecf8b4224763ab7c71fae7ec8274", "length": "10.0000", "width": "8.0000", "height": "4.0000", "distance_unit": "in", "weight": "48.0000", "mass_unit": "oz"}],
+  "rates": [
+    {"object_id": "rate_usps_priority", "amount": "9.14", "currency": "USD", "provider": "USPS", "servicelevel": {"name": "Priority Mail", "token": "usps_priority"}, "estimated_days": 2},
+    {"object_id": "rate_usps_ground", "amount": "7.58", "currency": "USD", "provider": "USPS", "servicelevel": {"name": "Ground Advantage", "token": "usps_ground_advantage"}, "estimated_days": 4},
+    {"object_id": "rate_ups_ground", "amount": "12.40", "currency": "USD", "provider": "UPS", "servicelevel": {"name": "Ground", "token": "ups_ground"}, "estimated_days": 3},
+    {"object_id": "rate_fedex_ground", "amount": "11.95", "currency": "USD", "provider": "FedEx", "servicelevel": {"name": "Ground", "token": "fedex_ground"}, "estimated_days": 3},
+    {"object_id": "rate_fedex_broken", "amount": null, "currency": "USD", "provider": "FedEx", "servicelevel": {"name": "Home", "token": "fedex_home"}}
+  ],
+  "messages": [{"source": "DHLExpress", "code": "", "text": "Shippo's DHL Express master account doesn't support shipments to this country"}],
+  "metadata": "Order ORD-20261027-ABCDEF",
+  "test": true
+}

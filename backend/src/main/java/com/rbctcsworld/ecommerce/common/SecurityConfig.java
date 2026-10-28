@@ -20,6 +20,7 @@ import org.springframework.security.web.header.writers.StaticHeadersWriter;
  * Access rules:
  *  - anyone may register/login, browse products (GET) and track a parcel by tracking number;
  *  - Stripe may post webhooks without a login: CardPaymentController checks their signature;
+ *  - Shippo may post tracking webhooks without a login: ShippoWebhookController checks the secret token;
  *  - only ADMIN may create, update or delete products and use /api/admin/**;
  *  - everything else (cart, orders...) needs a valid JWT.
  */
@@ -59,6 +60,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/v3/api-docs", "/v3/api-docs/**").permitAll()   // OpenAPI spec (used by OWASP ZAP)
                 .requestMatchers(HttpMethod.GET, "/api/tracking/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()   // Stripe proves itself by signature
+                .requestMatchers(HttpMethod.POST, "/api/shipping/shippo/webhook").permitAll()   // Shippo: secret token in the URL
                 .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")

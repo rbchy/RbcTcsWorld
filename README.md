@@ -5,8 +5,8 @@
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
 ![Tests](https://img.shields.io/badge/automated%20tests-1497-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-97.5%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-88.0%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
+[![Coverage](https://img.shields.io/badge/line%20coverage-97.6%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-88.1%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld/)
 
 **RbcTcsWorld Shop is an online store on its way to selling for real.** Everyday goods, delivered to your door:
@@ -29,7 +29,7 @@ Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github
 
 ## 🚦 Project Status Board
 
-<img src="docs/images/project-status.svg" alt="Project status board: 1,627 automated tests (1,624 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.5 % line coverage, 88.0 % mutation score, 132 of 132 requirements traced; road to launch: phases 1 and 2 done, phases 0 and 3 in progress" width="100%">
+<img src="docs/images/project-status.svg" alt="Project status board: 1,692 automated tests (1,689 passed, 3 skipped by design), 18 of 18 CI gates passed, 97.6 % line coverage, 88.1 % mutation score, 134 of 134 requirements traced; road to launch: phases 1 and 2 done, phases 0 and 3 in progress" width="100%">
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
@@ -43,16 +43,16 @@ the board is redrawn after a release with [`docs/images/make_readme_cards.py`](d
 
 ```mermaid
 pie showData
-    title 1,627 automated tests by level
-    "Backend unit + integration" : 881
-    "API, DB, BDD, Selenium UI" : 447
-    "Playwright (5 browsers/devices)" : 291
+    title 1,692 automated tests by level
+    "Backend unit + integration" : 938
+    "API, DB, BDD, Selenium UI" : 449
+    "Playwright (5 browsers/devices)" : 297
     "Appium (Android + iOS)" : 8
 ```
 
 ```mermaid
 pie showData
-    title 132 traced requirements by area
+    title 134 traced requirements by area
     "Orders and inventory" : 16
     "Identity and access" : 16
     "Non-functional" : 17
@@ -61,7 +61,7 @@ pie showData
     "Pricing, coupons, payments" : 16
     "Reviews and wishlist" : 11
     "Store admin back office" : 8
-    "Fulfilment and returns" : 6
+    "Fulfilment and returns" : 8
     "Customer e-mails" : 4
     "Audit trail" : 4
     "Cart" : 3
@@ -91,9 +91,9 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 |---|---|
 | Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
-| Quality bar | 1,627 automated tests, 18 CI quality gates, 97.5 % line coverage, 88.0 % mutation score, 132 traced requirements |
+| Quality bar | 1,692 automated tests, 18 CI quality gates, 97.6 % line coverage, 88.1 % mutation score, 134 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
-| Phase 3 (in progress) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); next Shippo rates and labels, then Amazon SES mail |
+| Phase 3 (in progress) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); next Amazon SES mail |
 | Not decided yet | what the store sells, where the products come from (phase 0, owner) |
 
 ## Roadmap to launch
@@ -139,10 +139,10 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 881 / 881 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 447 / 447 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.5 % / 94.6 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 88.0 % (test strength 94.6 %) | PIT |
+| 1 | Backend unit + integration | 100 % pass | 938 / 938 | JUnit 5, Mockito, H2 + Flyway |
+| 2 | API, database, BDD, UI | 100 % pass | 449 / 449 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.6 % / 94.8 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 88.1 % (test strength 94.7 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 23 pages | axe-core, WCAG 2.1 A + AA |
@@ -151,10 +151,10 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
 | 12 | Containers | stack healthy, smoke tests pass | 63 / 63 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 132 / 132 | `docs/qa/check_rtm.py` |
+| 13 | Traceability | every requirement has a test | 134 / 134 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 288 / 288 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 294 / 294 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
 
@@ -244,10 +244,11 @@ The automation suite needs the backend on 8081 (and the storefront on 5173 for U
 **Store:** [Roadmap](docs/store/ROADMAP.md) · [ADR-0010: from portfolio to live store](docs/adr/0010-from-portfolio-to-live-store.md) ·
 [ADR-0011: Stripe Elements and webhooks](docs/adr/0011-stripe-elements-and-webhooks.md) · [Stripe test-mode guide (Bangla)](docs/modules/STRIPE_ELEMENTS_BN.md) ·
 [ADR-0012: Stripe Tax](docs/adr/0012-stripe-tax.md) · [Stripe Tax guide (Bangla)](docs/modules/STRIPE_TAX_BN.md) ·
+[ADR-0013: Shippo](docs/adr/0013-shippo-labels-and-tracking.md) · [Shippo guide (Bangla)](docs/modules/SHIPPO_SHIPPING_BN.md) ·
 [The inherited foundation](docs/FOUNDATION.md)
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (132 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (134 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (29)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
 [UAT Plan](docs/qa/UAT_PLAN.md) · [UAT Summary](docs/qa/UAT_SUMMARY.md)
 

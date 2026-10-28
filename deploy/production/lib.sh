@@ -18,7 +18,7 @@ s3() {
   docker run --rm --network host -v "$BACKUP_DIR:/backups" \
     -e AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" -e AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
     -e AWS_DEFAULT_REGION="${BACKUP_S3_REGION:-us-east-1}" \
-    amazon/aws-cli:2.31.3 ${BACKUP_S3_ENDPOINT:+--endpoint-url "$BACKUP_S3_ENDPOINT"} s3 "$@"
+    "${AWS_CLI_IMAGE:-amazon/aws-cli:2.31.3}" ${BACKUP_S3_ENDPOINT:+--endpoint-url "$BACKUP_S3_ENDPOINT"} s3 "$@"
 }
 offsite() { [ -n "${BACKUP_S3_BUCKET:-}" ]; }
 s3_url() { echo "s3://$BACKUP_S3_BUCKET/${BACKUP_S3_PREFIX:-rbctcsworld}/$1"; }

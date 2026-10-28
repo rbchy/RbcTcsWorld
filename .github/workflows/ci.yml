@@ -596,20 +596,32 @@ jobs:
     timeout-minutes: 45
     env:
       DC: docker compose -f deploy/production/docker-compose.yml --env-file deploy/production/.env
-      S3: docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret -e AWS_DEFAULT_REGION=us-east-1 amazon/aws-cli:2.31.3 --endpoint-url http://127.0.0.1:9000 s3
     steps:
       - uses: actions/checkout@v5
       - name: Off-site bucket (MinIO, S3-compatible) and a receiver for the alerts
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
+          # the first image tag that exists (pinned first); the notice says which one ran
+          pick() { for t in "$@"; do docker pull -q "$t" >/dev/null 2>&1 && { echo "$t"; return 0; }; done; return 1; }
+          minio=$(pick minio/minio:RELEASE.2025-09-07T16-13-09Z minio/minio:RELEASE.2025-04-22T22-12-26Z minio/minio:latest) \
+            || { echo "::error::no MinIO image could be pulled"; exit 1; }
+          awscli=$(pick amazon/aws-cli:2.31.3 amazon/aws-cli:2.27.50 amazon/aws-cli:latest) \
+            || { echo "::error::no AWS CLI image could be pulled"; exit 1; }
+          echo "::notice title=Images::$minio, $awscli"
+          echo "AWS_CLI_IMAGE=$awscli" >> "$GITHUB_ENV"
+          echo "S3=docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret -e AWS_DEFAULT_REGION=us-east-1 $awscli --endpoint-url http://127.0.0.1:9000 s3" >> "$GITHUB_ENV"
           docker run -d --name minio -p 127.0.0.1:9000:9000 -e MINIO_ROOT_USER=ci-backup -e MINIO_ROOT_PASSWORD=ci-backup-secret \
-            minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+            "$minio" server /data
           for i in $(seq 1 60); do curl -fs http://127.0.0.1:9000/minio/health/live && break; sleep 1; done
-          $S3 mb s3://rbctcsworld-backups
+          out=$(docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret \
+                -e AWS_DEFAULT_REGION=us-east-1 "$awscli" --endpoint-url http://127.0.0.1:9000 s3 mb s3://rbctcsworld-backups 2>&1) \
+            || { echo "::error title=Bucket::$out"; docker logs minio 2>&1 | tail -5; exit 1; }
           mkdir -p "$RUNNER_TEMP/backups"
           nohup python3 .github/scripts/alert-receiver.py "$RUNNER_TEMP/alerts.txt" > /dev/null 2>&1 &
           touch "$RUNNER_TEMP/alerts.txt"
       - name: Start the live store exactly as on the server (prod profile, demo off)
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           cat > deploy/production/.env <<ENV
           STORE_DOMAIN=localhost
           DB_PASSWORD=$(openssl rand -hex 16)
@@ -631,6 +643,7 @@ jobs:
           $DC ps
       - name: Only Caddy is reachable; not the demo build; a missing setting stops the start
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           set -e
           for port in 5432 6379 8081 5173 8025; do
             ! nc -z -w 2 127.0.0.1 "$port" || { echo "::error::port $port is published"; exit 1; }
@@ -642,6 +655,7 @@ jobs:
           echo "::notice title=Production::only 80/443 open, no demo ribbon, a missing setting stops the start"
       - name: A customer orders; the backup is encrypted, checked and copied off the server
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           set -e
           . deploy/production/.env
           api() { curl -sk -H 'Content-Type: application/json' "$@"; }
@@ -661,6 +675,7 @@ jobs:
           echo "::notice title=Backup::$file encrypted, manifest $(jq -c .rows "$BACKUP_DIR/latest.json"), copied to the bucket"
       - name: Restore drill - a damaged backup is caught, the off-site copy restores
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           set -e
           . deploy/production/.env
           file=$(jq -r .file "$BACKUP_DIR/latest.json")
@@ -671,6 +686,7 @@ jobs:
           echo "::notice title=Restore drill::damaged file refused with an alert; off-site copy restored and checked"
       - name: Restore puts the backup back into the live store
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           set -e
           . deploy/production/.env
           api() { curl -sk -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' "$@"; }
@@ -681,6 +697,7 @@ jobs:
           echo "::notice title=Restore::the store is back at the backup: later account gone, the customer is there"
       - name: Health check - quiet while fine, one alert per change, recovery reported
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           set -e
           : > "$RUNNER_TEMP/alerts.txt"
           CURL_OPTS=-k deploy/production/healthcheck.sh
@@ -697,12 +714,16 @@ jobs:
       - name: Container logs
         if: failure()
         run: |
+          # the last output of the failed step as one annotation (readable without opening the log)
+          msg=$(tail -40 "$RUNNER_TEMP/steps.log" 2>/dev/null | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Last output::$msg"
           $DC ps -a
           $DC logs --no-color --tail=80
           cat "$RUNNER_TEMP/alerts.txt" 2>/dev/null || true
       - name: Stop and remove the stack
         if: always()
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1
           $DC down -v || true
           docker rm -f minio rbctcsworld-drill || true
 

@@ -100,7 +100,7 @@ class ShippoShippingIntegrationTest {
                         + "\",\"tracking_status\":{\"status\":\"DELIVERED\"}}}"));
     }
 
-    private String status(long id) {
+    private String orderStatus(long id) {
         return jdbc.queryForObject("select status from orders where id = ?", String.class, id);
     }
 
@@ -129,7 +129,7 @@ class ShippoShippingIntegrationTest {
         long id = paidOrder();
         doThrow(new ServiceUnavailableException("The shipping service is not available right now.")).when(shipping).buyLabel(any());
         ship(id, "UPS").andExpect(status().isServiceUnavailable());
-        assertThat(status(id)).isEqualTo("PAID");
+        assertThat(orderStatus(id)).isEqualTo("PAID");
         mvc.perform(as(get("/api/admin/orders/" + id + "/label"), admin)).andExpect(status().isNotFound());
     }
 
@@ -157,13 +157,13 @@ class ShippoShippingIntegrationTest {
 
         when(shipping.trackingStatus("USPS", tracking)).thenReturn("TRANSIT");
         webhook(TOKEN, tracking).andExpect(status().isOk()).andExpect(jsonPath("$.received").value(true));
-        assertThat(status(id)).isEqualTo("SHIPPED");                              // the body said DELIVERED; Shippo did not
+        assertThat(orderStatus(id)).isEqualTo("SHIPPED");                              // the body said DELIVERED; Shippo did not
 
         when(shipping.trackingStatus("USPS", tracking)).thenReturn("DELIVERED");
         webhook(TOKEN, tracking).andExpect(status().isOk());
-        assertThat(status(id)).isEqualTo("DELIVERED");
+        assertThat(orderStatus(id)).isEqualTo("DELIVERED");
         webhook(TOKEN, tracking).andExpect(status().isOk());                       // a repeat changes nothing
         webhook(TOKEN, "UNKNOWN-PARCEL").andExpect(status().isOk());
-        assertThat(status(id)).isEqualTo("DELIVERED");
+        assertThat(orderStatus(id)).isEqualTo("DELIVERED");
     }
 }

@@ -63,8 +63,12 @@ class SesEventsIntegrationTest {
 
         Notification n = notifications.save(new Notification(null, "GONE@example.com", "ORDER_PLACED", "Order received",
                 "Thanks", LocalDateTime.now().minusMinutes(1)));
-        delivery.sendDue();
-        Notification after = notifications.findById(n.getId()).orElseThrow();
+        // the outbox works oldest first, 20 at a time, and other test classes leave rows behind: run it until ours is done
+        Notification after = n;
+        for (int round = 0; round < 500 && Notification.PENDING.equals(after.getStatus()); round++) {
+            delivery.sendDue();
+            after = notifications.findById(n.getId()).orElseThrow();
+        }
         assertThat(after.getStatus()).isEqualTo(Notification.FAILED);
         assertThat(after.getLastError()).isEqualTo("Not sent: the address is on the suppression list after a bounce");
     }

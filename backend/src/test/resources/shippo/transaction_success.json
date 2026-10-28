@@ -1,0 +1,13 @@
+{
+  "object_id": "70ae8117ee1749e393f249d5b77c45e0",
+  "object_state": "VALID",
+  "status": "SUCCESS",
+  "rate": "rate_usps_ground",
+  "tracking_number": "9400111899223197428490",
+  "tracking_status": "UNKNOWN",
+  "tracking_url_provider": "https://tools.usps.com/go/TrackConfirmAction_input?origTrackNum=9400111899223197428490",
+  "label_url": "https://deliver.goshippo.com/70ae8117ee1749e393f249d5b77c45e0.pdf",
+  "messages": [],
+  "metadata": "Order ORD-20261027-ABCDEF",
+  "test": true
+}

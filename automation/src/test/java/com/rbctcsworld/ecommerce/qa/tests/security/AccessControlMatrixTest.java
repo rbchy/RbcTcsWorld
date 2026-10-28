@@ -52,6 +52,9 @@ class AccessControlMatrixTest {
             "POST,   /api/orders/99999999/card-payment,     401, 404, 404",
             // Stripe has no login: it proves itself with a signature, so everyone without one gets 400
             "POST,   /api/payments/stripe/webhook,          400, 400, 400",
+            // Shippo has no login either: its webhook URL carries a secret token, so a call without one is 400
+            "POST,   /api/shipping/shippo/webhook,          400, 400, 400",
+            "GET,    /api/admin/orders/99999999/label,      401, 403, 404",
             "GET,    /api/admin/orders,                     401, 403, 200",
             "GET,    /api/admin/returns,                    401, 403, 200",
             "GET,    /api/admin/reviews,                    401, 403, 200",

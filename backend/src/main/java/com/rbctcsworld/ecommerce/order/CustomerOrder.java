@@ -56,6 +56,16 @@ public class CustomerOrder {
     @Column(name = "coupon_code", length = 40)
     private String couponCode;
 
+    /** The shipping label bought for this order (Shippo): PDF link, what it cost the store, the provider's id. */
+    @Column(name = "label_url", length = 500)
+    private String labelUrl;
+
+    @Column(name = "label_cost", precision = 12, scale = 2)
+    private BigDecimal labelCost;
+
+    @Column(name = "label_ref", length = 64)
+    private String labelRef;
+
     /** Stripe Tax calculation (taxcalc_...) the tax came from; recorded as a sale once paid. Null with the flat rate. */
     @Column(name = "tax_calculation_id", length = 64)
     private String taxCalculationId;
@@ -225,6 +235,19 @@ public class CustomerOrder {
     public List<OrderItem> getItems() { return items; }
 
     public String getTaxCalculationId() { return taxCalculationId; }
+
+    public String getLabelUrl() { return labelUrl; }
+
+    public BigDecimal getLabelCost() { return labelCost; }
+
+    public String getLabelRef() { return labelRef; }
+
+    /** All null with simulated shipping. */
+    public void recordLabel(String url, BigDecimal cost, String reference) {
+        this.labelUrl = url;
+        this.labelCost = cost;
+        this.labelRef = reference;
+    }
 
     public void recordTaxCalculation(String calculationId) {
         this.taxCalculationId = calculationId;

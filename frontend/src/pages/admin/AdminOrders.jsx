@@ -40,12 +40,19 @@ export default function AdminOrders() {
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
   const [carrier, setCarrier] = useState({});
+  const [labels, setLabels] = useState({});
   const [ok, setOk] = useState('');
   const [error, setError] = useState('');
   const [adv, setAdv] = useState(NO_FILTER);
   const [applied, setApplied] = useState(NO_FILTER);
   const [advErrors, setAdvErrors] = useState({});
   const [shipsFrom, setShipsFrom] = useState({});          // order id -> allocations (shown on demand)
+
+  // the label bought with the shipping provider (Shippo): fetched on demand, shown as a link to the PDF
+  const showLabel = async o => {
+    try { setLabels({ ...labels, [o.id]: (await api.get(`/admin/orders/${o.id}/label`)).data }); setError(''); }
+    catch (err) { setOk(''); setError(errorText(err)); }
+  };
 
   const toggleShipsFrom = async o => {
     if (shipsFrom[o.id]) { const next = { ...shipsFrom }; delete next[o.id]; setShipsFrom(next); return; }
@@ -154,7 +161,15 @@ export default function AdminOrders() {
                           : shipsFrom[o.id].map(a => `${a.warehouseCode} ×${a.quantity}`).join(', ')}
                       </div>
                     )}
-                    {o.trackingNumber && <div className="small muted">{o.carrier} {o.trackingNumber}</div>}</td>
+                    {o.trackingNumber && <div className="small muted">{o.carrier} {o.trackingNumber}</div>}
+                    {o.trackingNumber && !labels[o.id] && (
+                      <div><button type="button" className="link small" onClick={() => showLabel(o)} data-testid="aor-label">
+                        {t('shippingLabel')}</button></div>
+                    )}
+                    {labels[o.id] && (
+                      <div className="small"><a href={labels[o.id].labelUrl} target="_blank" rel="noopener noreferrer"
+                        data-testid="aor-label-link">{t('printLabel')} ({money(labels[o.id].cost)})</a></div>
+                    )}</td>
                   <td className="num">{money(o.total)}</td>
                   <td className="actions">
                     {o.status === 'PAID' && (

@@ -526,6 +526,8 @@ const T = {
   mv_COUNT_CORRECTION: ["Count correction", "গণনা সংশোধন", "Corrección de inventario", "Correction d’inventaire", "تصحيح الجرد", "盘点更正"],
   mv_DAMAGED: ["Damaged (write off)", "নষ্ট (বাদ)", "Dañado (baja)", "Endommagé (sortie)", "تالف (شطب)", "损坏报废"],
   shipsFrom: ["Ships from", "কোথা থেকে যাবে", "Sale de", "Expédié depuis", "يُشحن من", "发货仓库"],
+  shippingLabel: ["Label", "লেবেল", "Etiqueta", "Étiquette", "الملصق", "面单"],
+  printLabel: ["Print label", "লেবেল প্রিন্ট করুন", "Imprimir etiqueta", "Imprimer l'étiquette", "طباعة الملصق", "打印面单"],
   'rpt_stock-by-warehouse': ["Stock by warehouse", "গুদাম অনুযায়ী স্টক", "Stock por almacén", "Stock par entrepôt", "المخزون حسب المستودع", "按仓库库存"],
   col_warehouse: ["Warehouse", "গুদাম", "Almacén", "Entrepôt", "المستودع", "仓库"],
   col_city: ["City", "শহর", "Ciudad", "Ville", "المدينة", "城市"],

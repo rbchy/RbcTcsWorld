@@ -60,6 +60,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(r.getStatusCode()).header("Retry-After", "30").body(r.getBody());
     }
 
+    @ExceptionHandler(ServiceUnavailableException.class)
+    ResponseEntity<ApiError> serviceUnavailable(ServiceUnavailableException ex, HttpServletRequest req) {
+        ResponseEntity<ApiError> r = build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), req);
+        return ResponseEntity.status(r.getStatusCode()).header("Retry-After", "30").body(r.getBody());
+    }
+
     @ExceptionHandler(PaymentDeclinedException.class)
     ResponseEntity<ApiError> paymentDeclined(PaymentDeclinedException ex, HttpServletRequest req) {
         return build(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), req);

@@ -11,7 +11,8 @@
     "discount",
     "shippingFee",
     "tax",
-    "total"
+    "total",
+    "taxEstimated"
   ],
   "additionalProperties": false,
   "properties": {
@@ -84,6 +85,10 @@
     "total": {
       "type": "number",
       "minimum": 0
+    },
+    "taxEstimated": {
+      "type": "boolean",
+      "description": "true when the tax is only an estimate (a tax provider and no delivery address yet)"
     }
   }
 }

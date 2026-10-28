@@ -64,6 +64,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      TAX_PROVIDER: ${TAX_PROVIDER:-flat}
     ports: ["8081:8081"]
     depends_on:
       postgres:

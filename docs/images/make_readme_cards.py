@@ -9,16 +9,16 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #8 (commit fda1324, 26 Oct 2026) ----
-AS_OF = "PR #8 @ fda1324 · 26 Oct 2026"
+# ---- from the GitHub Actions run of PR #9 (commit 0178336, 27 Oct 2026) ----
+AS_OF = "PR #9 @ 0178336 · 27 Oct 2026"
 LEVELS = [  # (label, tests, colour)
-    ("Backend unit + integration", 830, "#4fb3a9"),
+    ("Backend unit + integration", 881, "#4fb3a9"),
     ("API · DB · BDD · Selenium UI", 447, "#f4b04a"),
-    ("Playwright (5 browsers/devices)", 285, "#8fb8de"),
+    ("Playwright (5 browsers/devices)", 291, "#8fb8de"),
     ("Appium phones", 8, "#e58a8a"),
 ]
 SKIPPED = 3
-GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.5 %", "Mutation 87.6 %", "Contract: consumer",
+GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.5 %", "Mutation 88.0 %", "Contract: consumer",
          "Contract: provider", "Accessibility", "Firefox + Edge", "Performance (k6)", "OWASP ZAP",
          "Dependencies (OSV)", "Docker smoke", "Traceability", "Jenkinsfile lint", "Public demo stack",
          "Playwright", "Android (Appium)", "iOS (Appium)"]
@@ -28,12 +28,12 @@ GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.5 %", "Mutation
 COMMITS_PER_DAY = [("04", 31), ("05", 5), ("06", 2), ("07", 23), ("08", 7), ("09", 2), ("10", 5), ("11", 18),
                    ("12", 11), ("13", 10), ("14", 19), ("15", 3), ("16", 27), ("17", 20), ("18", 29), ("19", 1),
                    ("20", 3), ("23", 3), ("24", 1), ("25", 16), ("26", 3)]
-MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 7, 1, 29, "51k"
+MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 8, 1, 29, "51k"
 LANGUAGES = [("Java", 73.9, "#b07219"), ("JavaScript", 16.0, "#f1e05a"), ("TypeScript", 4.0, "#3178c6"),
              ("CSS", 2.7, "#663399"), ("Other", 3.4, "#b4add8")]  # Gherkin, Shell, Python, Makefile, HTML, Docker
 # the road to launch (docs/store/ROADMAP.md): (phase, short name, state) - state: done | now | next | later
-PHASES = [("0", "Products and brand", "now"), ("1", "Foundation", "done"), ("2", "Safe card payments", "now"),
-          ("3", "Tax, shipping, e-mail", "later"), ("4", "Business and legal", "later"), ("5", "Production server", "later"),
+PHASES = [("0", "Products and brand", "now"), ("1", "Foundation", "done"), ("2", "Safe card payments", "done"),
+          ("3", "Tax, shipping, e-mail", "now"), ("4", "Business and legal", "later"), ("5", "Production server", "later"),
           ("6", "UAT and launch", "later")]
 
 # the store's colours: indigo frame, sunflower titles
@@ -57,16 +57,16 @@ def status_board():
     w, h = 1000, 700
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
          f'aria-label="Project status board: {total} automated tests, {total - SKIPPED} passed and {SKIPPED} skipped by design; '
-         f'18 of 18 CI gates passed; 97.5 percent line coverage; 87.6 percent mutation score; 131 of 131 requirements traced; '
-         f'road to launch: phase 1 foundation done, phase 0 products in progress, phase 2 safe card payments in review.">',
+         f'18 of 18 CI gates passed; 97.5 percent line coverage; 88.0 percent mutation score; 132 of 132 requirements traced; '
+         f'road to launch: phase 1 foundation done, phase 0 products in progress, phase 2 safe card payments done, phase 3 tax, shipping and e-mail in progress.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, TITLE, 700),
          text(32, 72, f"RbcTcsWorld Shop · {AS_OF} · every gate green", 13, MUTED)]
     tiles = [(f"{total:,}", "automated tests", f"{total - SKIPPED:,} passed · {SKIPPED} skipped"),
              ("18 / 18", "CI gates passed", "GitHub Actions + Jenkins"),
-             ("97.5 %", "line coverage", "94.5 % branches (JaCoCo)"),
-             ("87.6 %", "mutation score", "test strength 94.7 % (PIT)"),
-             ("131 / 131", "requirements traced", "checked on every push")]
+             ("97.5 %", "line coverage", "94.6 % branches (JaCoCo)"),
+             ("88.0 %", "mutation score", "test strength 94.6 % (PIT)"),
+             ("132 / 132", "requirements traced", "checked on every push")]
     tw = (w - 64 - 4 * 12) / 5
     for i, (big, label, sub) in enumerate(tiles):
         p.append(tile(32 + i * (tw + 12), 92, tw, big, label, sub))

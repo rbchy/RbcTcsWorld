@@ -46,5 +46,11 @@ public class PricingService {
 
     public record PriceBreakdown(BigDecimal subtotal, BigDecimal discount, BigDecimal shippingFee,
                                  BigDecimal tax, BigDecimal total) {
+
+        /** The same prices with the tax from the tax provider (TaxCalculator): total = merchandise + shipping + tax. */
+        public PriceBreakdown withTax(BigDecimal newTax) {
+            BigDecimal t = money(newTax);
+            return new PriceBreakdown(subtotal, discount, shippingFee, t, money(subtotal.subtract(discount).add(shippingFee).add(t)));
+        }
     }
 }

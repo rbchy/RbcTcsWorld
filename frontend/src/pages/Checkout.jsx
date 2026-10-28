@@ -136,7 +136,10 @@ export function PriceTable({ q }) {
         <tr><td>Subtotal</td><td data-testid="price-subtotal">{money(q.subtotal)}</td></tr>
         <tr><td>Discount{q.couponCode ? ` (${q.couponCode})` : ''}</td><td data-testid="price-discount">-{money(q.discount)}</td></tr>
         <tr><td>Shipping</td><td data-testid="price-shipping">{Number(q.shippingFee) === 0 ? 'FREE' : money(q.shippingFee)}</td></tr>
-        <tr><td>Tax (6%)</td><td data-testid="price-tax">{money(q.tax)}</td></tr>
+        <tr>
+          <td data-testid="price-tax-label">{q.taxEstimated ? 'Estimated tax (exact tax for your address at order)' : 'Tax'}</td>
+          <td data-testid="price-tax">{money(q.tax)}</td>
+        </tr>
         <tr className="grand"><td>Total</td><td data-testid="price-total">{money(q.total)}</td></tr>
       </tbody>
     </table>

@@ -44,6 +44,8 @@ app:
     tax-rate: 0.06                    # 6% sales tax on merchandise (not on shipping)
     free-shipping-threshold: 50.00    # merchandise total after discount
     shipping-fee: 5.99
+  tax:
+    provider: ${TAX_PROVIDER:flat}    # flat = tax-rate above | stripe = Stripe Tax (uses STRIPE_SECRET_KEY)
   payment:
     provider: ${PAYMENT_PROVIDER:mock}            # mock (test cards, default) | stripe
     stripe:

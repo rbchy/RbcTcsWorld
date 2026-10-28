@@ -1,0 +1,19 @@
+{
+  "id": "taxcalc_1QexampleTaxCalc",
+  "object": "tax.calculation",
+  "amount_total": 11199,
+  "currency": "usd",
+  "customer_details": {
+    "address": {"city": "Philadelphia", "country": "US", "line1": "1 Market St", "postal_code": "19107", "state": "PA"},
+    "address_source": "shipping"
+  },
+  "expires_at": 1798000000,
+  "livemode": false,
+  "shipping_cost": {"amount": 599, "amount_tax": 0, "tax_behavior": "exclusive"},
+  "tax_amount_exclusive": 800,
+  "tax_amount_inclusive": 0,
+  "tax_breakdown": [
+    {"amount": 600, "inclusive": false, "tax_rate_details": {"country": "US", "percentage_decimal": "6.0", "state": "PA", "tax_type": "sales_tax"}, "taxability_reason": "standard_rated", "taxable_amount": 10000},
+    {"amount": 200, "inclusive": false, "tax_rate_details": {"country": "US", "percentage_decimal": "2.0", "state": "PA", "tax_type": "sales_tax"}, "taxability_reason": "standard_rated", "taxable_amount": 10000}
+  ]
+}

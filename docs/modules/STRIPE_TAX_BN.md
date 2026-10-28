@@ -1,0 +1,58 @@
+# Stripe Tax: ঠিকানা অনুযায়ী সঠিক sales tax (দোকানের Phase 3, প্রথম অংশ)
+
+আগে প্রতিটা অর্ডারে একই 6 % ট্যাক্স বসত। আসল দোকানে ট্যাক্স নির্ভর করে জিনিস কোথায় যাচ্ছে তার উপর:
+state, county, city সবার আলাদা হার। এই ধাপে সেই হিসাব Stripe Tax-কে দেওয়া হয়েছে।
+কেন এই সিদ্ধান্ত: [ADR-0012](../adr/0012-stripe-tax.md)।
+
+## কীভাবে কাজ করে
+
+```mermaid
+flowchart LR
+  Q["Checkout-এর দাম<br/>(ঠিকানা ছাড়া)"] -->|"flat 6 % দিয়ে আন্দাজ<br/>taxEstimated = true"| B["Browser: Estimated tax"]
+  O["অর্ডার দেওয়া<br/>(ঠিকানা সহ)"] --> T["TaxCalculator"] -->|"TAX_PROVIDER=stripe"| S["Stripe Tax<br/>/v1/tax/calculations"]
+  S -->|"ট্যাক্স + taxcalc_ id"| O
+  P["পেমেন্ট হয়ে গেলে"] -->|"create_from_calculation<br/>key = tax-অর্ডার নম্বর"| S
+```
+
+- **Default `flat`।** আগের মতোই 6 %, সব পুরোনো টেস্ট আর সংখ্যা একই থাকে।
+- **`TAX_PROVIDER=stripe`** দিলে Stripe Tax চালু হয়। পেমেন্টের `STRIPE_SECRET_KEY`-ই ব্যবহার হয়, আলাদা account লাগে না।
+- **Stripe কী পায়:** প্রতিটা line (SKU, সংখ্যা, discount বাদ দিয়ে দাম), shipping-এর খরচ, আর ডেলিভারির ঠিকানা।
+  coupon-এর discount line-গুলোর দামের অনুপাতে ভাগ হয়, পয়সার বাকিটা শেষ line পায়, তাই যোগফল একদম মেলে।
+- **অনুমানের ট্যাক্সে কখনো অর্ডার নয়:**
+  - ঠিকানা ছাড়া checkout-এর দাম শুধু আন্দাজ, পাতায় লেখা থাকে "Estimated tax"।
+  - Stripe ঠিকানা চিনতে না পারলে 400 ("check the address"), Stripe না পেলে 503। দুটোতেই কিছু সেভ হয় না, stock আটকায় না, cart খালি হয় না।
+- **বিক্রি রিপোর্টে যায় পেমেন্টের পরে:** অর্ডারে `tax_calculation_id` রাখা হয়। টাকা কাটার পরে সেটা Stripe-এ "sale" হিসেবে লেখা হয়।
+  তখন Stripe না পেলে শুধু log হয়, পেমেন্ট কখনো বাতিল হয় না। একই অর্ডার নম্বর মানে একই key, তাই দুবার লেখা হয় না।
+
+## Test mode-এ চালানো
+
+1. Stripe Dashboard → **Tax** → Settings: দোকানের ঠিকানা (origin) আর default product tax code দিন।
+2. **Registrations**-এ অন্তত একটা state যোগ করুন (যেমন Pennsylvania)। registration না থাকলে Stripe সেই state-এ ট্যাক্স 0 দেখায়।
+3. `.env`:
+   ```bash
+   PAYMENT_PROVIDER=stripe
+   STRIPE_SECRET_KEY=sk_test_...
+   TAX_PROVIDER=stripe
+   ```
+4. `docker compose up --build`, তারপর Pennsylvania-র একটা ঠিকানায় অর্ডার দিন। অর্ডারের ট্যাক্স Stripe-এর হিসাবের সাথে মিলবে
+   (Philadelphia-তে 8 %: state 6 % + city 2 %)। পেমেন্টের পরে Dashboard → Tax → Transactions-এ অর্ডার নম্বরসহ বিক্রিটা দেখা যাবে।
+
+## এখনো বাকি
+
+- refund বা return হলে Stripe-এ ট্যাক্স ফেরত (reversal) এখনো পাঠানো হয় না।
+- সব পণ্য account-এর default tax code পায়। কাপড়, খাবার ইত্যাদি আলাদা হারের পণ্য বিক্রির আগে product অনুযায়ী tax code লাগবে।
+- কোন কোন state-এ ট্যাক্স নিতে হবে, সেটা মালিক আর accountant-এর সিদ্ধান্ত (Phase 4: sales tax license)।
+
+## টেস্ট কোথায়
+
+| স্তর | টেস্ট | কী প্রমাণ করে |
+|---|---|---|
+| Unit | `TaxCalculatorTest` | flat 6 %, rounding, discount ভাগ করা |
+| Unit | `StripeTaxCalculatorTest`, `TaxConfigTest` | আন্দাজ বনাম আসল, 400/503, sale-এর key, চালু হওয়ার নিয়ম |
+| Unit | `StripeTaxClientTest` | Stripe-এ ঠিক কী যায় (প্রতিটা form field), প্রতিটা উত্তর পড়া |
+| Unit | `OrderServiceTest`, `TaxSaleRecorderTest` | অর্ডারে provider-এর ট্যাক্স, ব্যর্থ হলে কিছু সেভ হয় না, পেমেন্টের পরে sale |
+| Contract | `StripeContractIntegrationTest` | stripe-mock বলে আমাদের দুটো request বৈধ |
+| Integration | `StripeTaxIntegrationTest` | API আর database দিয়ে পুরো পথ |
+| Browser | `playwright/tests/checkout.spec.ts` | "Tax" বনাম "Estimated tax" লেখা |
+
+Requirement: REQ-PAY-11 ([traceability](../qa/TRACEABILITY_MATRIX.md))।

@@ -49,4 +49,14 @@ class PricingServiceTest {
         assertThat(p.tax().scale()).isEqualTo(2);
         assertThat(p.total().scale()).isEqualTo(2);
     }
+
+    @Test
+    void anotherTaxKeepsThePricesAndRecomputesTheTotal() {
+        PriceBreakdown p = pricing.price(new BigDecimal("54.99"), new BigDecimal("5.00")).withTax(new BigDecimal("4.125"));
+        assertThat(p.subtotal()).isEqualByComparingTo("54.99");
+        assertThat(p.discount()).isEqualByComparingTo("5.00");
+        assertThat(p.shippingFee()).isEqualByComparingTo("5.99");
+        assertThat(p.tax()).isEqualTo(new BigDecimal("4.13"));                 // rounded HALF_UP to cents
+        assertThat(p.total()).isEqualTo(new BigDecimal("60.11"));              // 49.99 + 5.99 + 4.13
+    }
 }

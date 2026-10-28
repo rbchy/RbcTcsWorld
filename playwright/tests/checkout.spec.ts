@@ -53,3 +53,27 @@ test.describe('Checkout: delivery address', () => {
     await expect(page.getByLabel('ZIP code', { exact: true })).toHaveValue('15213');
   });
 });
+
+/** Sales tax label (REQ-PAY-11): exact with the flat rate; an estimate with Stripe Tax until the address is known. */
+test.describe('Checkout: tax line', () => {
+  test.use({ serviceWorkers: 'block' });   // WebKit sends a service-worker page's requests past page.route
+  test.beforeEach(async ({ api, customer }) => {
+    const product = await api.createProduct({ price: 12, stock: 5 });
+    await api.addToCart(customer.token, product.id);
+  });
+
+  test('with the default flat rate the tax line is simply "Tax"', async ({ signedIn: page }) => {
+    await new CheckoutPage(page).open();
+    await expect(page.getByTestId('price-tax-label')).toHaveText('Tax');
+    await expect(page.getByTestId('price-tax')).toContainText('0.72');                // 6 % of 12.00
+  });
+
+  test('with a tax provider the preview says the tax is an estimate', async ({ signedIn: page }) => {
+    await page.route('**/api/checkout/quote', async route => {
+      const quote = await (await route.fetch()).json();
+      return route.fulfill({ json: { ...quote, taxEstimated: true } });
+    });
+    await new CheckoutPage(page).open();
+    await expect(page.getByTestId('price-tax-label')).toHaveText('Estimated tax (exact tax for your address at order)');
+  });
+});

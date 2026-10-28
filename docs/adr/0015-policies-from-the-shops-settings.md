@@ -21,7 +21,8 @@ address), and no lawyer has read anything.
 - **Draft until proven otherwise:** every page shows placeholders and a "Draft" note until all business details are set
   and `STORE_POLICIES_REVIEWED=true`; "reviewed" is forced to false while any detail is missing.
 - **Cookie notice, not a consent form:** only strictly necessary storage is used, so a notice that says so is enough.
-  It sits in the page flow (never over content, so no test or customer clicks through it) and "OK" hides it for good.
+  It sits in the page flow under the content, above the footer: never over anything, and nothing above it moves
+  (a first version above the header pushed the sticky header over menu links; CI caught it). "OK" hides it for good.
 - Account creation and checkout name the terms and policies they agree to.
 
 ## Consequences

@@ -88,7 +88,6 @@ function App() {
     <div className="shell">
       <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
       {DEMO && <DemoRibbon />}
-      <CookieNotice />
       <AnnounceBar />
       <Topbar session={session} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <div className="frame">
@@ -96,6 +95,7 @@ function App() {
         {menuOpen && <div className="scrim" aria-hidden="true" onClick={() => setMenuOpen(false)} />}
         <div className="content">
           <main id="main" tabIndex={-1}>{page}</main>
+          <CookieNotice />
           <Footer session={session} />
         </div>
       </div>

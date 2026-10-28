@@ -259,8 +259,9 @@ export function Sidebar({ route, session, open, onNavigate }) {
 
 /**
  * What the shop keeps in the browser, said once (REQ-LEG-02). Only strictly necessary storage is used (sign-in,
- * language), so this is a notice, not a consent form. It sits in the page flow above the header, never over the
- * content, and "OK" hides it for good in this browser.
+ * language), so this is a notice, not a consent form. It sits in the page flow under the page content, above the
+ * footer: never over anything, and nothing above it moves (a bar above the header pushed the sticky header over menu
+ * links that tests and keyboard users scroll to). "OK" hides it for good in this browser.
  */
 const COOKIE_KEY = 'cookieNotice';
 export function CookieNotice() {

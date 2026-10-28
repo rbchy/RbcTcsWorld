@@ -589,6 +589,123 @@ jobs:
         if: always()
         run: $DC down -v
 
+  production-stack:
+    name: Production stack (live settings, encrypted off-site backups, restore drill, health alerts)
+    needs: backend-tests
+    runs-on: ${{ inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    env:
+      DC: docker compose -f deploy/production/docker-compose.yml --env-file deploy/production/.env
+      S3: docker run --rm --network host -e AWS_ACCESS_KEY_ID=ci-backup -e AWS_SECRET_ACCESS_KEY=ci-backup-secret -e AWS_DEFAULT_REGION=us-east-1 amazon/aws-cli:2.31.3 --endpoint-url http://127.0.0.1:9000 s3
+    steps:
+      - uses: actions/checkout@v5
+      - name: Off-site bucket (MinIO, S3-compatible) and a receiver for the alerts
+        run: |
+          docker run -d --name minio -p 127.0.0.1:9000:9000 -e MINIO_ROOT_USER=ci-backup -e MINIO_ROOT_PASSWORD=ci-backup-secret \
+            minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+          for i in $(seq 1 60); do curl -fs http://127.0.0.1:9000/minio/health/live && break; sleep 1; done
+          $S3 mb s3://rbctcsworld-backups
+          mkdir -p "$RUNNER_TEMP/backups"
+          nohup python3 .github/scripts/alert-receiver.py "$RUNNER_TEMP/alerts.txt" > /dev/null 2>&1 &
+          touch "$RUNNER_TEMP/alerts.txt"
+      - name: Start the live store exactly as on the server (prod profile, demo off)
+        run: |
+          cat > deploy/production/.env <<ENV
+          STORE_DOMAIN=localhost
+          DB_PASSWORD=$(openssl rand -hex 16)
+          JWT_SECRET=$(openssl rand -hex 32)
+          ADMIN_EMAIL=owner@ci.test
+          ADMIN_PASSWORD=Ci-Prod-$(openssl rand -hex 6)!
+          PAYMENT_PROVIDER=mock
+          NOTIFICATIONS_CHANNEL=log
+          BACKUP_PASSPHRASE=$(openssl rand -hex 32)
+          BACKUP_DIR=$RUNNER_TEMP/backups
+          BACKUP_S3_BUCKET=rbctcsworld-backups
+          BACKUP_S3_ENDPOINT=http://127.0.0.1:9000
+          BACKUP_S3_ACCESS_KEY=ci-backup
+          BACKUP_S3_SECRET_KEY=ci-backup-secret
+          ALERT_WEBHOOK_URL=http://127.0.0.1:8099/hook
+          CERT_MIN_DAYS=0
+          ENV
+          $DC up -d --build --wait --wait-timeout 900
+          $DC ps
+      - name: Only Caddy is reachable; not the demo build; a missing setting stops the start
+        run: |
+          set -e
+          for port in 5432 6379 8081 5173 8025; do
+            ! nc -z -w 2 127.0.0.1 "$port" || { echo "::error::port $port is published"; exit 1; }
+          done
+          CURL_OPTS=-k deploy/smoke.sh --production https://localhost
+          out=$(env -u PAYMENT_PROVIDER docker compose -f deploy/production/docker-compose.yml \
+                --env-file <(grep -v '^PAYMENT_PROVIDER=' deploy/production/.env) config 2>&1 || true)
+          echo "$out" | grep -q "set PAYMENT_PROVIDER" || { echo "$out" | tail -5; exit 1; }
+          echo "::notice title=Production::only 80/443 open, no demo ribbon, a missing setting stops the start"
+      - name: A customer orders; the backup is encrypted, checked and copied off the server
+        run: |
+          set -e
+          . deploy/production/.env
+          api() { curl -sk -H 'Content-Type: application/json' "$@"; }
+          admin=$(api -X POST https://localhost/api/auth/login -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | jq -r .token)
+          customer=$(api -X POST https://localhost/api/auth/register -d '{"email":"buyer@ci.test","password":"Buyer-Pass-1"}' | jq -r .token)
+          product=$(api -X POST https://localhost/api/products -H "Authorization: Bearer $admin" \
+                    -d '{"name":"Backup proof","sku":"CI-BKP-1","price":10,"stock":5}' | jq -r .id)
+          api -X POST https://localhost/api/cart/items -H "Authorization: Bearer $customer" -d "{\"productId\":$product,\"quantity\":1}" > /dev/null
+          order=$(api -X POST https://localhost/api/orders -H "Authorization: Bearer $customer" -d '{"shippingAddress":{"fullName":"Ada Lovelace","line1":"12 Main St","city":"Pittsburgh","state":"PA","zip":"15213"}}' | jq -r .id)
+          test "$order" != null
+          deploy/production/backup.sh
+          file=$(jq -r .file "$BACKUP_DIR/latest.json")
+          head -c 8 "$BACKUP_DIR/$file" | grep -q Salted__ || { echo "::error::backup is not encrypted"; exit 1; }
+          ! grep -q PGDMP "$BACKUP_DIR/$file" || { echo "::error::plain dump inside"; exit 1; }
+          jq -e '.rows.users >= 2 and .rows.orders >= 1' "$BACKUP_DIR/latest.json"
+          $S3 ls s3://rbctcsworld-backups/rbctcsworld/ | tee /dev/stderr | grep -q "$file"
+          echo "::notice title=Backup::$file encrypted, manifest $(jq -c .rows "$BACKUP_DIR/latest.json"), copied to the bucket"
+      - name: Restore drill - a damaged backup is caught, the off-site copy restores
+        run: |
+          set -e
+          . deploy/production/.env
+          file=$(jq -r .file "$BACKUP_DIR/latest.json")
+          printf 'X' | dd of="$BACKUP_DIR/$file" bs=1 seek=100 conv=notrunc 2>/dev/null       # one byte damaged
+          ! deploy/production/restore-drill.sh || { echo "::error::damaged backup passed the drill"; exit 1; }
+          grep -q "Restore drill FAILED" "$RUNNER_TEMP/alerts.txt" || { echo "::error::no alert for the failed drill"; exit 1; }
+          deploy/production/restore-drill.sh --from-offsite          # as after losing the server: from the bucket
+          echo "::notice title=Restore drill::damaged file refused with an alert; off-site copy restored and checked"
+      - name: Restore puts the backup back into the live store
+        run: |
+          set -e
+          . deploy/production/.env
+          api() { curl -sk -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' "$@"; }
+          test "$(api -X POST https://localhost/api/auth/register -d '{"email":"later@ci.test","password":"Later-Pass-1"}')" = 201
+          CURL_OPTS=-k deploy/production/restore.sh "$(jq -r .file "$BACKUP_DIR/latest.json")" --yes
+          test "$(api -X POST https://localhost/api/auth/login -d '{"email":"later@ci.test","password":"Later-Pass-1"}')" = 401
+          test "$(api -X POST https://localhost/api/auth/login -d '{"email":"buyer@ci.test","password":"Buyer-Pass-1"}')" = 200
+          echo "::notice title=Restore::the store is back at the backup: later account gone, the customer is there"
+      - name: Health check - quiet while fine, one alert per change, recovery reported
+        run: |
+          set -e
+          : > "$RUNNER_TEMP/alerts.txt"
+          CURL_OPTS=-k deploy/production/healthcheck.sh
+          test ! -s "$RUNNER_TEMP/alerts.txt"
+          $DC stop frontend
+          ! CURL_OPTS=-k deploy/production/healthcheck.sh
+          ! CURL_OPTS=-k deploy/production/healthcheck.sh                   # still down: no second alert
+          test "$(grep -c 'Problem:' "$RUNNER_TEMP/alerts.txt")" = 1
+          grep -q 'container frontend is' "$RUNNER_TEMP/alerts.txt"
+          $DC up -d --wait frontend
+          CURL_OPTS=-k deploy/production/healthcheck.sh
+          grep -q 'Recovered' "$RUNNER_TEMP/alerts.txt"
+          echo "::notice title=Health check::$(cat "$RUNNER_TEMP/alerts.txt" | tr '\n' ' ')"
+      - name: Container logs
+        if: failure()
+        run: |
+          $DC ps -a
+          $DC logs --no-color --tail=80
+          cat "$RUNNER_TEMP/alerts.txt" 2>/dev/null || true
+      - name: Stop and remove the stack
+        if: always()
+        run: |
+          $DC down -v || true
+          docker rm -f minio rbctcsworld-drill || true
+
   security-scan:
     name: Security scan (OWASP ZAP API scan + OSV dependency scan)
     needs: backend-tests

@@ -21,5 +21,6 @@
 | [0013](0013-shippo-labels-and-tracking.md) | Shipping label `ShippingProvider` দিয়ে; default simulated, চাইলে Shippo | আসল carrier label আর tracking নম্বর, পেমেন্ট ছাড়া label নয়, Shippo নিশ্চিত করলে তবেই DELIVERED |
 | [0014](0014-amazon-ses-mail.md) | দোকানের নিজের domain থেকে Amazon SES (SDK ছাড়া, SigV4); bounce/complaint SNS দিয়ে | inbox-এ পৌঁছায়, ফেরত আসা ঠিকানায় আর পাঠানো হয় না, সই ছাড়া কোনো রিপোর্ট নয় |
 | [0015](0015-policies-from-the-shops-settings.md) | নীতিমালার সংখ্যা দোকানের setting থেকে; lawyer না দেখা পর্যন্ত "Draft" | নীতিমালা কখনো কোডের চেয়ে আলাদা কথা বলে না; অসম্পূর্ণ নীতিমালা চূড়ান্ত দেখায় না |
+| [0016](0016-production-stack-backups-and-alerts.md) | আসল দোকান আলাদা stack-এ; encrypted off-site backup, সাপ্তাহিক restore মহড়া, alert | data হারায় না, backup সত্যিই ফেরত আনা যায় তার প্রমাণ, সমস্যা হলে আগে মালিক জানেন |
 
 **Interview-এ:** "Architecture-এর প্রতিটা বড় সিদ্ধান্তের ADR আছে: কী বিকল্প ছিল, কেন এটা বেছেছি, আর কী দাম দিতে হয়েছে (যেমন logout-এর পরেও ১৫ মিনিট access token কাজ করে, সেটা জেনে-বুঝে মেনে নেওয়া)।"

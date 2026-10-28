@@ -1,0 +1,20 @@
+# HTTPS in front of the live store. Caddy gets and renews the Let's Encrypt certificate for STORE_DOMAIN and
+# redirects http:// to https://. "www." is sent to the bare domain.
+{$STORE_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy frontend:80
+}
+
+www.{$STORE_DOMAIN} {
+	redir https://{$STORE_DOMAIN}{uri} permanent
+}

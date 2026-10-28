@@ -1,0 +1,12 @@
+{
+  "Type": "Notification",
+  "MessageId": "msg-complaint-1",
+  "TopicArn": "arn:aws:sns:us-east-1:123456789012:rbctcsworld-ses-events",
+  "Message": "{\"notificationType\":\"Complaint\",\"complaint\":{\"complainedRecipients\":[{\"emailAddress\":\"angry@example.com\"}],\"complaintFeedbackType\":\"abuse\",\"timestamp\":\"2026-10-28T03:05:00.000Z\"},\"mail\":{\"messageId\":\"0100019a-complaint\",\"destination\":[\"angry@example.com\"]}}",
+  "Timestamp": "2026-10-28T03:00:01.000Z",
+  "SignatureVersion": "1",
+  "SigningCertURL": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-test.pem",
+  "UnsubscribeURL": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe",
+  "Subject": "Amazon SES Email Event",
+  "Signature": "syIfLUCaPSKTmNIepQCDGT64jF+4dmomat4zTmg46rR3TaL2u3VbdEF6WJbgn/5esRGtmycEAHJZAtbpTl3/y5R990zCAifCxcjcftZX6kVcUEqe//I/PUwZ0gWh2CRlLMNz5J4+rBI/fygzi9dFB/Gm3yBaL2zgdpoy8RzVMbj9oBp5Q3MH4BKrQrPADLGack7eIIscpmW3VUL4kHflUmQIxsi8eV3wmddqDGAAMdVviDQsIL8EpR3PvDwWm+VC9d1n1vXho1LZI6wDsQE3hoI4Kx/Tm0MVlBTqFVkei+z7ZPUS61DpzZRMbvSA0b/T8A5yiEOmU4c8VV2fKZxe0Q=="
+}

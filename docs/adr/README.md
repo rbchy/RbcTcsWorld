@@ -19,5 +19,6 @@
 | [0011](0011-stripe-elements-and-webhooks.md) | কার্ড Stripe Elements-এ; অর্ডার PAID শুধু Stripe-এর কথায় (webhook/confirm) | দোকান কখনো কার্ড নম্বর দেখে না (PCI SAQ A); ব্রাউজারের কথায় টাকা ধরা হয় না; একবারই পেমেন্ট |
 | [0012](0012-stripe-tax.md) | ট্যাক্স `TaxCalculator` দিয়ে; default flat 6 %, চাইলে Stripe Tax | ঠিকানা অনুযায়ী সঠিক ট্যাক্স, অনুমানের ট্যাক্সে কখনো অর্ডার নয়, পেমেন্টের পরে বিক্রি রিপোর্টে |
 | [0013](0013-shippo-labels-and-tracking.md) | Shipping label `ShippingProvider` দিয়ে; default simulated, চাইলে Shippo | আসল carrier label আর tracking নম্বর, পেমেন্ট ছাড়া label নয়, Shippo নিশ্চিত করলে তবেই DELIVERED |
+| [0014](0014-amazon-ses-mail.md) | দোকানের নিজের domain থেকে Amazon SES (SDK ছাড়া, SigV4); bounce/complaint SNS দিয়ে | inbox-এ পৌঁছায়, ফেরত আসা ঠিকানায় আর পাঠানো হয় না, সই ছাড়া কোনো রিপোর্ট নয় |
 
 **Interview-এ:** "Architecture-এর প্রতিটা বড় সিদ্ধান্তের ADR আছে: কী বিকল্প ছিল, কেন এটা বেছেছি, আর কী দাম দিতে হয়েছে (যেমন logout-এর পরেও ১৫ মিনিট access token কাজ করে, সেটা জেনে-বুঝে মেনে নেওয়া)।"

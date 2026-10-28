@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
  *  1. read due rows (oldest first, a batch at a time)
  *  2. claim each one with a conditional UPDATE - two instances never send the same row
  *  3. send; success -> SENT, failure -> try again after 30 s, 1, 2, 4 minutes; the 5th failure -> FAILED
+ *     (an address that hard-bounced or complained is not sent to at all: FAILED with the reason)
  *
  * At-least-once: an instance that dies after the mail server accepted the message but before "SENT" was
  * written leaves a SENDING row whose lease expires, and the e-mail is sent again. Losing an order
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 @Service
 public class NotificationDeliveryService {
 
+    static final String SUPPRESSED = "Not sent: the address is on the suppression list after a ";
     static final String REDACTED_CODE = "[sign-in code removed after delivery]";
     static final String REDACTED = "[password reset link removed after delivery]";
 
@@ -35,13 +37,16 @@ public class NotificationDeliveryService {
 
     private final NotificationRepository notifications;
     private final MailChannel channel;
+    private final EmailSuppressions suppressions;
     private final Clock clock;
     private final int batchSize;
 
-    public NotificationDeliveryService(NotificationRepository notifications, MailChannel channel, Clock clock,
+    public NotificationDeliveryService(NotificationRepository notifications, MailChannel channel,
+                                       EmailSuppressions suppressions, Clock clock,
                                        @Value("${app.notifications.batch-size:20}") int batchSize) {
         this.notifications = notifications;
         this.channel = channel;
+        this.suppressions = suppressions;
         this.clock = clock;
         this.batchSize = batchSize;
     }
@@ -58,6 +63,13 @@ public class NotificationDeliveryService {
         for (Notification n : notifications.findDue(now, PageRequest.of(0, batchSize))) {
             if (notifications.claim(n.getId(), n.getNextAttemptAt(), now.plus(LEASE)) == 0) {
                 continue;                                            // another instance took it
+            }
+            String suppressed = suppressions.reason(n.getRecipient());
+            if (suppressed != null) {
+                // a hard bounce or a complaint: sending again would only hurt the domain's reputation with SES
+                notifications.markFailedAttempt(n.getId(), Notification.FAILED, n.getAttempts(), LocalDateTime.now(clock),
+                        SUPPRESSED + suppressed.toLowerCase());
+                continue;
             }
             try {
                 channel.send(n.getRecipient(), n.getSubject(), n.getBody());

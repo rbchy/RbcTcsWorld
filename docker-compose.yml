@@ -56,7 +56,13 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
       LOGIN_STORE: ${LOGIN_STORE:-redis}
       REDIS_URL: redis://redis:6379
-      NOTIFICATIONS_CHANNEL: smtp
+      NOTIFICATIONS_CHANNEL: ${NOTIFICATIONS_CHANNEL:-smtp}   # ses: Amazon SES (docs/modules/AMAZON_SES_MAIL_BN.md)
+      MAIL_FROM: ${MAIL_FROM:-RbcTcsWorld <orders@rbctcsworld.test>}
+      SES_REGION: ${SES_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      SES_CONFIGURATION_SET: ${SES_CONFIGURATION_SET:-}
+      SES_SNS_TOPIC_ARN: ${SES_SNS_TOPIC_ARN:-}
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
       # payments: mock unless set; Stripe test keys turn on Stripe Elements (docs/modules/STRIPE_ELEMENTS_BN.md)

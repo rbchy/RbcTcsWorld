@@ -75,11 +75,20 @@ app:
       currency: usd
       timeout-seconds: 10
   notifications:
-    channel: ${NOTIFICATIONS_CHANNEL:log}         # log (development) | smtp
+    channel: ${NOTIFICATIONS_CHANNEL:log}         # log (development) | smtp (Mailpit) | ses (Amazon SES)
     smtp:
       host: ${MAIL_HOST:localhost}
-      port: ${MAIL_PORT:1025}                     # Mailpit; a real provider uses 587 + credentials
-    from: "RbcTcsWorld <orders@rbctcsworld.test>"
+      port: ${MAIL_PORT:1025}                     # Mailpit
+    # the sender: the store's own domain, verified in SES with DKIM - PLACEHOLDER until the store has a domain
+    from: ${MAIL_FROM:RbcTcsWorld <orders@rbctcsworld.test>}
+    ses:
+      region: ${SES_REGION:}                      # e.g. us-east-1
+      access-key-id: ${AWS_ACCESS_KEY_ID:}        # an IAM user that may only ses:SendEmail
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+      session-token: ${AWS_SESSION_TOKEN:}        # only with temporary keys
+      configuration-set: ${SES_CONFIGURATION_SET:}   # sends bounces and complaints to the SNS topic below
+      sns-topic-arn: ${SES_SNS_TOPIC_ARN:}        # the only topic POST /api/notifications/ses/events accepts
+      endpoint: ${SES_ENDPOINT:}                  # tests only; default https://email.<region>.amazonaws.com
     poll-ms: ${NOTIFICATIONS_POLL_MS:2000}        # how often the outbox is checked
   returns:
     window-days: 30                   # a return may be requested up to 30 days after delivery

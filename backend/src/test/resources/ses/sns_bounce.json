@@ -1,0 +1,11 @@
+{
+  "Type": "Notification",
+  "MessageId": "msg-bounce-1",
+  "TopicArn": "arn:aws:sns:us-east-1:123456789012:rbctcsworld-ses-events",
+  "Message": "{\"notificationType\":\"Bounce\",\"bounce\":{\"bounceType\":\"Permanent\",\"bounceSubType\":\"General\",\"bouncedRecipients\":[{\"emailAddress\":\"Gone@Example.com\",\"diagnosticCode\":\"smtp; 550 5.1.1 user unknown\"}],\"timestamp\":\"2026-10-28T03:00:00.000Z\"},\"mail\":{\"messageId\":\"0100019a-bounce\",\"destination\":[\"Gone@Example.com\"]}}",
+  "Timestamp": "2026-10-28T03:00:01.000Z",
+  "SignatureVersion": "2",
+  "SigningCertURL": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-test.pem",
+  "UnsubscribeURL": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe",
+  "Signature": "SESFnZUJJ4n9iDGtXARZ5pN9uZuSTphXrRiyGv1F37ATvWvGafO8+zezmw2oSpvuVtgfo4irEG0+p7Lo5MBFSAJwwDOJ2vQbjjwEUnGxo1FZdoDYxpSjBgzN7M0NEs1IV/vNoI/wRgtFm8TE3bNSiOybwRyyst+1bPr5fwBrGT9xtwhPDO2ArEoDuD4/drsOGSobSc5wGePPzUzBOgmyBzq1Irx0T5C+QVEuL9/55hMHXrU9gJRCd1Tx7qG08El4ugT2vHImfVcctXvLjLXNFUi+q6T/08zqlWAvgP27GWhY5RtBCX1VMP4Lq2qAImou8k5LcvIPpV8oMH7LewlAqA=="
+}

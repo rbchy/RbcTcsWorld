@@ -21,6 +21,7 @@ import org.springframework.security.web.header.writers.StaticHeadersWriter;
  *  - anyone may register/login, browse products (GET) and track a parcel by tracking number;
  *  - Stripe may post webhooks without a login: CardPaymentController checks their signature;
  *  - Shippo may post tracking webhooks without a login: ShippoWebhookController checks the secret token;
+ *  - Amazon SNS may post SES bounce/complaint reports without a login: SesEventController checks SNS's signature;
  *  - only ADMIN may create, update or delete products and use /api/admin/**;
  *  - everything else (cart, orders...) needs a valid JWT.
  */
@@ -61,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tracking/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()   // Stripe proves itself by signature
                 .requestMatchers(HttpMethod.POST, "/api/shipping/shippo/webhook").permitAll()   // Shippo: secret token in the URL
+                .requestMatchers(HttpMethod.POST, "/api/notifications/ses/events").permitAll()  // Amazon SNS: signed messages
                 .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")

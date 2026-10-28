@@ -34,7 +34,9 @@ Phase 2 does exactly that (ADR-0011).
    *Chosen:* Stripe Tax, Shippo, Amazon SES; the domain is a placeholder until the owner buys one.
    *Built so far:* Stripe Tax behind `TAX_PROVIDER` ([ADR-0012](../adr/0012-stripe-tax.md), [guide](../modules/STRIPE_TAX_BN.md));
    Shippo labels and carrier tracking behind `SHIPPING_PROVIDER` ([ADR-0013](../adr/0013-shippo-labels-and-tracking.md),
-   [guide](../modules/SHIPPO_SHIPPING_BN.md)). Next: Amazon SES mail.
+   [guide](../modules/SHIPPO_SHIPPING_BN.md)); order e-mail from the store's domain through Amazon SES with bounce and
+   complaint suppression ([ADR-0014](../adr/0014-amazon-ses-mail.md), [guide](../modules/AMAZON_SES_MAIL_BN.md)).
+   Left for the owner: buy the domain, verify it in SES, request SES production access.
 5. **Phase 4 - business and legal (owner and professionals, alongside phases 2-3):** LLC and EIN, sales tax license, business bank account, Stripe live verification; engineering builds the policy pages, a lawyer reviews them.
 6. **Phase 5 - production server (engineering, 1 week):** demo mode off, daily backups, alerts, a restore drill.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.

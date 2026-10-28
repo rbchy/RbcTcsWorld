@@ -54,6 +54,8 @@ class AccessControlMatrixTest {
             "POST,   /api/payments/stripe/webhook,          400, 400, 400",
             // Shippo has no login either: its webhook URL carries a secret token, so a call without one is 400
             "POST,   /api/shipping/shippo/webhook,          400, 400, 400",
+            // Amazon SNS proves itself with a signature; until a topic is configured nobody gets in (503)
+            "POST,   /api/notifications/ses/events,         503, 503, 503",
             "GET,    /api/admin/orders/99999999/label,      401, 403, 404",
             "GET,    /api/admin/orders,                     401, 403, 200",
             "GET,    /api/admin/returns,                    401, 403, 200",

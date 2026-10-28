@@ -52,7 +52,7 @@ pie showData
 
 ```mermaid
 pie showData
-    title 134 traced requirements by area
+    title 136 traced requirements by area
     "Orders and inventory" : 16
     "Identity and access" : 16
     "Non-functional" : 17
@@ -62,7 +62,7 @@ pie showData
     "Reviews and wishlist" : 11
     "Store admin back office" : 8
     "Fulfilment and returns" : 8
-    "Customer e-mails" : 4
+    "Customer e-mails" : 6
     "Audit trail" : 4
     "Cart" : 3
     "Address book" : 3
@@ -93,7 +93,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
 | Quality bar | 1,692 automated tests, 18 CI quality gates, 97.6 % line coverage, 88.1 % mutation score, 134 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
-| Phase 3 (in progress) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); next Amazon SES mail |
+| Phase 3 (in progress) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
 | Not decided yet | what the store sells, where the products come from (phase 0, owner) |
 
 ## Roadmap to launch
@@ -151,7 +151,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
 | 12 | Containers | stack healthy, smoke tests pass | 63 / 63 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 134 / 134 | `docs/qa/check_rtm.py` |
+| 13 | Traceability | every requirement has a test | 136 / 136 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
 | 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 294 / 294 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
@@ -245,10 +245,11 @@ The automation suite needs the backend on 8081 (and the storefront on 5173 for U
 [ADR-0011: Stripe Elements and webhooks](docs/adr/0011-stripe-elements-and-webhooks.md) · [Stripe test-mode guide (Bangla)](docs/modules/STRIPE_ELEMENTS_BN.md) ·
 [ADR-0012: Stripe Tax](docs/adr/0012-stripe-tax.md) · [Stripe Tax guide (Bangla)](docs/modules/STRIPE_TAX_BN.md) ·
 [ADR-0013: Shippo](docs/adr/0013-shippo-labels-and-tracking.md) · [Shippo guide (Bangla)](docs/modules/SHIPPO_SHIPPING_BN.md) ·
+[ADR-0014: Amazon SES](docs/adr/0014-amazon-ses-mail.md) · [SES guide (Bangla)](docs/modules/AMAZON_SES_MAIL_BN.md) ·
 [The inherited foundation](docs/FOUNDATION.md)
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (134 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (136 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (29)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
 [UAT Plan](docs/qa/UAT_PLAN.md) · [UAT Summary](docs/qa/UAT_SUMMARY.md)
 

@@ -27,6 +27,7 @@ class NotificationDeliveryServiceTest {
 
     @Mock NotificationRepository notifications;
     @Mock MailChannel channel;
+    @Mock EmailSuppressions suppressions;
     /** A clock the test can move forward. */
     static final class TestClock extends java.time.Clock {
         private java.time.Instant now = java.time.Instant.parse("2026-10-12T12:00:00Z");
@@ -42,7 +43,7 @@ class NotificationDeliveryServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new NotificationDeliveryService(notifications, channel, clock, 20);
+        service = new NotificationDeliveryService(notifications, channel, suppressions, clock, 20);
         now = LocalDateTime.now(clock);
     }
 
@@ -196,7 +197,39 @@ class NotificationDeliveryServiceTest {
         assertThat(NotificationConfig.create(" SMTP ", "localhost", 1025, "a@b.c").name()).isEqualTo("smtp");
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> NotificationConfig.create("email", "h", 1, "f"))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("'email'");
-        assertThat(new NotificationConfig().mailChannel("log", "h", 1, "f")).isInstanceOf(LogMailChannel.class);
+        assertThat(new NotificationConfig().mailChannel("log", "h", 1, "f", "", "", "", "", "", "", java.time.Clock.systemUTC()))
+                .isInstanceOf(LogMailChannel.class);
+        assertThat(new NotificationConfig().mailChannel("ses", "h", 1, "a@b.c", "us-east-1", "AKID", "s", "", "", "",
+                java.time.Clock.systemUTC())).isInstanceOf(SesMailChannel.class);
         new LogMailChannel().send("a@b.c", "subject", "body");      // only logs
+    }
+
+    // ---- the suppression list (SES bounces and complaints) ----
+
+    @Test
+    void anAddressThatBouncedIsNotSentToAndTheRowSaysWhy() {
+        Notification n = row(5, 0);
+        due(n);
+        when(notifications.claim(eq(5L), any(), any())).thenReturn(1);
+        when(suppressions.reason("buyer@test.com")).thenReturn(EmailSuppressions.BOUNCE);
+
+        assertThat(service.sendDue()).isZero();
+
+        verify(channel, never()).send(anyString(), anyString(), anyString());
+        verify(notifications).markFailedAttempt(5L, Notification.FAILED, 0, now,
+                "Not sent: the address is on the suppression list after a bounce");
+        verify(notifications, never()).markSent(anyLong(), any());
+    }
+
+    @Test
+    void anAddressThatComplainedIsNotSentToEither() {
+        Notification n = row(6, 2);
+        due(n);
+        when(notifications.claim(eq(6L), any(), any())).thenReturn(1);
+        when(suppressions.reason("buyer@test.com")).thenReturn(EmailSuppressions.COMPLAINT);
+        service.sendDue();
+        verify(notifications).markFailedAttempt(6L, Notification.FAILED, 2, now,
+                "Not sent: the address is on the suppression list after a complaint");
+        verify(channel, never()).send(anyString(), anyString(), anyString());
     }
 }

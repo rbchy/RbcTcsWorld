@@ -21,6 +21,7 @@ import Addresses from './pages/Addresses';
 import PaymentMethods from './pages/PaymentMethods';
 import Security from './pages/Security';
 import Help from './pages/Help';
+import Contact from './pages/Contact';
 import Goodbye from './pages/Goodbye';
 import { AdminOnly } from './pages/admin/common';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -35,12 +36,14 @@ import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminReports from './pages/admin/AdminReports';
 import AdminWarehouses from './pages/admin/AdminWarehouses';
+import AdminMessages from './pages/admin/AdminMessages';
 
 const ADMIN = {
   '/admin': AdminDashboard, '/admin/products': AdminProducts, '/admin/coupons': AdminCoupons,
   '/admin/orders': AdminOrders, '/admin/returns': AdminReturns, '/admin/reviews': AdminReviews,
   '/admin/notifications': AdminNotifications, '/admin/audit': AdminAudit,
   '/admin/customers': AdminCustomers, '/admin/payments': AdminPayments, '/admin/reports': AdminReports, '/admin/warehouses': AdminWarehouses,
+  '/admin/messages': AdminMessages,
 };
 
 /** Public demo only (built with VITE_DEMO=true, see deploy/): says plainly that nothing here is real. */
@@ -70,6 +73,7 @@ function App() {
   else if (route === '/forgot-password') page = <ForgotPassword />;
   else if (route.startsWith('/reset-password')) page = <ResetPassword token={new URLSearchParams(route.split('?')[1] || '').get('token')} />;
   else if (route === '/help' || route.startsWith('/help/')) page = <Help />;
+  else if (route === '/contact') page = <Contact />;
   else if (POLICIES[route.slice(1)]) page = <Legal page={route.slice(1)} />;
   else if (route === '/goodbye') page = <Goodbye session={session} />;
   else if (ADMIN[route]) { const P = ADMIN[route]; page = <AdminOnly session={session}><P /></AdminOnly>; }

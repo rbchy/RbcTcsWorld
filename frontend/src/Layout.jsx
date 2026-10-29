@@ -186,6 +186,7 @@ export const ADMIN_MENU = [
     ['#/admin/returns', 'nav-admin-returns', 'navReturns', 'returnArrow']] },
   { key: 'customers', title: 'grpCustomers', items: [
     ['#/admin/customers', 'nav-admin-customers', 'navCustomers', 'users'],
+    ['#/admin/messages', 'nav-admin-messages', 'navMessages', 'mail'],
     ['#/admin/reviews', 'nav-admin-reviews', 'navReviews', 'star'],
     ['#/admin/notifications', 'nav-admin-notifications', 'navNotifications', 'bell']] },
   { key: 'control', title: 'grpControl', items: [
@@ -251,6 +252,7 @@ export function Sidebar({ route, session, open, onNavigate }) {
         <p className="side-head" id="sec-support">{t('secSupport')}</p>
         <ul aria-labelledby="sec-support">
           <Item route={route} href="#/help" testId="side-help" icon="help" onNavigate={onNavigate}>{t('navHelp')}</Item>
+          <Item route={route} href="#/contact" testId="side-contact" icon="mail" onNavigate={onNavigate}>{t('navContact')}</Item>
         </ul>
       </div>
     </nav>
@@ -327,6 +329,7 @@ export function Footer({ session }) {
             <li><a href="#/help" data-testid="foot-help">{t('navHelp')}</a></li>
             <li><a href="#/help">{t('footShippingHelp')}</a></li>
             <li><a href="#/help">{t('footReturnsHelp')}</a></li>
+            <li><a href="#/contact" data-testid="foot-contact">{t('navContact')}</a></li>
           </ul>
         </nav>
         <nav aria-labelledby="foot-legal">

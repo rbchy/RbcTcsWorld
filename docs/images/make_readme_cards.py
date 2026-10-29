@@ -57,7 +57,7 @@ def status_board():
     w, h = 1000, 740
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
          f'aria-label="Project status board: {total} automated tests, {total - SKIPPED} passed and {SKIPPED} skipped by design; '
-         f'19 of 19 CI gates passed; 97.1 percent line coverage; 88.2 percent mutation score; 143 of 143 requirements traced; '
+         f'19 of 19 CI gates passed; 97.1 percent line coverage; 88.2 percent mutation score; 147 of 147 requirements traced; '
          f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal in progress, phase 5 production server built.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, TITLE, 700),
@@ -66,7 +66,7 @@ def status_board():
              ("19 / 19", "CI gates passed", "GitHub Actions + Jenkins"),
              ("97.1 %", "line coverage", "93.2 % branches (JaCoCo)"),
              ("88.2 %", "mutation score", "test strength 94.7 % (PIT)"),
-             ("143 / 143", "requirements traced", "checked on every push")]
+             ("147 / 147", "requirements traced", "checked on every push")]
     tw = (w - 64 - 4 * 12) / 5
     for i, (big, label, sub) in enumerate(tiles):
         p.append(tile(32 + i * (tw + 12), 92, tw, big, label, sub))

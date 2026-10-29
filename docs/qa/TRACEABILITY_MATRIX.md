@@ -198,6 +198,15 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | REQ-LEG-02 | Cookie notice: says the shop keeps only what it needs in the browser (sign-in, language) and no advertising or tracking cookies, links to the privacy policy, sits under the page content (never over anything, never moves the header or menu), and "OK" hides it for good in that browser | `playwright/tests/legal.spec.ts` | UI | Pass |
 | REQ-LEG-03 | Creating an account names the terms and privacy policy it agrees to, placing an order the terms, return policy and privacy policy (links); in another language the pages say the policy is in English | `playwright/tests/legal.spec.ts` | UI | Pass |
 
+## Customer service
+
+| ID | Requirement | Tests | Levels | Status |
+|---|---|---|---|---|
+| REQ-CS-01 | Contact form (ADR-0018): anybody may write, one click from every page (footer and menu); name, a valid e-mail, a topic (ORDER, RETURN, PRODUCT, PAYMENT, OTHER), an optional order number (letters, digits, -), a message of 10-4000 characters (spaces do not count); anything else is 400; the sender gets a ticket MSG-XXXXXX and the promised answer time (STORE_REPLY_DAYS, default 2 business days) | `ContactServiceTest#aVisitorsMessageIsSavedTidiedAndAnsweredWithATicket`, `ContactServiceTest#aVisitorMustGiveAnAddress`, `ContactServiceTest#spacesDoNotCountTowardsTheTenCharacters`, `ContactServiceTest#aTicketNumberIsNeverUsedTwice`, `ContactIntegrationTest#aVisitorWritesGetsATicketAndTheOwnerIsToldThroughTheOutbox`, `ContactIntegrationTest#badFormsAre400`, `AccessControlMatrixTest#matrix`, `playwright/tests/contact.spec.ts` | U I A UI | Pass |
+| REQ-CS-02 | Nobody writes in someone else's name: a logged-in customer always writes with the account's own address; the confirmation e-mail names the ticket but never repeats the text (no spam relay to a stranger's address); the owner gets the whole message (STORE_CONTACT_EMAIL, else the admin), both through the outbox in the same transaction | `ContactServiceTest#aLoggedInCustomerWritesWithTheAccountsOwnAddress`, `ContactServiceTest#theSenderGetsATicketButNeverTheirOwnTextAndTheOwnerGetsTheMessage`, `ContactServiceTest#withoutAContactAddressTheMessagesGoToTheAdmin`, `ContactIntegrationTest#aLoggedInCustomerAlwaysWritesWithTheirOwnAddress`, `playwright/tests/contact.spec.ts` | U I UI | Pass |
+| REQ-CS-03 | Spam protection without a CAPTCHA: a hidden honeypot field (filled in = looks accepted, nothing saved or sent); at most 3 messages per address per hour (429, Retry-After 3600) and 200 for the whole shop | `ContactServiceTest#aFilledHoneypotLooksAcceptedButNothingIsSavedOrSent`, `ContactServiceTest#threeMessagesPerAddressAndHourThenPleaseWait`, `ContactServiceTest#theWholeShopTakesAtMost200MessagesAnHour`, `ContactIntegrationTest#aBotThatFillsTheHiddenFieldGetsNothing`, `ContactIntegrationTest#theFourthMessageFromOneAddressWithinAnHourIs429` | U I | Pass |
+| REQ-CS-04 | Admin -> Messages: only the admin reads them (401/403); newest first, filtered by NEW/ANSWERED/CLOSED (400 otherwise); one answer per message (409 after), e-mailed with the question quoted and who answered recorded; a message can be closed once; 404 for an unknown one | `ContactServiceTest#theOwnersAnswerIsSavedAndEmailedWithTheQuestionQuoted`, `ContactServiceTest#anAnswerIsGivenOnceAndNotToAClosedMessage`, `ContactServiceTest#theOwnerListsAllOrOneStatusNewestFirst`, `ContactIntegrationTest#theOwnerAnswersOnceThenClosesAndTheAnswerIsEmailed`, `ContactIntegrationTest#onlyTheOwnerReadsTheMessages`, `AccessControlMatrixTest#matrix`, `playwright/tests/contact.spec.ts` | U I A UI | Pass |
+
 ## Non-functional
 
 | ID | Requirement | Tests | Levels | Status |
@@ -228,7 +237,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 16 | 16 | - |
-| Catalog | 14 | 14 | - |
+| Catalog | 15 | 15 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
 | Pricing, coupons, payments | 16 | 16 | - |
@@ -240,5 +249,6 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
 | Legal and policies | 3 | 3 | - |
+| Customer service | 4 | 4 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **142** | **142 (100 %)** | **0** |
+| **Total** | **147** | **147 (100 %)** | **0** |

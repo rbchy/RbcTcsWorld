@@ -61,6 +61,8 @@ function Privacy({ d }) {
         <li><b>Saved cards:</b> only the card brand, the last four digits, the expiry date and our payment processor's
           reference. We never store the full card number or the security code.</li>
         <li><b>Reviews and your wishlist,</b> if you write or keep them.</li>
+        <li><b>Messages to us:</b> from the contact form, your name, e-mail address, the topic, an order number if you
+          give one, your message and our answer.</li>
         <li><b>Security records:</b> failed sign-in attempts, sign-in sessions and, if you turn it on, two-factor sign-in.
           One-time sign-in codes and password-reset links are removed from our records once they are sent.</li>
         <li><b>Server logs:</b> the time and the requested address of visits, kept to keep the shop secure and working.</li>
@@ -68,7 +70,7 @@ function Privacy({ d }) {
 
       <h2>Why we use it</h2>
       <p>To take, pay for, ship and, if needed, return or refund your orders; to send you e-mails about your orders and
-        your account; to keep accounts and payments safe; and to keep the records that tax and accounting law requires.
+        your account; to answer your messages; to keep accounts and payments safe; and to keep the records that tax and accounting law requires.
         We do not sell your personal information, we do not share it for advertising, and we send no marketing e-mail.</p>
 
       <h2>Who else sees it</h2>

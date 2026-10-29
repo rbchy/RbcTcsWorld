@@ -1,6 +1,6 @@
 # Roadmap to a live store
 
-Status on 29 Oct 2026: phases 1, 2, 3 and 5 done (engineering), phase 4's engineering part done; product photo uploads done;
+Status on 29 Oct 2026: phases 1, 2, 3 and 5 done (engineering), phase 4's engineering part done; product photo uploads and the contact form done;
 next: the owner's part of phases 0, 4 and 5, then phase 6. The owner decides phase 0; engineering does phases 1-3 and 5; phase 4 needs
 an accountant and a lawyer. Running costs are estimates to check against each provider's own price page.
 
@@ -15,7 +15,7 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 | Products | 10 sample products with drawn pictures; photo upload from the admin form ([ADR-0017](../adr/0017-product-photo-uploads.md), done) | real products, photos, descriptions, suppliers | Owner |
 | Hosting | demo server (nightly reset) and a production stack with backups, restore drill and alerts (phase 5) | a second server, the domain, a backup bucket | Owner |
 | Legal | policy pages and cookie notice (drafts, phase 4) | business registration (LLC, EIN), sales tax license, a lawyer's review of the policies | Owner + lawyer |
-| Customer service | none | contact form, response times | Owner |
+| Customer service | contact form with a ticket number and a promised answer time, Admin -> Messages ([ADR-0018](../adr/0018-contact-form.md), done) | answering within the promised time | Owner |
 | Search engines | none | page titles and descriptions, sitemap, Search Console | Engineering |
 | Already strong | orders, no overselling, returns and refunds, coupons, accounts with two-factor sign-in, audit trail, six languages, 1,800+ tests, 19 CI gates | the same test rules for every new feature | - |
 
@@ -49,8 +49,9 @@ Phase 2 does exactly that (ADR-0011).
    [guide (Bangla)](../deploy/PRODUCTION_BN.md)). Left for the owner: the server, the domain, the bucket, the phone app.
    *Also built before launch:* product photo upload from the admin form: re-encoded by the backend (upright, at most
    1600 px, no EXIF/GPS), stored in the database so the backups cover it ([ADR-0017](../adr/0017-product-photo-uploads.md),
-   [guide (Bangla)](../modules/PRODUCT_PHOTOS_BN.md)). Still before launch (engineering): a contact form, page titles
-   and a sitemap for search engines.
+   [guide (Bangla)](../modules/PRODUCT_PHOTOS_BN.md)). A contact form and Admin -> Messages ([ADR-0018](../adr/0018-contact-form.md),
+   [guide (Bangla)](../modules/CONTACT_FORM_BN.md)). Still before launch (engineering): page titles and a sitemap for
+   search engines.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
 
 ## 3. Running costs (estimates)

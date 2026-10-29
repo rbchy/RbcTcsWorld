@@ -2,8 +2,8 @@
 <rect width="400" height="300" fill="#e8eef3"/>
 <circle cx="320" cy="72" r="64" fill="#d6e1ea"/>
 <ellipse cx="200" cy="248" rx="150" ry="10" fill="#12313f" opacity=".16"/>
-<path d="M70 236v-44c0-10 8-16 18-14l40 8c14 3 26-4 32-16l10-22c3-6 10-8 15-4 20 16 40 40 72 50l48 14c18 5 30 18 30 34v8z" fill="#1d6fa3"/>
-<path d="M70 236h265v10H78c-4 0-8-4-8-8z" fill="#12313f"/>
+<path d="M70 236v-44c0-10 8-16 18-14l40 8c14 3 26-4 32-16l10-22c3-6 10-8 15-4 20 16 40 40 72 50l48 14c18 5 30 18 30 34z" fill="#1d6fa3"/>
+<path d="M70 234h272v4c0 5-4 8-9 8H78c-4 0-8-4-8-8z" fill="#12313f"/>
 <path d="M176 156l14 12M188 146l14 12M200 138l14 12" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
 <path d="M232 196c26 4 52 10 76 18" fill="none" stroke="#9cc9e6" stroke-width="7" stroke-linecap="round"/>
 <path d="M70 214h48" stroke="#9cc9e6" stroke-width="7" stroke-linecap="round"/>

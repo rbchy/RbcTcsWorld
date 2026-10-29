@@ -63,5 +63,6 @@ test('the admin adds the partner link in the product form; only https links are 
   await page.getByTestId('pf-save').click();
   await expect(page.getByTestId('admin-notice')).toHaveText('Product saved');
   await page.getByTestId('admin-product-search').fill(`Partner jacket ${sku}`);
-  await expect(page.getByTestId('apr-partner')).toHaveText('Amazon');
+  // other tests' partner products are in the list too until the search applies: look in this product's row only
+  await expect(page.locator('tr', { hasText: sku }).getByTestId('apr-partner')).toHaveText('Amazon');
 });

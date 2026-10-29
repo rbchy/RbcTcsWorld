@@ -37,7 +37,17 @@ public record ProductRequest(
         /** Optional flash deal: a price below the normal price between two UTC times (all three, or none). */
         @Positive @Digits(integer = 10, fraction = 2) BigDecimal dealPrice,
         java.time.LocalDateTime dealStartsAt,
-        java.time.LocalDateTime dealEndsAt) {
+        java.time.LocalDateTime dealEndsAt,
+        /** Affiliate product (ADR-0020): the partner shop's https link (e.g. an Amazon link with your tag); empty = sold here. */
+        @Size(max = 500) @Pattern(regexp = "^\\s*$|^\\s*https://[^\\s\"'<>]+\\s*$", message = "must be an https:// link")
+        String affiliateUrl) {
+
+    /** Without an affiliate link (older clients, tests). */
+    public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
+                          String variantGroup, String size, String color, BigDecimal dealPrice,
+                          java.time.LocalDateTime dealStartsAt, java.time.LocalDateTime dealEndsAt) {
+        this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, dealPrice, dealStartsAt, dealEndsAt, null);
+    }
 
     /** Without a deal (older clients, tests). */
     public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,

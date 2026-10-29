@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { errorText, money } from '../api';
 import { getSession, go } from '../session';
 import Stars from './Stars';
+import { PartnerButton, PartnerDisclosure } from '../Partner';
 import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
 import { Icon } from '../icons';
@@ -119,6 +120,7 @@ export default function Home() {
       <div className="catalog-layout">
         <aside aria-label={t('filters')}><Filters value={filters} onChange={setFilters} facets={facets} /></aside>
         <div>
+      <PartnerDisclosure urls={products.map(p => p.affiliateUrl)} testId="catalog-partner-disclosure" />
       <section className="grid" data-testid="product-grid">
         {products.map(p => <ProductCard key={p.id} p={p} options={options[p.variantGroup]} onAdd={add} onWish={wish} t={t} />)}
       </section>
@@ -140,6 +142,12 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
       <h2><a href={`#/products/${p.id}`} data-testid="product-name">{p.name}</a></h2>
       <p className="muted">{p.category}</p>
       <Stars average={p.ratingAverage} count={p.ratingCount} />
+      {p.affiliateUrl ? (                                        /* partner product (ADR-0020): no price, no cart */
+        <div className="row">
+          <PartnerButton product={p} />
+          <button className="ghost" data-testid="add-to-wishlist" title={t('saveWishlist')} aria-label={`${t('saveWishlist')}: ${p.name}`} onClick={() => onWish(p.id)}><Icon name="heart" /></button>
+        </div>
+      ) : <>
       <p><Price p={p} /></p>
       {isLive(p) && <Countdown endsAt={p.dealEndsAt} />}
       <p className="muted" data-testid="product-stock">{t('stock')}: {p.stock}</p>
@@ -151,6 +159,7 @@ function ProductCard({ p, options, onAdd, onWish, t }) {
         </button>
         <button className="ghost" data-testid="add-to-wishlist" title={t('saveWishlist')} aria-label={`${t('saveWishlist')}: ${p.name}`} onClick={() => onWish(p.id)}><Icon name="heart" /></button>
       </div>
+      </>}
     </article>
   );
 }

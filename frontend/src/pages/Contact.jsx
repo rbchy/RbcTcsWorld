@@ -71,7 +71,7 @@ export default function Contact() {
         <p role="status">{t('contactSent', { ticket: sent.ticket, days: sent.replyDays })}</p>
         <p className="ticket" data-testid="contact-ticket">{sent.ticket}</p>
         <p className="row">
-          <a href="#/" className="button">{t('navCatalog')}</a>
+          <a href="#/" className="button-link">{t('navCatalog')}</a>
           <button type="button" className="ghost" onClick={() => setSent(null)} data-testid="contact-again">{t('contactAgain')}</button>
         </p>
       </section>

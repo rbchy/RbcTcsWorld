@@ -727,3 +727,9 @@ article, .card { border-radius: 16px; }
 .message-reply { white-space: pre-wrap; overflow-wrap: anywhere; margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--line); }
 .badge.msg-NEW { background: #fff3e0; color: #8a4b00; }
 .badge.msg-ANSWERED { background: #e7f5ec; color: var(--ok); }
+
+/* partner (affiliate) products, ADR-0020 */
+.partner-button { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.partner-disclosure { font-size: 13px; color: var(--muted, #555); background: #fff8e1; border-left: 3px solid #f4b04a; padding: 6px 10px; border-radius: 4px; margin: 8px 0; }
+.partner-box { display: grid; gap: 8px; justify-items: start; }
+.partner-tag { background: #fff3e0; color: #8a4b00; }

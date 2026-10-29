@@ -12,7 +12,7 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 | Sales tax | Stripe Tax by delivery address (phase 3, done); flat 6 % until switched on | correct rate by state and product (for example Stripe Tax), Pennsylvania sales tax license | Engineering; owner + accountant |
 | Shipping | Shippo labels and carrier tracking (phase 3, done); made-up numbers until switched on | carrier rates and labels (for example Shippo or EasyPost) | Engineering; owner opens the account |
 | E-mail | Amazon SES from the store's domain, bounce suppression (phase 3, done); Mailpit until the domain exists | a mail service, the store's own domain, SPF and DKIM | Engineering + owner (domain) |
-| Products | 10 sample products with drawn pictures; photo upload from the admin form ([ADR-0017](../adr/0017-product-photo-uploads.md), done) | real products, photos, descriptions, suppliers | Owner |
+| Products | 10 sample products with drawn pictures; photo upload from the admin form ([ADR-0017](../adr/0017-product-photo-uploads.md), done); partner (affiliate) products such as Amazon links ([ADR-0020](../adr/0020-affiliate-products.md), done) | real products, photos, descriptions, suppliers; or an Amazon Associates account to start with partner products | Owner |
 | Hosting | demo server (nightly reset) and a production stack with backups, restore drill and alerts (phase 5) | a second server, the domain, a backup bucket | Owner |
 | Legal | policy pages and cookie notice (drafts, phase 4) | business registration (LLC, EIN), sales tax license, a lawyer's review of the policies | Owner + lawyer |
 | Customer service | contact form with a ticket number and a promised answer time, Admin -> Messages ([ADR-0018](../adr/0018-contact-form.md), done) | answering within the promised time | Owner |
@@ -51,8 +51,9 @@ Phase 2 does exactly that (ADR-0011).
    1600 px, no EXIF/GPS), stored in the database so the backups cover it ([ADR-0017](../adr/0017-product-photo-uploads.md),
    [guide (Bangla)](../modules/PRODUCT_PHOTOS_BN.md)). A contact form and Admin -> Messages ([ADR-0018](../adr/0018-contact-form.md),
    [guide (Bangla)](../modules/CONTACT_FORM_BN.md)). Page titles, product data and a sitemap for search engines
-   ([ADR-0019](../adr/0019-search-engines.md), [guide (Bangla)](../modules/SEARCH_ENGINES_BN.md)). Nothing left for
-   engineering before phase 6.
+   ([ADR-0019](../adr/0019-search-engines.md), [guide (Bangla)](../modules/SEARCH_ENGINES_BN.md)). Partner (affiliate) products, e.g. Amazon
+   links, to earn before the shop sells its own ([ADR-0020](../adr/0020-affiliate-products.md),
+   [guide (Bangla)](../modules/AFFILIATE_PRODUCTS_BN.md)). Nothing left for engineering before phase 6.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
 
 ## 3. Running costs (estimates)

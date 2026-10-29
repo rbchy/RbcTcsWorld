@@ -88,6 +88,18 @@ class OrderServiceTest {
         verify(orders, never()).save(any());
     }
 
+    /** REQ-AFF-02: a product that became an affiliate product while in the cart cannot be ordered here (ADR-0020). */
+    @Test
+    void aPartnerProductInTheCartStopsTheOrder() {
+        mouse.changeAffiliateUrl("https://www.amazon.com/dp/B000TEST?tag=shop-20");
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+
+        assertThatThrownBy(() -> service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("sold by our partner shop").hasMessageEndingWith("remove it from the cart");
+        verify(orders, never()).save(any());
+    }
+
     @Test
     void placeOrderSnapshotsPricesReservesStockAndClearsCart() {
         // cart order is keyboard then mouse; reservations must happen in product-id order (deadlock safety)

@@ -147,6 +147,11 @@ function Terms({ d }) {
       <p>Orders ship to addresses in the United States. Shipping costs and times are in the shipping policy; returns and
         refunds in the return and refund policy.</p>
 
+      <h2>Products sold by partner shops</h2>
+      <p>Some products are marked "Buy at" another shop, for example Amazon. You buy those from that shop, under its
+        prices, terms, delivery and returns; we are not the seller. We may earn a commission when you buy through such a
+        link; your price stays the same.</p>
+
       <h2>Reviews</h2>
       <p>Reviews must be about the product and honest. You keep the rights to what you write and allow us to show it in the
         shop. We may hide reviews that are offensive, off-topic or misleading.</p>

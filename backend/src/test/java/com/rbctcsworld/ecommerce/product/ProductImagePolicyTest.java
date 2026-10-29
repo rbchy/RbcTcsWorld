@@ -48,4 +48,13 @@ class ProductImagePolicyTest {
         assertThatThrownBy(() -> policy(true).checkUpload())
                 .isInstanceOf(BusinessRuleException.class).hasMessage(ProductImagePolicy.DEMO_UPLOAD_MESSAGE);
     }
+
+    @Test
+    void partnerLinksAreOnlyRefusedInTheDemo() {
+        assertThatCode(() -> policy(false).checkAffiliate("https://www.amazon.com/dp/B000")).doesNotThrowAnyException();
+        assertThatCode(() -> policy(true).checkAffiliate(" ")).doesNotThrowAnyException();
+        assertThatCode(() -> policy(true).checkAffiliate(null)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> policy(true).checkAffiliate("https://www.amazon.com/dp/B000"))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(ProductImagePolicy.DEMO_AFFILIATE_MESSAGE);
+    }
 }

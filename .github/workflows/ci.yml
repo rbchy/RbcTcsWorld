@@ -664,11 +664,30 @@ jobs:
           api -X POST https://localhost/api/cart/items -H "Authorization: Bearer $customer" -d "{\"productId\":$product,\"quantity\":1}" > /dev/null
           order=$(api -X POST https://localhost/api/orders -H "Authorization: Bearer $customer" -d '{"shippingAddress":{"fullName":"Ada Lovelace","line1":"12 Main St","city":"Pittsburgh","state":"PA","zip":"15213"}}' | jq -r .id)
           test "$order" != null
+          # a 4 MB product photo goes through Caddy and nginx (1 MB everywhere else) and becomes the product's picture
+          python3 - "$RUNNER_TEMP/photo.png" <<'PY'
+          import os, struct, sys, zlib
+          w, h = 1400, 1000                                   # random pixels: does not compress, about 4 MB
+          raw = b''.join(b'\x00' + os.urandom(w * 3) for _ in range(h))
+          def chunk(t, d): return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+          png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 1)) + chunk(b'IEND', b'')
+          open(sys.argv[1], 'wb').write(png)
+          PY
+          picture=$(curl -sk -X POST https://localhost/api/products/pictures -H "Authorization: Bearer $admin" -F "file=@$RUNNER_TEMP/photo.png" | jq -r .url)
+          [[ "$picture" =~ ^/api/products/pictures/[0-9a-f]{64}\.jpg$ ]] || { echo "::error::photo upload failed: $picture"; exit 1; }
+          echo "PICTURE=$picture" >> "$GITHUB_ENV"
+          api -X PUT "https://localhost/api/products/$product" -H "Authorization: Bearer $admin" \
+              -d "{\"name\":\"Backup proof\",\"sku\":\"CI-BKP-1\",\"price\":10,\"stock\":5,\"imageUrl\":\"$picture\"}" | jq -e ".imageUrl == \"$picture\""
+          curl -sk -D - -o /dev/null "https://localhost$picture" | tee "$RUNNER_TEMP/picture.headers"
+          grep -qi '^content-type: image/jpeg' "$RUNNER_TEMP/picture.headers"
+          grep -qi '^cache-control:.*immutable' "$RUNNER_TEMP/picture.headers"
+          head -c 2000000 /dev/zero | tr '\0' 'a' > "$RUNNER_TEMP/big.json"
+          test "$(curl -sk -o /dev/null -w '%{http_code}' -X POST https://localhost/api/auth/login -H 'Content-Type: application/json' --data-binary @"$RUNNER_TEMP/big.json")" = 413
           deploy/production/backup.sh
           file=$(jq -r .file "$BACKUP_DIR/latest.json")
           head -c 8 "$BACKUP_DIR/$file" | grep -q Salted__ || { echo "::error::backup is not encrypted"; exit 1; }
           ! grep -q PGDMP "$BACKUP_DIR/$file" || { echo "::error::plain dump inside"; exit 1; }
-          jq -e '.rows.users >= 2 and .rows.orders >= 1' "$BACKUP_DIR/latest.json"
+          jq -e '.rows.users >= 2 and .rows.orders >= 1 and .rows.product_pictures >= 1' "$BACKUP_DIR/latest.json"
           $S3 ls s3://rbctcsworld-backups/rbctcsworld/ | tee /dev/stderr | grep -q "$file"
           echo "::notice title=Backup::$file encrypted, manifest $(jq -c .rows "$BACKUP_DIR/latest.json"), copied to the bucket"
       - name: Restore drill - a damaged backup is caught, the off-site copy restores
@@ -692,7 +711,8 @@ jobs:
           CURL_OPTS=-k deploy/production/restore.sh "$(jq -r .file "$BACKUP_DIR/latest.json")" --yes
           test "$(api -X POST https://localhost/api/auth/login -d '{"email":"later@ci.test","password":"Later-Pass-1"}')" = 401
           test "$(api -X POST https://localhost/api/auth/login -d '{"email":"buyer@ci.test","password":"Buyer-Pass-1"}')" = 200
-          echo "::notice title=Restore::the store is back at the backup: later account gone, the customer is there"
+          test "$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost$PICTURE")" = 200        # the photo came back too
+          echo "::notice title=Restore::the store is back at the backup: later account gone, the customer and the product photo are there"
       - name: Health check - quiet while fine, one alert per change, recovery reported
         run: |
           exec > >(tee -a "$RUNNER_TEMP/steps.log") 2>&1

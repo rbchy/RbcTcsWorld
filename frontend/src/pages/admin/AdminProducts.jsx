@@ -3,6 +3,10 @@ import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
 import ProductImage, { IMAGE_URL } from '../../ProductImage';
+import { ACCEPT, PhotoError, preparePhoto, uploadName } from '../../photo';
+
+/** The public demo build (VITE_DEMO=true): photo uploads are off there (the backend refuses them too, ADR-0017). */
+const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 const PAGE = 25;
 const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '' };
@@ -71,6 +75,7 @@ export default function AdminProducts() {
   const [applied, setApplied] = useState(NO_FILTER);    // advanced search in use
   const [advErrors, setAdvErrors] = useState({});
   const [categories, setCategories] = useState([]);
+  const [photo, setPhoto] = useState({});          // {busy} | {ok} | {error} for the photo upload
 
   useEffect(() => { api.get('/products/categories').then(r => setCategories(r.data)).catch(() => {}); }, []);
 
@@ -95,7 +100,7 @@ export default function AdminProducts() {
   };
 
   const open = p => {
-    setErrors({}); setOk(''); setError(''); setConfirm(null);
+    setErrors({}); setOk(''); setError(''); setConfirm(null); setPhoto({});
     setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
       variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
       dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16) } : { ...EMPTY });
@@ -104,6 +109,25 @@ export default function AdminProducts() {
     const next = { ...form, [k]: e.target.value };
     setForm(next);
     if (errors[k]) setErrors(validateProduct(next));
+  };
+
+  /** Prepares the chosen photo in the browser, uploads it and puts its address into the picture field. */
+  const uploadPhoto = async e => {
+    const file = e.target.files?.[0];
+    e.target.value = '';                      // choosing the same file again uploads it again
+    if (!file) return;
+    setPhoto({ busy: true });
+    try {
+      const blob = await preparePhoto(file);
+      const data = new FormData();
+      data.append('file', blob, uploadName(blob, file));
+      const r = await api.post('/products/pictures', data);
+      setForm(f => ({ ...f, imageUrl: r.data.url }));
+      setErrors(({ imageUrl, ...rest }) => rest);
+      setPhoto({ ok: t('photoUploaded') });
+    } catch (err) {
+      setPhoto({ error: err instanceof PhotoError ? t(err.key) : err.response?.status === 413 ? t('photoTooBig') : errorText(err) });
+    }
   };
 
   const save = async e => {
@@ -121,6 +145,8 @@ export default function AdminProducts() {
       else await api.post('/products', body);
       setOk(form.id ? t('productUpdated') : t('productSaved'));
       setError(''); setForm(null); load();
+      // the form is long (picture, photo, deal): back to the top, where the notice and the list are
+      window.scrollTo(0, 0);
     } catch (err) { setOk(''); setError(errorText(err)); }
   };
 
@@ -225,10 +251,24 @@ export default function AdminProducts() {
             </Field>
           </fieldset>
           <div className="image-field">
-            <Field id="pf-image" label={t('picture')} error={errors.imageUrl} hint={t('pictureHint')}>
-              <input value={form.imageUrl} onChange={set('imageUrl')} maxLength={500} inputMode="url" spellCheck={false}
-                     placeholder="/products/my-product.svg" data-testid="pf-image" />
-            </Field>
+            <div>
+              <Field id="pf-image" label={t('picture')} error={errors.imageUrl} hint={t('pictureHint')}>
+                <input value={form.imageUrl} onChange={set('imageUrl')} maxLength={500} inputMode="url" spellCheck={false}
+                       placeholder="/products/my-product.svg" data-testid="pf-image" />
+              </Field>
+              {DEMO ? <p className="hint" data-testid="pf-photo-demo">{t('photoDemoOff')}</p> : (
+                <div className="field photo-upload">
+                  <label htmlFor="pf-photo">{photo.busy ? t('photoUploading') : t('photoUpload')}</label>
+                  <input id="pf-photo" type="file" accept={ACCEPT} onChange={uploadPhoto} disabled={!!photo.busy}
+                         aria-describedby="pf-photo-hint" data-testid="pf-photo" />
+                  <span className="hint" id="pf-photo-hint">{t('photoHint')}</span>
+                  <span aria-live="polite">
+                    {photo.ok && <span className="ok" data-testid="pf-photo-ok">{photo.ok}</span>}
+                    {photo.error && <span className="field-error" role="alert" data-testid="pf-photo-error">{photo.error}</span>}
+                  </span>
+                </div>
+              )}
+            </div>
             <ProductImage product={{ category: form.category, imageUrl: errors.imageUrl ? '' : form.imageUrl.trim() }}
                           className="pf-preview" testId="pf-image-preview" eager />
           </div>

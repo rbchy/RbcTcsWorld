@@ -17,12 +17,13 @@ public record ProductRequest(
         @NotNull @Positive @Digits(integer = 10, fraction = 2) BigDecimal price,
         @NotNull @Min(0) Integer stock,
         /**
-         * Optional picture: the storefront's own image (/products/name.svg|png|jpg|webp) or an https:// link.
+         * Optional picture: the storefront's own image (/products/name.svg|png|jpg|webp), an uploaded photo
+         * (/api/products/pictures/<sha256>.jpg|png, ADR-0017) or an https:// link.
          * Anything else (javascript:, data:, http://, quotes or spaces) is refused with 400.
          */
         @Size(max = 500)
-        @Pattern(regexp = "^(/products/[a-z0-9][a-z0-9-]*\\.(svg|png|jpg|webp)|https://[^\\s\"'<>]+)$",
-                message = "must be /products/<name>.svg|png|jpg|webp or an https:// link")
+        @Pattern(regexp = "^(/products/[a-z0-9][a-z0-9-]*\\.(svg|png|jpg|webp)|/api/products/pictures/[0-9a-f]{64}\\.(jpg|png)|https://[^\\s\"'<>]+)$",
+                message = "must be /products/<name>.svg|png|jpg|webp, an uploaded picture or an https:// link")
         String imageUrl,
         /** Variant group shared by the options of one item: letters, digits and dashes, 2-40 (stored in upper case). */
         @Size(max = 40) @Pattern(regexp = "^\\s*$|^\\s*[A-Za-z0-9][A-Za-z0-9-]{1,39}\\s*$",

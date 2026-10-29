@@ -40,4 +40,13 @@ class GlobalExceptionHandlerTest {
         assertThat(r.getStatusCode().value()).isEqualTo(500);
         assertThat(r.getBody().message()).isEqualTo("Unexpected server error").doesNotContain("password");
     }
+
+    /** REQ-CAT-15: a photo above the multipart limit is 413 with the same words as PictureProcessor (ADR-0017). */
+    @Test
+    void aPhotoAboveTheUploadLimitIs413() {
+        ResponseEntity<ApiError> r = handler.tooLarge(
+                new org.springframework.web.multipart.MaxUploadSizeExceededException(10L * 1024 * 1024), req);
+        assertThat(r.getStatusCode().value()).isEqualTo(413);
+        assertThat(r.getBody().message()).isEqualTo("The picture is larger than 10 MB");
+    }
 }

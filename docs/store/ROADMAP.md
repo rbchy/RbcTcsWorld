@@ -12,7 +12,7 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 | Shipping | Shippo labels and carrier tracking (phase 3, done); made-up numbers until switched on | carrier rates and labels (for example Shippo or EasyPost) | Engineering; owner opens the account |
 | E-mail | Amazon SES from the store's domain, bounce suppression (phase 3, done); Mailpit until the domain exists | a mail service, the store's own domain, SPF and DKIM | Engineering + owner (domain) |
 | Products | 10 sample products with drawn pictures | real products, photos, descriptions, suppliers | Owner; engineering adds photo upload |
-| Hosting | one free Oracle server, demo mode, nightly reset | demo mode off, daily backups, monitoring and alerts, a tested restore | Engineering |
+| Hosting | demo server (nightly reset) and a production stack with backups, restore drill and alerts (phase 5) | a second server, the domain, a backup bucket | Owner |
 | Legal | policy pages and cookie notice (drafts, phase 4) | business registration (LLC, EIN), sales tax license, a lawyer's review of the policies | Owner + lawyer |
 | Customer service | none | contact form, response times | Owner |
 | Search engines | none | page titles and descriptions, sitemap, Search Console | Engineering |
@@ -42,6 +42,10 @@ Phase 2 does exactly that (ADR-0011).
    cookie notice, agreement links at sign-up and checkout ([ADR-0015](../adr/0015-policies-from-the-shops-settings.md)).
    *Owner's part, step by step with fees (Bangla):* [PHASE4_BUSINESS_LEGAL_BN.md](../modules/PHASE4_BUSINESS_LEGAL_BN.md).
 6. **Phase 5 - production server (engineering, 1 week):** demo mode off, daily backups, alerts, a restore drill.
+   *Built:* a separate production stack (profile prod, demo off, required settings), daily encrypted backups copied
+   off the server, a weekly restore drill, a restore command, a 5-minute health check with alerts, all proven by the CI
+   job "Production stack" ([ADR-0016](../adr/0016-production-stack-backups-and-alerts.md),
+   [guide (Bangla)](../deploy/PRODUCTION_BN.md)). Left for the owner: the server, the domain, the bucket, the phone app.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
 
 ## 3. Running costs (estimates)

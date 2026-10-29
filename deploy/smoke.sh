@@ -2,9 +2,12 @@
 # Checks a running demo from the outside, like a visitor: HTTPS, storefront, API, pictures, security headers,
 # demo safeguards. Read-only (no account, no order). Used by deploy.sh and by the "Live demo" GitHub workflow.
 #   deploy/smoke.sh https://129-146-10-20.sslip.io
+#   deploy/smoke.sh --production https://your-store.com     the live store: NO demo build, no sample-data checks
 # CURL_OPTS="-k" for a test certificate (CI uses Caddy's local CA).
 set -uo pipefail
-BASE="${1:?usage: smoke.sh https://<demo address>}"
+PRODUCTION=false
+if [ "${1:-}" = "--production" ]; then PRODUCTION=true; shift; fi
+BASE="${1:?usage: smoke.sh [--production] https://<address>}"
 BASE="${BASE%/}"
 CURL="curl -sS --max-time 20 ${CURL_OPTS:-}"
 fail=0
@@ -18,7 +21,11 @@ echo "Smoke test of $BASE"
 html=$($CURL "$BASE/")
 check "storefront answers over HTTPS"           grep -q '<div id="root">' <<<"$html"
 js=$(grep -o '/assets/index-[^"]*\.js' <<<"$html" | head -1)
-check "storefront is the demo build (ribbon)"  bash -c "$CURL '$BASE$js' | grep -q demo-ribbon"
+if [ "$PRODUCTION" = true ]; then
+  check "storefront is NOT the demo build"     bash -c "! $CURL '$BASE$js' | grep -q demo-ribbon"
+else
+  check "storefront is the demo build (ribbon)" bash -c "$CURL '$BASE$js' | grep -q demo-ribbon"
+fi
 check "HSTS header"                             grep -qi '^strict-transport-security:' <<<"$(headers "$BASE/")"
 check "storefront CSP header"                   grep -qi "^content-security-policy:.*frame-ancestors 'none'" <<<"$(headers "$BASE/")"
 if [[ "$BASE" == https://* ]]; then
@@ -27,9 +34,14 @@ if [[ "$BASE" == https://* ]]; then
 fi
 
 products=$($CURL "$BASE/api/products?size=100")
-check "catalog API returns the seeded products" grep -q '"sku":"ELEC-MOUSE-001"' <<<"$products"
-check "products carry their pictures"          grep -q '"imageUrl":"/products/elec-mouse-001.svg"' <<<"$products"
-check "picture file is served as SVG"           grep -qi '^content-type: image/svg+xml' <<<"$(headers "$BASE/products/elec-mouse-001.svg")"
+if [ "$PRODUCTION" = true ]; then
+  check "catalog API answers with a product list" jq -e 'type == "array"' <<<"$products"
+  check "policy pages get the store's details"  bash -c "$CURL '$BASE/api/store/legal' | grep -q '\"returnWindowDays\"'"
+else
+  check "catalog API returns the seeded products" grep -q '"sku":"ELEC-MOUSE-001"' <<<"$products"
+  check "products carry their pictures"          grep -q '"imageUrl":"/products/elec-mouse-001.svg"' <<<"$products"
+  check "picture file is served as SVG"           grep -qi '^content-type: image/svg+xml' <<<"$(headers "$BASE/products/elec-mouse-001.svg")"
+fi
 check "fallback picture is served"              grep -qi '^HTTP/[0-9.]* 200' <<<"$(headers "$BASE/products/product.svg")"
 check "API sends its strict CSP"                grep -qi "^content-security-policy: default-src 'none'" <<<"$(headers "$BASE/api/products")"
 

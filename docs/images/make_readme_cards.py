@@ -9,8 +9,8 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #13 (commit 667e829, 29 Oct 2026) ----
-AS_OF = "PR #13 @ 667e829 · 29 Oct 2026"
+# ---- from the GitHub Actions run of PR #14 (commit b0ecef6, 29 Oct 2026) ----
+AS_OF = "PR #14 @ b0ecef6 · 29 Oct 2026"
 LEVELS = [  # (label, tests, colour)
     ("Backend unit + integration", 1004, "#4fb3a9"),
     ("API · DB · BDD · Selenium UI", 451, "#f4b04a"),
@@ -21,7 +21,7 @@ SKIPPED = 3
 GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.3 %", "Mutation 88.1 %", "Contract: consumer",
          "Contract: provider", "Accessibility", "Firefox + Edge", "Performance (k6)", "OWASP ZAP",
          "Dependencies (OSV)", "Docker smoke", "Traceability", "Jenkinsfile lint", "Public demo stack",
-         "Playwright", "Android (Appium)", "iOS (Appium)"]
+         "Playwright", "Android (Appium)", "iOS (Appium)", "Production stack"]
 
 # ---- from the GitHub API and git (same day) ----
 # The git history of the code is kept from the E-Commerce Suite (4 to 24 Oct); the store repository starts on 25 Oct.
@@ -33,7 +33,7 @@ LANGUAGES = [("Java", 73.9, "#b07219"), ("JavaScript", 16.0, "#f1e05a"), ("TypeS
              ("CSS", 2.7, "#663399"), ("Other", 3.4, "#b4add8")]  # Gherkin, Shell, Python, Makefile, HTML, Docker
 # the road to launch (docs/store/ROADMAP.md): (phase, short name, state) - state: done | now | next | later
 PHASES = [("0", "Products and brand", "now"), ("1", "Foundation", "done"), ("2", "Safe card payments", "done"),
-          ("3", "Tax, shipping, e-mail", "done"), ("4", "Business and legal", "now"), ("5", "Production server", "later"),
+          ("3", "Tax, shipping, e-mail", "done"), ("4", "Business and legal", "now"), ("5", "Production server", "now"),
           ("6", "UAT and launch", "later")]
 
 # the store's colours: indigo frame, sunflower titles
@@ -54,19 +54,19 @@ def tile(x, y, w, big, label, sub):
 
 def status_board():
     total = sum(n for _, n, _ in LEVELS)
-    w, h = 1000, 700
+    w, h = 1000, 740
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
          f'aria-label="Project status board: {total} automated tests, {total - SKIPPED} passed and {SKIPPED} skipped by design; '
-         f'18 of 18 CI gates passed; 97.3 percent line coverage; 88.1 percent mutation score; 139 of 139 requirements traced; '
-         f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal in progress.">',
+         f'19 of 19 CI gates passed; 97.3 percent line coverage; 88.1 percent mutation score; 142 of 142 requirements traced; '
+         f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal in progress, phase 5 production server built.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, TITLE, 700),
          text(32, 72, f"RbcTcsWorld Shop · {AS_OF} · every gate green", 13, MUTED)]
     tiles = [(f"{total:,}", "automated tests", f"{total - SKIPPED:,} passed · {SKIPPED} skipped"),
-             ("18 / 18", "CI gates passed", "GitHub Actions + Jenkins"),
+             ("19 / 19", "CI gates passed", "GitHub Actions + Jenkins"),
              ("97.3 %", "line coverage", "94.8 % branches (JaCoCo)"),
              ("88.1 %", "mutation score", "test strength 94.7 % (PIT)"),
-             ("139 / 139", "requirements traced", "checked on every push")]
+             ("142 / 142", "requirements traced", "checked on every push")]
     tw = (w - 64 - 4 * 12) / 5
     for i, (big, label, sub) in enumerate(tiles):
         p.append(tile(32 + i * (tw + 12), 92, tw, big, label, sub))
@@ -96,16 +96,16 @@ def status_board():
         p.append(text(round(cx + 34, 1), cy + 20, f"{i + 1:>2}  {g}".strip(), 12.5, INK))
 
     # road to launch
-    p.append(text(32, 600, "Road to launch (docs/store/ROADMAP.md)", 15, INK, 700))
+    p.append(text(32, 640, "Road to launch (docs/store/ROADMAP.md)", 15, INK, 700))
     fills = {"done": OK, "now": TITLE, "next": "#8fb8de", "later": PANEL}
     words = {"done": "done", "now": "in progress", "next": "next", "later": "planned"}
     pw = (w - 64 - 6 * 8) / 7
     for i, (num, name, state) in enumerate(PHASES):
         px = 32 + i * (pw + 8)
         dark = state != "later"
-        p.append(f'<rect x="{px:.1f}" y="612" width="{pw:.1f}" height="60" rx="10" fill="{fills[state]}"/>')
-        p.append(text(round(px + 10, 1), 634, f"Phase {num} · {words[state]}", 10.5, BG if dark else MUTED, 700))
-        p.append(text(round(px + 10, 1), 656, name, 11.5, BG if dark else INK, 600))
+        p.append(f'<rect x="{px:.1f}" y="652" width="{pw:.1f}" height="60" rx="10" fill="{fills[state]}"/>')
+        p.append(text(round(px + 10, 1), 674, f"Phase {num} · {words[state]}", 10.5, BG if dark else MUTED, 700))
+        p.append(text(round(px + 10, 1), 696, name, 11.5, BG if dark else INK, 600))
     p.append("</svg>")
     (OUT / "project-status.svg").write_text("\n".join(p) + "\n", encoding="utf-8")
 

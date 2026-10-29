@@ -1,0 +1,130 @@
+# The REAL store on one server (store Phase 5). Guide (Bangla): docs/deploy/PRODUCTION_BN.md
+#
+#   deploy/production/setup-prod.sh      once: Docker, firewall, deploy/production/.env with random secrets, cron jobs
+#   deploy/production/deploy-prod.sh     every update: backup first, then build, start, wait, smoke test
+#
+# Differences to the public demo (deploy/docker-compose.yml):
+#   - Spring profile 'prod', DEMO_MODE off, no demo ribbon: live Stripe keys are only accepted here
+#   - no Mailpit: order e-mail goes out through Amazon SES from the store's domain (or the log until then)
+#   - no nightly reset: the data is the business. Instead: daily encrypted backups (backup.sh), copied off the
+#     server, a weekly restore drill (restore-drill.sh) and a health check every 5 minutes (healthcheck.sh)
+#   - every setting the store cannot run without is required (${VAR:?}): a forgotten one stops the start
+name: rbctcsworld-prod
+
+x-backend-env: &backend-env
+  SPRING_PROFILES_ACTIVE: prod
+  DEMO_MODE: "false"
+  DB_HOST: postgres
+  DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/production/.env}
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in deploy/production/.env}
+  ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in deploy/production/.env}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in deploy/production/.env}
+  PUBLIC_URL: https://${STORE_DOMAIN}
+  API_DOCS_ENABLED: "false"
+  LOGIN_STORE: redis
+  REDIS_URL: redis://redis:6379
+  # payments, tax, shipping, e-mail: chosen explicitly for the live store (docs/deploy/PRODUCTION_BN.md)
+  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:?set PAYMENT_PROVIDER (stripe, or mock before launch)}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  TAX_PROVIDER: ${TAX_PROVIDER:-flat}
+  SHIPPING_PROVIDER: ${SHIPPING_PROVIDER:-simulated}
+  SHIPPO_TOKEN: ${SHIPPO_TOKEN:-}
+  SHIPPO_WEBHOOK_TOKEN: ${SHIPPO_WEBHOOK_TOKEN:-}
+  SHIP_FROM_NAME: ${SHIP_FROM_NAME:-RbcTcsWorld Shop}
+  SHIP_FROM_STREET: ${SHIP_FROM_STREET:-}
+  SHIP_FROM_CITY: ${SHIP_FROM_CITY:-}
+  SHIP_FROM_STATE: ${SHIP_FROM_STATE:-}
+  SHIP_FROM_ZIP: ${SHIP_FROM_ZIP:-}
+  SHIP_FROM_PHONE: ${SHIP_FROM_PHONE:-}
+  NOTIFICATIONS_CHANNEL: ${NOTIFICATIONS_CHANNEL:?set NOTIFICATIONS_CHANNEL (ses, or log before the domain)}
+  MAIL_FROM: ${MAIL_FROM:-RbcTcsWorld <orders@rbctcsworld.test>}
+  SES_REGION: ${SES_REGION:-}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+  SES_CONFIGURATION_SET: ${SES_CONFIGURATION_SET:-}
+  SES_SNS_TOPIC_ARN: ${SES_SNS_TOPIC_ARN:-}
+  STORE_LEGAL_NAME: ${STORE_LEGAL_NAME:-}
+  STORE_STREET: ${STORE_STREET:-}
+  STORE_CITY: ${STORE_CITY:-}
+  STORE_STATE: ${STORE_STATE:-}
+  STORE_ZIP: ${STORE_ZIP:-}
+  STORE_CONTACT_EMAIL: ${STORE_CONTACT_EMAIL:-}
+  STORE_POLICIES_EFFECTIVE: ${STORE_POLICIES_EFFECTIVE:-2026-10-28}
+  STORE_POLICIES_REVIEWED: ${STORE_POLICIES_REVIEWED:-false}
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/production/.env}
+    volumes: ["prod-pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-ttl"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+
+  backend:
+    build: ../../backend
+    image: rbctcsworld/backend:prod
+    restart: unless-stopped
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    mem_limit: 1536m
+
+  frontend:
+    build:
+      context: ../../frontend
+      args:
+        VITE_DEMO: "false"
+    image: rbctcsworld/frontend:prod
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      STORE_DOMAIN: ${STORE_DOMAIN:?set STORE_DOMAIN in deploy/production/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - prod-caddy-data:/data           # certificates: keep them, Let's Encrypt limits new ones
+      - prod-caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 128m
+
+volumes:
+  prod-pgdata: {}
+  prod-caddy-data: {}
+  prod-caddy-config: {}

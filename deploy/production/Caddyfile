@@ -8,7 +8,13 @@
 		-Server
 	}
 
-	request_body {
+	# 1 MB is plenty for the API; product photo uploads (ADR-0017, admin only) may be up to 10 MB
+	@photoUpload path /api/products/pictures
+	request_body @photoUpload {
+		max_size 11MB
+	}
+	@notPhotoUpload not path /api/products/pictures
+	request_body @notPhotoUpload {
 		max_size 1MB
 	}
 

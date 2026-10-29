@@ -5,6 +5,12 @@ spring:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ecommerce}
     username: ${DB_USER:ecommerce}
     password: ${DB_PASSWORD:ecommerce}
+  # product photo uploads (ADR-0017): PictureProcessor refuses more than 10 MB with a clear message; the request may
+  # be a little larger because of the multipart framing
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   jpa:
     hibernate:
       ddl-auto: validate   # Flyway owns the schema; Hibernate only checks entities match it

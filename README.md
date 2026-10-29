@@ -52,11 +52,11 @@ pie showData
 
 ```mermaid
 pie showData
-    title 142 traced requirements by area
+    title 143 traced requirements by area
     "Orders and inventory" : 16
     "Identity and access" : 16
     "Non-functional" : 20
-    "Catalog" : 14
+    "Catalog" : 15
     "Storefront UI" : 14
     "Pricing, coupons, payments" : 16
     "Reviews and wishlist" : 11
@@ -92,9 +92,10 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 |---|---|
 | Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
-| Quality bar | 1,792 automated tests, 19 CI quality gates, 97.3 % line coverage, 88.1 % mutation score, 139 traced requirements |
+| Quality bar | 1,792 automated tests, 19 CI quality gates, 97.3 % line coverage, 88.1 % mutation score, 143 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
 | Phase 3 (done) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
+| Product photos (done) | The owner uploads a photo from the admin form (phone or computer); the backend turns it upright, scales it to 1600 px and saves a new file without EXIF or GPS data, in the database so the backups cover it ([ADR-0017](docs/adr/0017-product-photo-uploads.md)) |
 | Not decided yet | what the store sells, where the products come from (phase 0, owner) |
 
 ## Roadmap to launch
@@ -152,7 +153,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
 | 12 | Containers | stack healthy, smoke tests pass | 63 / 63 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 142 / 142 | `docs/qa/check_rtm.py` |
+| 13 | Traceability | every requirement has a test | 143 / 143 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
 | 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 326 / 326 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
@@ -178,7 +179,8 @@ the plan, not a footnote.
   on refunds, and an admin view of bounced e-mail addresses (listed in ADR-0012, 0013 and 0014).
 - **Only the demo server is online.** The production stack (backups, restore drill, alerts) is built and proven in CI; it needs its own server and domain (phase 5).
 - **No business yet:** the policy pages exist as drafts with placeholders; LLC, EIN, sales tax license and a lawyer's review come next (phase 4).
-- **Products are samples** with drawn pictures until the owner decides what to sell (phase 0).
+- **Products are samples** with drawn pictures until the owner decides what to sell (phase 0); photo upload is ready for the real ones.
+- **Not built yet:** a contact form for customers, page titles and a sitemap for search engines.
 
 ---
 
@@ -250,11 +252,12 @@ The automation suite needs the backend on 8081 (and the storefront on 5173 for U
 [ADR-0013: Shippo](docs/adr/0013-shippo-labels-and-tracking.md) · [Shippo guide (Bangla)](docs/modules/SHIPPO_SHIPPING_BN.md) ·
 [ADR-0014: Amazon SES](docs/adr/0014-amazon-ses-mail.md) · [SES guide (Bangla)](docs/modules/AMAZON_SES_MAIL_BN.md) ·
 [ADR-0015: policies](docs/adr/0015-policies-from-the-shops-settings.md) ·
-[ADR-0016: production stack](docs/adr/0016-production-stack-backups-and-alerts.md) · [Production server guide (Bangla)](docs/deploy/PRODUCTION_BN.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
+[ADR-0016: production stack](docs/adr/0016-production-stack-backups-and-alerts.md) · [Production server guide (Bangla)](docs/deploy/PRODUCTION_BN.md) ·
+[ADR-0017: product photos](docs/adr/0017-product-photo-uploads.md) · [Product photo guide (Bangla)](docs/modules/PRODUCT_PHOTOS_BN.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
 [The inherited foundation](docs/FOUNDATION.md)
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (142 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (143 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (29)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
 [UAT Plan](docs/qa/UAT_PLAN.md) · [UAT Summary](docs/qa/UAT_SUMMARY.md)
 

@@ -62,6 +62,16 @@ class DemoModeIntegrationTest {
                 .andExpect(jsonPath("$.imageUrl").value("/products/home-mug-002.svg"));
     }
 
+    /** REQ-CAT-15: anybody can be the admin of the demo, so photo uploads are switched off there (ADR-0017). */
+    @Test
+    void photoUploadsAreSwitchedOffInTheDemo() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/products/pictures")
+                        .file(new org.springframework.mock.web.MockMultipartFile("file", "a.png", "image/png", new byte[]{1, 2, 3}))
+                        .header("Authorization", "Bearer " + adminToken()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("does not take photo uploads")));
+    }
+
     @Test
     void developmentAdminPasswordDoesNotExistHere() throws Exception {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

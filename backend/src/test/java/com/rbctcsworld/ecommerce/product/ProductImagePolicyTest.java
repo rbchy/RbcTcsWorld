@@ -41,4 +41,11 @@ class ProductImagePolicyTest {
     void noPictureIsAlwaysFine(String url) {
         assertThatCode(() -> policy(true).check(url)).doesNotThrowAnyException();
     }
+
+    @Test
+    void photoUploadsAreOnlyRefusedInTheDemo() {
+        assertThatCode(() -> policy(false).checkUpload()).doesNotThrowAnyException();
+        assertThatThrownBy(() -> policy(true).checkUpload())
+                .isInstanceOf(BusinessRuleException.class).hasMessage(ProductImagePolicy.DEMO_UPLOAD_MESSAGE);
+    }
 }

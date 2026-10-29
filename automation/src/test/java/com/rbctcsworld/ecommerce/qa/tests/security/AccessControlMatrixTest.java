@@ -44,6 +44,9 @@ class AccessControlMatrixTest {
             "POST,   /api/products,                         401, 403, 400",
             "PUT,    /api/products/{pid},                     401, 403, 400",
             "DELETE, /api/products/99999999,                401, 403, 404",
+            // product photos (ADR-0017): only an admin uploads, and only as multipart (a JSON body is 415); pictures are public
+            "POST,   /api/products/pictures,                401, 403, 415",
+            "GET,    /api/products/pictures/0000000000000000000000000000000000000000000000000000000000000000.jpg, 404, 404, 404",
             "GET,    /api/cart,                             401, 200, 200",
             "GET,    /api/orders,                           401, 200, 200",
             "GET,    /api/wishlist,                         401, 200, 200",

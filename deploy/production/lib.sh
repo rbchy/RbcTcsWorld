@@ -35,4 +35,4 @@ s3_url() { echo "s3://$BACKUP_S3_BUCKET/${BACKUP_S3_PREFIX:-rbctcsworld}/$1"; }
 
 # tables that only ever grow (nothing deletes their rows): the restore drill checks a restored backup has at least
 # as many rows as the manifest recorded just before the dump
-KEY_TABLES="users orders order_items payment_transactions audit_log flyway_schema_history"
+KEY_TABLES="users orders order_items payment_transactions audit_log product_pictures flyway_schema_history"

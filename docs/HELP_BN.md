@@ -347,7 +347,7 @@ flowchart TD
 
 | ফর্ম | নিয়ম |
 |---|---|
-| Product | নাম আর SKU লাগবেই; দাম > 0, সর্বোচ্চ ২ দশমিক; স্টক ০ বা তার বেশি পূর্ণ সংখ্যা; ছবি খালি, `/products/<নাম>.svg/png/jpg/webp` অথবা `https://` লিংক |
+| Product | নাম আর SKU লাগবেই; দাম > 0, সর্বোচ্চ ২ দশমিক; স্টক ০ বা তার বেশি পূর্ণ সংখ্যা; ছবি খালি, `/products/<নাম>.svg/png/jpg/webp`, আপলোড করা ছবি (`/api/products/pictures/<sha256>.jpg/png`) অথবা `https://` লিংক |
 | Coupon | কোডে শুধু অক্ষর, সংখ্যা, `_`, `-`; মান > 0; PERCENT হলে ≤ ১০০; সর্বোচ্চ ব্যবহার ≥ ১ |
 
 > Products-এর খোঁজা শুধু **নাম** মেলায়, SKU না (DEF-023)।
@@ -356,7 +356,8 @@ flowchart TD
 
 - সিড করা ৮টা পণ্যের নিজস্ব ছবি আছে: `frontend/public/products/<sku ছোট হাতে>.svg` (যেমন `elec-mouse-001.svg`)। এগুলো এই প্রজেক্টের জন্য আঁকা নিজস্ব SVG, কোনো কপিরাইটের ঝামেলা নেই।
 - ছবি না থাকলে বা লিংক লোড না হলে category-র ছবি দেখায়: `electronics.svg`, `home.svg`, `books.svg`, বাকি সবার জন্য `product.svg` (পার্সেল বাক্স)। তাই কখনো ভাঙা ছবির আইকন দেখা যায় না।
-- নতুন ছবি দিতে: ফাইলটা `frontend/public/products/`-এ রাখুন (নাম ছোট হাতের অক্ষর, সংখ্যা, `-`), তারপর Products → Edit → **Picture** ঘরে `/products/নাম.png` লিখে Update। অথবা যেকোনো `https://` লিংক। ঘরের পাশে সাথে সাথে preview দেখায়।
+- **ছবি আপলোড (সবচেয়ে সহজ):** Products → Edit → **Upload a photo**-তে ফোন বা কম্পিউটারের ছবি বাছুন (JPEG, PNG বা WebP, ১০ MB পর্যন্ত)। ছবিটা সোজা করা হয়, ১৬০০ px-এ ছোট করা হয়, লোকেশনসহ সব লুকানো তথ্য মুছে ফেলা হয়, তারপর Picture ঘরে `/api/products/pictures/<নাম>.jpg` বসে যায়। এরপর **Update** দিলে ছবিটা দোকানে দেখায়। ছবিগুলো database-এ থাকে, তাই প্রতিদিনের backup-এ সেগুলোও থাকে ([ADR-0017](adr/0017-product-photo-uploads.md))। পাবলিক ডেমোতে আপলোড বন্ধ।
+- নতুন ছবি দিতে (ফাইল দিয়ে): ফাইলটা `frontend/public/products/`-এ রাখুন (নাম ছোট হাতের অক্ষর, সংখ্যা, `-`), তারপর Products → Edit → **Picture** ঘরে `/products/নাম.png` লিখে Update। অথবা যেকোনো `https://` লিংক। ঘরের পাশে সাথে সাথে preview দেখায়।
 - `javascript:`, `data:`, `http://`, `../` বা উদ্ধৃতিচিহ্ন থাকা লিংক browser-এও আটকায়, backend-ও 400 দেয় (XSS আর path traversal ঠেকাতে)। nginx-এর CSP-তে তাই `img-src 'self' data: https:` রাখা হয়েছে।
 - সাবধান: Edit করে Picture ঘর খালি করে Update দিলে ছবি মুছে যায় (API-তে `PUT` পুরো পণ্য বদলায়, `imageUrl` না পাঠালে `null`)।
 

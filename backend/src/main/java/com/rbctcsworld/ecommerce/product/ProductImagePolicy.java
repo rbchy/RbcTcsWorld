@@ -29,6 +29,13 @@ public class ProductImagePolicy {
         }
     }
 
+    static final String DEMO_AFFILIATE_MESSAGE = "This demo shop does not take partner (affiliate) links";
+
+    /** Partner links are off in the public demo too: anybody there could point visitors to any site (ADR-0020). */
+    public void checkAffiliate(String affiliateUrl) {
+        if (demo && affiliateUrl != null && !affiliateUrl.isBlank()) throw new BusinessRuleException(DEMO_AFFILIATE_MESSAGE);
+    }
+
     /** Uploads are off in the public demo for the same reason (ADR-0017): any visitor could put any photo online. */
     public void checkUpload() {
         if (demo) throw new BusinessRuleException(DEMO_UPLOAD_MESSAGE);

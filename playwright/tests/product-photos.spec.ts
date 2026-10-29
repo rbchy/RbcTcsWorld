@@ -82,6 +82,6 @@ test('a file that is not a photo gets a clear message and the picture field stay
   await openNewProductForm(page, `Not a photo ${Date.now().toString(36)}`);
   await page.getByTestId('pf-image').fill('/products/home-mug-002.svg');
   await page.getByTestId('pf-photo').setInputFiles({ name: 'notes.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('just some text') });
-  await expect(page.getByTestId('pf-photo-error')).toContainText('JPEG or PNG');
+  await expect(page.getByTestId('pf-photo-error')).toContainText('JPEG or PNG', { timeout: 20_000 });
   await expect(page.getByTestId('pf-image')).toHaveValue('/products/home-mug-002.svg');
 });

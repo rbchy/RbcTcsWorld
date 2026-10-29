@@ -28,6 +28,9 @@ import java.util.List;
 @Transactional
 public class CartService {
 
+    /** An affiliate product (ADR-0020) is bought at the partner shop through its link, never in this cart. */
+    public static final String PARTNER_ONLY = "This product is sold by our partner shop; use the link on its page to buy it";
+
     public static final int MAX_QTY_PER_ITEM = 10;
 
     private final CartItemRepository items;
@@ -89,6 +92,9 @@ public class CartService {
         if (!product.isActive()) {
             throw new NotFoundException("Product not found: " + product.getId());
         }
+        if (product.soldByPartner()) {                  // affiliate product (ADR-0020): bought at the partner shop
+            throw new BusinessRuleException(PARTNER_ONLY);
+        }
         if (quantity > product.getStock()) {
             throw new ConflictException("Insufficient stock for " + product.getSku()
                     + ": requested " + quantity + ", available " + product.getStock());
@@ -115,7 +121,7 @@ public class CartService {
     private CartLine toLine(CartItem i) {
         Product p = i.getProduct();
         BigDecimal lineTotal = p.currentPrice().multiply(BigDecimal.valueOf(i.getQuantity()));
-        boolean available = p.isActive() && p.getStock() >= i.getQuantity();
+        boolean available = p.isActive() && !p.soldByPartner() && p.getStock() >= i.getQuantity();
         return new CartLine(i.getId(), p.getId(), p.getSku(), p.displayName(), p.currentPrice(),
                 i.getQuantity(), lineTotal, available);
     }

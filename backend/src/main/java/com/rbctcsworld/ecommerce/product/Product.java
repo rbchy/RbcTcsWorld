@@ -74,6 +74,10 @@ public class Product {
     @Column(name = "deal_ends_at")
     private LocalDateTime dealEndsAt;
 
+    /** Affiliate product (ADR-0020): bought at the partner shop behind this https link, never in our cart. */
+    @Column(name = "affiliate_url", length = 500)
+    private String affiliateUrl;
+
     protected Product() {
     }
 
@@ -156,6 +160,17 @@ public class Product {
         String options = java.util.stream.Stream.of(color, size).filter(v -> v != null && !v.isBlank())
                 .collect(java.util.stream.Collectors.joining(", "));
         return options.isEmpty() ? name : name + " (" + options + ")";
+    }
+
+    /** Affiliate link: null or blank = an ordinary product sold here. */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getAffiliateUrl() { return affiliateUrl; }
+
+    /** Sold by a partner shop: cannot go into the cart or an order. Not a JSON property (clients read affiliateUrl). */
+    public boolean soldByPartner() { return affiliateUrl != null; }
+
+    public void changeAffiliateUrl(String url) {
+        this.affiliateUrl = url == null || url.isBlank() ? null : url.trim();
     }
 
     /** null or blank = no own picture (the storefront shows the category picture). */

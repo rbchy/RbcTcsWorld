@@ -142,12 +142,14 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@Valid @RequestBody ProductRequest r) {
         images.check(r.imageUrl());
+        images.checkAffiliate(r.affiliateUrl());
         return service.create(r);
     }
 
     @PutMapping("/{id}")
     public Product update(@PathVariable long id, @Valid @RequestBody ProductRequest r) {
         images.check(r.imageUrl());
+        images.checkAffiliate(r.affiliateUrl());
         return service.update(id, r);
     }
 

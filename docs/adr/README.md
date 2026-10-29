@@ -25,5 +25,6 @@
 | [0017](0017-product-photo-uploads.md) | পণ্যের ছবি admin আপলোড করেন; backend নতুন করে আঁকে, database-এ রাখে | ছবির সাথে কোনো লুকানো তথ্য বা script ঢোকে না, ফোনের ছবি সোজা হয়, backup-এ ছবিও থাকে |
 | [0018](0018-contact-form.md) | যোগাযোগ ফর্ম; উত্তর admin পাতা থেকে, ইমেইল outbox দিয়ে, CAPTCHA ছাড়া | প্রতিটা প্রশ্নের রেকর্ড আর উত্তর, ফর্ম spam relay হয় না, অন্যের নামে লেখা যায় না |
 | [0019](0019-search-engines.md) | আসল ঠিকানা (`/products/12/mug`), page tag, JSON-LD, robots.txt আর sitemap; hash router থাকে | Google প্রতিটা পণ্য আলাদা পাতা হিসেবে পায়, ব্যক্তিগত পাতা আর ডেমো কখনো ফলাফলে নয় |
+| [0020](0020-affiliate-products.md) | Partner (affiliate, যেমন Amazon) পণ্য: একটা লিংক, দাম আর cart ছাড়া, ঘোষণাসহ | নিজের পণ্যের আগেই আয়, Amazon আর FTC-র নিয়ম মেনে, partner পণ্য কখনো আমাদের অর্ডারে নয় |
 
 **Interview-এ:** "Architecture-এর প্রতিটা বড় সিদ্ধান্তের ADR আছে: কী বিকল্প ছিল, কেন এটা বেছেছি, আর কী দাম দিতে হয়েছে (যেমন logout-এর পরেও ১৫ মিনিট access token কাজ করে, সেটা জেনে-বুঝে মেনে নেওয়া)।"

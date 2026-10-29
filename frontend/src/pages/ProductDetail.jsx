@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 import { Price, Countdown, isLive } from '../Deal';
 import { compareSizes, pickVariant, slug, swatch, variantLabel } from '../variants';
 import { productPath, useHead } from '../head';
+import { PartnerButton, PartnerDisclosure, partnerName } from '../Partner';
 import { fallbackImage } from '../ProductImage';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
@@ -74,6 +75,15 @@ export default function ProductDetail({ id }) {
         <div>
           <h1 data-testid="detail-name">{product.name}</h1>
           <p className="muted">{product.category} · SKU <span data-testid="detail-sku">{product.sku}</span></p>
+          {product.affiliateUrl ? (
+            /* partner product (ADR-0020): no price here (only the partner shows it), bought through the link */
+            <div className="buy-box partner-box" data-testid="partner-box">
+              <p className="muted">{t('soldAt', { shop: partnerName(product.affiliateUrl) })}</p>
+              <PartnerDisclosure urls={[product.affiliateUrl]} />
+              <PartnerButton product={product} testId="detail-partner-link" />
+              <button className="ghost" data-testid="detail-wishlist" onClick={wish}>Save to wishlist</button>
+            </div>
+          ) : <>
           <p className="detail-price-row"><Price p={product} testId="detail-price" />
             <span className={`stock-note ${product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : 'in'}`} data-testid="detail-stock">
               {product.stock === 0 ? t('outOfStock') : product.stock <= 5 ? t('onlyLeft', { n: product.stock }) : t('inStock')}
@@ -94,6 +104,7 @@ export default function ProductDetail({ id }) {
             <button className="ghost" data-testid="detail-wishlist" onClick={wish}>Save to wishlist</button>
           </div>
           {cartMsg && <p className="ok" role="status" data-testid="detail-cart-notice">{cartMsg} <a href="#/cart">{t('navCart')}</a></p>}
+          </>}
         </div>
       </div>
       {notice && <p data-testid="review-notice" className="ok">{notice}</p>}
@@ -276,7 +287,8 @@ export function productHead(product, variants, reviews, t) {
   const average = Number(reviews?.averageRating ?? product.ratingAverage ?? 0);
   return {
     title: product.name,
-    description: t('metaProduct', { name: product.name, price: money(price) }),
+    description: product.affiliateUrl ? t('metaPartnerProduct', { name: product.name, shop: partnerName(product.affiliateUrl) })
+      : t('metaProduct', { name: product.name, price: money(price) }),
     path,
     jsonLd: {
       '@context': 'https://schema.org',
@@ -286,13 +298,13 @@ export function productHead(product, variants, reviews, t) {
       ...(product.category ? { category: product.category } : {}),
       image: image.startsWith('/') ? `${origin}${image}` : image,
       url: `${origin}${path}`,
-      offers: {
+      ...(product.affiliateUrl ? {} : { offers: {
         '@type': 'Offer',
         price: Number(price).toFixed(2),
         priceCurrency: 'USD',
         availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
         url: `${origin}${path}`,
-      },
+      } }),
       ...(count > 0 && average > 0
         ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: average, reviewCount: count } }
         : {}),

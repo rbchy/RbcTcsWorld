@@ -72,6 +72,17 @@ class DemoModeIntegrationTest {
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("does not take photo uploads")));
     }
 
+    /** REQ-AFF-01: partner (affiliate) links are off in the demo, like outside picture links (ADR-0020). */
+    @Test
+    void partnerLinksAreSwitchedOffInTheDemo() throws Exception {
+        mvc.perform(post("/api/products").header("Authorization", "Bearer " + adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Demo shoe\",\"sku\":\"DEMO-AFF-" + UUID.randomUUID().toString().substring(0, 8)
+                                + "\",\"price\":1.00,\"stock\":1,\"affiliateUrl\":\"https://www.amazon.com/dp/B000\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("partner (affiliate) links")));
+    }
+
     @Test
     void developmentAdminPasswordDoesNotExistHere() throws Exception {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

@@ -10,6 +10,7 @@ export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 export const MAX_SOURCE_BYTES = 40 * 1024 * 1024;     // bigger files are not even opened
 export const BROWSER_MAX_EDGE = 2400;
 export const ACCEPT = 'image/jpeg,image/png,image/webp,image/heic,image/heif';
+export const DECODE_TIMEOUT_MS = 4000;
 
 /** Error keys (i18n): photoTooBig, photoUnreadable. */
 export class PhotoError extends Error {
@@ -24,7 +25,11 @@ export async function preparePhoto(file) {
   if (file.size > MAX_SOURCE_BYTES) throw new PhotoError('photoTooBig');
   let bitmap = null;
   try {
-    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    // a decoder can stall on a file that is not a picture: give up after a few seconds and let the server decide
+    bitmap = await Promise.race([
+      createImageBitmap(file, { imageOrientation: 'from-image' }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('decode timeout')), DECODE_TIMEOUT_MS)),
+    ]);
   } catch {
     // this browser cannot read it (HEIC in Chrome, a damaged file): only JPEG/PNG may still go to the server
   }

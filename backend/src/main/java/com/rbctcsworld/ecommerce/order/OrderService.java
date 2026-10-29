@@ -234,6 +234,11 @@ public class OrderService {
         if (lines.isEmpty()) {
             throw new BusinessRuleException("Cart is empty");
         }
+        // a product that became an affiliate product while in the cart (ADR-0020) cannot be ordered here
+        lines.stream().filter(ci -> ci.getProduct().soldByPartner()).findFirst().ifPresent(ci -> {
+            throw new BusinessRuleException(ci.getProduct().displayName() + ": "
+                    + com.rbctcsworld.ecommerce.cart.CartService.PARTNER_ONLY + "; remove it from the cart");
+        });
         return lines;
     }
 

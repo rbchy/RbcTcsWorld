@@ -114,6 +114,23 @@ class CartServiceTest {
         verify(items, never()).save(any());
     }
 
+    /** REQ-AFF-02: an affiliate product is bought at the partner shop, never in the cart (ADR-0020). */
+    @Test
+    void aPartnerProductCannotBeAddedAndAnOldLineShowsUnavailable() {
+        mouse.changeAffiliateUrl(" https://www.amazon.com/dp/B000TEST?tag=shop-20 ");
+        when(products.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(mouse));
+
+        assertThatThrownBy(() -> service.addItem(EMAIL, 1L, 1))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(CartService.PARTNER_ONLY);
+        verify(items, never()).save(any());
+
+        when(items.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+        assertThat(service.getCart(EMAIL).items()).singleElement().satisfies(l -> assertThat(l.available()).isFalse());
+        assertThat(mouse.getAffiliateUrl()).isEqualTo("https://www.amazon.com/dp/B000TEST?tag=shop-20");
+        mouse.changeAffiliateUrl("  ");
+        assertThat(mouse.soldByPartner()).isFalse();
+    }
+
     @Test
     void lineIsUnavailableWhenStockDropsBelowCartQuantity() {
         CartItem line = new CartItem(7L, mouse, 4);

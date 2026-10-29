@@ -4,12 +4,13 @@ import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
 import ProductImage, { IMAGE_URL } from '../../ProductImage';
 import { ACCEPT, PhotoError, preparePhoto, uploadName } from '../../photo';
+import { partnerName } from '../../Partner';
 
 /** The public demo build (VITE_DEMO=true): photo uploads are off there (the backend refuses them too, ADR-0017). */
 const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '' };
 
 /** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
  *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
@@ -23,6 +24,8 @@ export function validateProduct(f) {
   if (f.stock === '' || !/^\d+$/.test(String(f.stock).trim())) e.stock = 'vWhole';
   const img = (f.imageUrl ?? '').trim();
   if (img && (img.length > 500 || !IMAGE_URL.test(img))) e.imageUrl = 'vImage';
+  const aff = (f.affiliateUrl ?? '').trim();
+  if (aff && (aff.length > 500 || !/^https:\/\/[^\s"'<>]+$/.test(aff))) e.affiliateUrl = 'vHttps';
   // variants (same rules as ProductService): a size or colour needs a group, a group needs a size or colour
   const group = (f.variantGroup ?? '').trim();
   const size = (f.size ?? '').trim();
@@ -103,7 +106,8 @@ export default function AdminProducts() {
     setErrors({}); setOk(''); setError(''); setConfirm(null); setPhoto({});
     setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
       variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
-      dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16) } : { ...EMPTY });
+      dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16),
+      affiliateUrl: p.affiliateUrl || '' } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -139,7 +143,8 @@ export default function AdminProducts() {
       price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl.trim() || null,
       variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null,
       dealPrice: form.dealPrice.trim() ? Number(form.dealPrice) : null,
-      dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null };
+      dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null,
+      affiliateUrl: form.affiliateUrl.trim() || null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -250,6 +255,14 @@ export default function AdminProducts() {
               <input type="datetime-local" value={form.dealEndsAt} onChange={set('dealEndsAt')} data-testid="pf-deal-end" />
             </Field>
           </fieldset>
+          <fieldset className="deal-fields partner-fields">
+            <legend>{t('partnerLegend')}</legend>
+            <p className="hint">{t('partnerHint')}</p>
+            <Field id="pf-affiliate" label={t('partnerLink')} error={errors.affiliateUrl}>
+              <input value={form.affiliateUrl} onChange={set('affiliateUrl')} maxLength={500} inputMode="url" spellCheck={false}
+                     placeholder="https://www.amazon.com/dp/B0...?tag=your-tag-20" data-testid="pf-affiliate" />
+            </Field>
+          </fieldset>
           <div className="image-field">
             <div>
               <Field id="pf-image" label={t('picture')} error={errors.imageUrl} hint={t('pictureHint')}>
@@ -291,6 +304,7 @@ export default function AdminProducts() {
                   <td className="pic"><ProductImage product={p} className="row-thumb" testId="apr-image" /></td>
                   <td>{p.sku}</td>
                   <td data-testid="apr-name">{p.name}
+                    {p.affiliateUrl && <span className="variant-tag partner-tag" data-testid="apr-partner">{partnerName(p.affiliateUrl)}</span>}
                     {p.variantGroup && <span className="variant-tag" data-testid="apr-variant">
                       {[p.color, p.size].filter(Boolean).join(' / ')}<span className="muted"> {p.variantGroup}</span></span>}
                   </td>

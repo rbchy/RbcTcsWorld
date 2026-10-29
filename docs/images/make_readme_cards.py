@@ -9,16 +9,16 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of PR #14 (commit b0ecef6, 29 Oct 2026) ----
-AS_OF = "PR #14 @ b0ecef6 · 29 Oct 2026"
+# ---- from the GitHub Actions run of PR #15 (commit 7ad433c, 29 Oct 2026) ----
+AS_OF = "PR #15 @ 7ad433c · 29 Oct 2026"
 LEVELS = [  # (label, tests, colour)
-    ("Backend unit + integration", 1004, "#4fb3a9"),
-    ("API · DB · BDD · Selenium UI", 451, "#f4b04a"),
-    ("Playwright (5 browsers/devices)", 329, "#8fb8de"),
+    ("Backend unit + integration", 1037, "#4fb3a9"),
+    ("API · DB · BDD · Selenium UI", 453, "#f4b04a"),
+    ("Playwright (5 browsers/devices)", 338, "#8fb8de"),
     ("Appium phones", 8, "#e58a8a"),
 ]
 SKIPPED = 3
-GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.3 %", "Mutation 88.1 %", "Contract: consumer",
+GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.1 %", "Mutation 88.2 %", "Contract: consumer",
          "Contract: provider", "Accessibility", "Firefox + Edge", "Performance (k6)", "OWASP ZAP",
          "Dependencies (OSV)", "Docker smoke", "Traceability", "Jenkinsfile lint", "Public demo stack",
          "Playwright", "Android (Appium)", "iOS (Appium)", "Production stack"]
@@ -57,16 +57,16 @@ def status_board():
     w, h = 1000, 740
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
          f'aria-label="Project status board: {total} automated tests, {total - SKIPPED} passed and {SKIPPED} skipped by design; '
-         f'19 of 19 CI gates passed; 97.3 percent line coverage; 88.1 percent mutation score; 142 of 142 requirements traced; '
+         f'19 of 19 CI gates passed; 97.1 percent line coverage; 88.2 percent mutation score; 143 of 143 requirements traced; '
          f'road to launch: phase 1 foundation done, phase 0 products in progress, phases 2 and 3 (safe card payments; tax, shipping and e-mail) done, phase 4 business and legal in progress, phase 5 production server built.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "Project Status Board", 24, TITLE, 700),
          text(32, 72, f"RbcTcsWorld Shop · {AS_OF} · every gate green", 13, MUTED)]
     tiles = [(f"{total:,}", "automated tests", f"{total - SKIPPED:,} passed · {SKIPPED} skipped"),
              ("19 / 19", "CI gates passed", "GitHub Actions + Jenkins"),
-             ("97.3 %", "line coverage", "94.8 % branches (JaCoCo)"),
-             ("88.1 %", "mutation score", "test strength 94.7 % (PIT)"),
-             ("142 / 142", "requirements traced", "checked on every push")]
+             ("97.1 %", "line coverage", "93.2 % branches (JaCoCo)"),
+             ("88.2 %", "mutation score", "test strength 94.7 % (PIT)"),
+             ("143 / 143", "requirements traced", "checked on every push")]
     tw = (w - 64 - 4 * 12) / 5
     for i, (big, label, sub) in enumerate(tiles):
         p.append(tile(32 + i * (tw + 12), 92, tw, big, label, sub))

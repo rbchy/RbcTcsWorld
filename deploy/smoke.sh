@@ -42,6 +42,15 @@ else
   check "products carry their pictures"          grep -q '"imageUrl":"/products/elec-mouse-001.svg"' <<<"$products"
   check "picture file is served as SVG"           grep -qi '^content-type: image/svg+xml' <<<"$(headers "$BASE/products/elec-mouse-001.svg")"
 fi
+# search engines (ADR-0019): the live store invites them to its sitemap; the demo keeps them away
+robots=$($CURL "$BASE/robots.txt")
+if [ "$PRODUCTION" = true ]; then
+  check "robots.txt names the sitemap"           grep -q "^Sitemap: $BASE/sitemap.xml" <<<"$robots"
+  check "sitemap.xml lists the store's pages"    grep -q "<loc>$BASE/contact</loc>" <<<"$($CURL "$BASE/sitemap.xml")"
+else
+  check "the demo is kept out of search engines" grep -qx 'Disallow: /' <<<"$robots"
+fi
+check "a product's real address opens the shop" grep -q '<div id="root">' <<<"$($CURL "$BASE/products/1/any-name")"
 check "fallback picture is served"              grep -qi '^HTTP/[0-9.]* 200' <<<"$(headers "$BASE/products/product.svg")"
 check "API sends its strict CSP"                grep -qi "^content-security-policy: default-src 'none'" <<<"$(headers "$BASE/api/products")"
 

@@ -207,6 +207,14 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | REQ-CS-03 | Spam protection without a CAPTCHA: a hidden honeypot field (filled in = looks accepted, nothing saved or sent); at most 3 messages per address per hour (429, Retry-After 3600) and 200 for the whole shop | `ContactServiceTest#aFilledHoneypotLooksAcceptedButNothingIsSavedOrSent`, `ContactServiceTest#threeMessagesPerAddressAndHourThenPleaseWait`, `ContactServiceTest#theWholeShopTakesAtMost200MessagesAnHour`, `ContactIntegrationTest#aBotThatFillsTheHiddenFieldGetsNothing`, `ContactIntegrationTest#theFourthMessageFromOneAddressWithinAnHourIs429` | U I | Pass |
 | REQ-CS-04 | Admin -> Messages: only the admin reads them (401/403); newest first, filtered by NEW/ANSWERED/CLOSED (400 otherwise); one answer per message (409 after), e-mailed with the question quoted and who answered recorded; a message can be closed once; 404 for an unknown one | `ContactServiceTest#theOwnersAnswerIsSavedAndEmailedWithTheQuestionQuoted`, `ContactServiceTest#anAnswerIsGivenOnceAndNotToAClosedMessage`, `ContactServiceTest#theOwnerListsAllOrOneStatusNewestFirst`, `ContactIntegrationTest#theOwnerAnswersOnceThenClosesAndTheAnswerIsEmailed`, `ContactIntegrationTest#onlyTheOwnerReadsTheMessages`, `AccessControlMatrixTest#matrix`, `playwright/tests/contact.spec.ts` | U I A UI | Pass |
 
+## Search engines
+
+| ID | Requirement | Tests | Levels | Status |
+|---|---|---|---|---|
+| REQ-SEO-01 | `/robots.txt` (ADR-0019): a live store (https `PUBLIC_URL`, not the demo) allows crawling, keeps `/api/admin/` and `/api/auth/` out and names `/sitemap.xml`; the demo and any non-https shop disallow everything; served at the site root, public, cached for an hour | `SeoServiceTest#aLiveShopIsIndexedAndNamesItsSitemap`, `SeoServiceTest#theDemoAndAShopWithoutHttpsAreNeverIndexed`, `SeoIntegrationTest#aDevelopmentShopTellsSearchEnginesToStayAway`, `AccessControlMatrixTest#matrix`, `playwright/tests/seo.spec.ts`, `deploy/smoke.sh` | U I A UI | Pass |
+| REQ-SEO-02 | `/sitemap.xml`: the public pages (home, contact, help, four policies) and one address per item on sale (`/products/<id>/<slug>`, a variant group once, by its first variant) with its picture; XML-escaped; slug lower case, letters and digits, at most 80 characters | `SeoServiceTest#theSitemapListsThePublicPagesAndOneAddressPerItemWithItsPicture`, `SeoServiceTest#namesBecomeSafeShortAddressesAndXmlIsEscaped`, `SeoIntegrationTest#theSitemapListsTheSeededCatalogOncePerItem`, `playwright/tests/seo.spec.ts`, `deploy/smoke.sh` | U I UI | Pass |
+| REQ-SEO-03 | The storefront opens real paths like its `#/` routes; every page has a title "Name | RbcTcsWorld Shop"; public pages a description, `index, follow` and a canonical link to their real path (a product: the item's first variant); private pages (cart, orders, account, sign-in, admin) `noindex` without canonical; product pages carry schema.org Product data (SKU, picture, USD price incl. a running deal, availability, review average); the demo build is `noindex` everywhere | `playwright/tests/seo.spec.ts`, `deploy/smoke.sh` | UI | Pass |
+
 ## Non-functional
 
 | ID | Requirement | Tests | Levels | Status |
@@ -250,5 +258,6 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Store admin back office | 8 | 8 | - |
 | Legal and policies | 3 | 3 | - |
 | Customer service | 4 | 4 | - |
+| Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **147** | **147 (100 %)** | **0** |
+| **Total** | **150** | **150 (100 %)** | **0** |

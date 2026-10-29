@@ -365,7 +365,18 @@ flowchart TD
 
 ## ৬. টেস্ট চালানো
 
-Automation টেস্টের জন্য backend 8081-এ চালু থাকতে হবে। UI আর accessibility টেস্টের জন্য storefront 5173-এও চালু থাকতে হবে। সবচেয়ে সহজ: আগে `docker compose --profile app up -d --build --wait`।
+**আগে দোকান চালু করুন।** Backend-এর টেস্ট (`mvn -f backend/pom.xml verify`) ছাড়া বাকি সব টেস্ট একটা চালু দোকানকে পরীক্ষা করে: automation-এর জন্য backend 8081-এ, UI, accessibility আর Playwright-এর জন্য storefront 5173-এও। দোকান বন্ধ থাকলে প্রতিটা টেস্ট "Connection refused" দিয়ে fail করে। এগুলো bug নয়। তখন দুটো suite-ই শুরুতে আর শেষে একটা বড় বার্তায় সেটা বলে দেয়।
+
+```bash
+cd ~/Eclipse-Workspace-QA/RbcTcsWorld   # আপনার প্রজেক্ট ফোল্ডার
+git pull                                # সবচেয়ে নতুন কোড আর টেস্ট
+make app                                # Docker Desktop চালু রেখে: পুরো দোকান চালু (প্রথমবার কয়েক মিনিট)
+# ... টেস্টগুলো চালান (নিচে) ...
+make down                               # কাজ শেষে বন্ধ (ডেটা থাকে)
+```
+
+Playwright প্রথমবার চালানোর আগে browser-গুলো একবার install করুন:
+`cd playwright && npm ci && npx playwright install chromium firefox webkit`। না করলে Playwright শুরুতেই কোন browser নেই সেটা বলে থেমে যায়।
 
 ```bash
 # Backend

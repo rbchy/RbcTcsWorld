@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tracking/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/store/legal").permitAll()   // who runs the store, for the policy pages
                 .requestMatchers("/api/contact").permitAll()   // the contact form: visitors too (ADR-0018)
+                .requestMatchers(HttpMethod.GET, "/api/seo/robots.txt", "/api/seo/sitemap.xml").permitAll()   // search engines (ADR-0019)
                 .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()   // Stripe proves itself by signature
                 .requestMatchers(HttpMethod.POST, "/api/shipping/shippo/webhook").permitAll()   // Shippo: secret token in the URL
                 .requestMatchers(HttpMethod.POST, "/api/notifications/ses/events").permitAll()  // Amazon SNS: signed messages

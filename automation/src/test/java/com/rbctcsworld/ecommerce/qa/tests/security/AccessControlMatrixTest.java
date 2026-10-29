@@ -43,6 +43,9 @@ class AccessControlMatrixTest {
             "GET,    /api/store/legal,                      200, 200, 200",
             // contact form (ADR-0018): anybody may write (an empty form is 400 for everyone); only the admin reads
             "GET,    /api/contact,                          200, 200, 200",
+            // search engines (ADR-0019): public
+            "GET,    /api/seo/robots.txt,                   200, 200, 200",
+            "GET,    /api/seo/sitemap.xml,                  200, 200, 200",
             "POST,   /api/contact,                          400, 400, 400",
             "GET,    /api/admin/messages,                   401, 403, 200",
             "POST,   /api/admin/messages/99999999/close,    401, 403, 404",

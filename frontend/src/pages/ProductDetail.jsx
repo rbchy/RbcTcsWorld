@@ -6,6 +6,8 @@ import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
 import { Price, Countdown, isLive } from '../Deal';
 import { compareSizes, pickVariant, slug, swatch, variantLabel } from '../variants';
+import { productPath, useHead } from '../head';
+import { fallbackImage } from '../ProductImage';
 
 /** Product page: rating summary, reviews (sortable) and the review form for verified buyers. */
 export default function ProductDetail({ id }) {
@@ -60,6 +62,9 @@ export default function ProductDetail({ id }) {
       setError(''); setNotice(r.status === 201 ? 'Saved to wishlist' : 'Already on your wishlist');
     } catch (e) { setNotice(''); setError(errorText(e)); }
   };
+
+  // search engines (ADR-0019): one canonical page per item (its first variant, as in the sitemap), with the price
+  useHead(product ? productHead(product, variants, data, t) : null);
 
   if (!product || !data) return error ? <p data-testid="review-error" className="error">{error}</p> : <p>Loading product...</p>;
   return (
@@ -258,4 +263,39 @@ function VariantPicker({ product, variants, t }) {
       )}
     </div>
   );
+}
+
+/** Title, description, canonical path and schema.org Product data for the product page. */
+export function productHead(product, variants, reviews, t) {
+  const first = variants.length && variants.some(v => v.id === product.id) ? variants[0] : product;
+  const path = productPath(first.id, first.name);
+  const price = isLive(product) ? product.dealPrice : product.price;
+  const origin = window.location.origin;
+  const image = product.imageUrl || fallbackImage(product.category);
+  const count = reviews?.reviewCount ?? product.ratingCount ?? 0;
+  const average = Number(reviews?.averageRating ?? product.ratingAverage ?? 0);
+  return {
+    title: product.name,
+    description: t('metaProduct', { name: product.name, price: money(price) }),
+    path,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      sku: product.sku,
+      ...(product.category ? { category: product.category } : {}),
+      image: image.startsWith('/') ? `${origin}${image}` : image,
+      url: `${origin}${path}`,
+      offers: {
+        '@type': 'Offer',
+        price: Number(price).toFixed(2),
+        priceCurrency: 'USD',
+        availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        url: `${origin}${path}`,
+      },
+      ...(count > 0 && average > 0
+        ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: average, reviewCount: count } }
+        : {}),
+    },
+  };
 }

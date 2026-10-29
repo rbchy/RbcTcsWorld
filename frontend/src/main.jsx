@@ -7,6 +7,7 @@ import { useRoute, useSession } from './session';
 import { AnnounceBar, CookieNotice, Footer, Sidebar, Topbar } from './Layout';
 import Legal, { POLICIES } from './pages/Legal';
 import { installButtonIcons } from './icons';
+import { useHead } from './head';
 import { useI18n } from './i18n';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -53,11 +54,29 @@ function DemoRibbon() {
   return <p className="demo-ribbon" role="note" data-testid="demo-ribbon">{t('demoRibbon')}</p>;
 }
 
+/** What search engines see for each page (ADR-0019): public pages are indexable with their real path; the product
+ *  page sets its own once loaded; everything personal (cart, orders, admin, sign-in) is noindex. */
+const PRIVATE_TITLES = { '/cart': 'navCart', '/checkout': 'navCart', '/orders': 'navOrders', '/wishlist': 'navWishlist',
+  '/login': 'navLogin', '/register': 'navRegister', '/addresses': 'navAddresses', '/security': 'navSecurity' };
+
+export function routeHead(route, t) {
+  if (route.startsWith('/products/')) return null;
+  if (route === '/') return { description: t('metaHome'), path: '/' };
+  if (route === '/help' || route.startsWith('/help/')) return { title: t('navHelp'), description: t('metaHelp'), path: '/help' };
+  if (route === '/contact') return { title: t('contactTitle'), description: t('metaContact'), path: '/contact' };
+  const policy = POLICIES[route.slice(1)];
+  if (policy) return { title: t(policy.nav), path: route };
+  const key = Object.keys(PRIVATE_TITLES).find(p => route === p || route.startsWith(`${p}/`));
+  return { title: key ? t(PRIVATE_TITLES[key]) : route.startsWith('/admin') ? t('secAdmin') : undefined, index: false };
+}
+
 // data-testid attributes are the stable hooks used by Selenium (automation/.../pages/*.java).
 function App() {
   const route = useRoute();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useI18n();
+  useHead(routeHead(route, t));
   const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist', '/addresses', '/payment-methods', '/security', '/admin'].some(p => route.startsWith(p));
 
   useEffect(() => {

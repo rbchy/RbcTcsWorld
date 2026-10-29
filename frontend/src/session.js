@@ -36,14 +36,25 @@ export function useSession() {
   return session;
 }
 
-/** Simple hash router: #/cart, #/orders/12 ... (works with any static server, easy to deep-link in tests). */
+/**
+ * Simple hash router: #/cart, #/orders/12 ... (works with any static server, easy to deep-link in tests).
+ * A real path without a hash opens the same page (ADR-0019): /products/12/travel-mug is what search engines and
+ * shared links use, because they ignore everything after "#". nginx and Vite answer every path with the app.
+ */
+export function readRoute(hash = window.location.hash, path = window.location.pathname) {
+  const fromHash = hash.replace(/^#/, '');
+  if (fromHash) return fromHash;
+  const p = path.replace(/\/+$/, '');
+  return p && p !== '/index.html' ? p : '/';
+}
+
 export function useRoute() {
-  const read = () => window.location.hash.replace(/^#/, '') || '/';
-  const [route, setRoute] = useState(read());
+  const [route, setRoute] = useState(readRoute());
   useEffect(() => {
-    const onChange = () => setRoute(read());
+    const onChange = () => setRoute(readRoute());
     window.addEventListener('hashchange', onChange);
-    return () => window.removeEventListener('hashchange', onChange);
+    window.addEventListener('popstate', onChange);
+    return () => { window.removeEventListener('hashchange', onChange); window.removeEventListener('popstate', onChange); };
   }, []);
   return route;
 }

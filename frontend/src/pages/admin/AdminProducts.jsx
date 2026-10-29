@@ -145,6 +145,8 @@ export default function AdminProducts() {
       else await api.post('/products', body);
       setOk(form.id ? t('productUpdated') : t('productSaved'));
       setError(''); setForm(null); load();
+      // the form is long (picture, photo, deal): back to the top, where the notice and the list are
+      window.scrollTo(0, 0);
     } catch (err) { setOk(''); setError(errorText(err)); }
   };
 

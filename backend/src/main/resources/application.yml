@@ -106,6 +106,7 @@ app:
     state: ${STORE_STATE:}
     zip: ${STORE_ZIP:}
     contact-email: ${STORE_CONTACT_EMAIL:}
+    reply-days: ${STORE_REPLY_DAYS:2}            # contact form: "we answer within N business days" (ADR-0018)
     policies-effective: ${STORE_POLICIES_EFFECTIVE:2026-10-28}
     policies-reviewed: ${STORE_POLICIES_REVIEWED:false}   # true only after a lawyer has read the policies
     governing-law: Pennsylvania

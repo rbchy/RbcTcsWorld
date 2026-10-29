@@ -715,3 +715,15 @@ article, .card { border-radius: 16px; }
 .legal-table th, .legal-table td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .legal-links { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--line); }
 .agree { font-size: 13px; margin-top: 10px; }
+
+/* contact form and the admin's messages (ADR-0018) */
+.form-grid .full { grid-column: 1 / -1; }
+.field .label { display: block; font-weight: 600; margin-bottom: 4px; }
+.hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+.ticket { font: 700 1.6rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.06em; margin: 8px 0 16px; }
+.message-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.message-list .row.space { justify-content: space-between; align-items: center; margin-top: 0; }
+.message-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-reply { white-space: pre-wrap; overflow-wrap: anywhere; margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--line); }
+.badge.msg-NEW { background: #fff3e0; color: #8a4b00; }
+.badge.msg-ANSWERED { background: #e7f5ec; color: var(--ok); }

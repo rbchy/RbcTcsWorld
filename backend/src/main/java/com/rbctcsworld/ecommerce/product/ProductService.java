@@ -41,7 +41,7 @@ public class ProductService {
                 "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive(),
                 "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor(),
                 "dealPrice", p.getDealPrice(), "dealStartsAt", p.getDealStartsAt(), "dealEndsAt", p.getDealEndsAt(),
-                "affiliateUrl", p.getAffiliateUrl());
+                "affiliateUrl", p.getAffiliateUrl(), "description", p.getDescription());
     }
 
     private void audit(Product p, String action, Map<String, Object> before) {
@@ -295,6 +295,7 @@ public class ProductService {
         checkDeal(r, null);
         p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());
         p.changeAffiliateUrl(r.affiliateUrl());
+        p.changeDescription(r.description());
         Product saved = repo.save(p);
         inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
@@ -316,6 +317,7 @@ public class ProductService {
         p.changeVariant(variant.group(), variant.size(), variant.color());  // ... and no variant fields = no variant
         p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());      // ... and no deal fields = no deal
         p.changeAffiliateUrl(r.affiliateUrl());                       // ... and no link = sold here again
+        p.changeDescription(r.description());                         // ... and no description = none
         Product saved = repo.save(p);
         audit(saved, "PRODUCT_UPDATED", before);
         return saved;

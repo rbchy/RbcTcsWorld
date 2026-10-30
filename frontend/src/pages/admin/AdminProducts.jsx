@@ -10,7 +10,7 @@ import { partnerName } from '../../Partner';
 const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '', description: '' };
 
 /** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
  *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
@@ -24,6 +24,9 @@ export function validateProduct(f) {
   if (f.stock === '' || !/^\d+$/.test(String(f.stock).trim())) e.stock = 'vWhole';
   const img = (f.imageUrl ?? '').trim();
   if (img && (img.length > 500 || !IMAGE_URL.test(img))) e.imageUrl = 'vImage';
+  const desc = f.description ?? '';
+  if (desc.length > 4000) e.description = 'vTooLong';
+  else if (/[<>]/.test(desc)) e.description = 'vNoMarkup';
   const aff = (f.affiliateUrl ?? '').trim();
   if (aff && (aff.length > 500 || !/^https:\/\/[^\s"'<>]+$/.test(aff))) e.affiliateUrl = 'vHttps';
   // variants (same rules as ProductService): a size or colour needs a group, a group needs a size or colour
@@ -107,7 +110,7 @@ export default function AdminProducts() {
     setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
       variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
       dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16),
-      affiliateUrl: p.affiliateUrl || '' } : { ...EMPTY });
+      affiliateUrl: p.affiliateUrl || '', description: p.description || '' } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -144,7 +147,7 @@ export default function AdminProducts() {
       variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null,
       dealPrice: form.dealPrice.trim() ? Number(form.dealPrice) : null,
       dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null,
-      affiliateUrl: form.affiliateUrl.trim() || null };
+      affiliateUrl: form.affiliateUrl.trim() || null, description: form.description.trim() || null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -255,6 +258,12 @@ export default function AdminProducts() {
               <input type="datetime-local" value={form.dealEndsAt} onChange={set('dealEndsAt')} data-testid="pf-deal-end" />
             </Field>
           </fieldset>
+          <div className="full description-field">
+            <Field id="pf-description" label={t('descriptionLabel')} error={errors.description}
+                   hint={`${t('descriptionHint')} ${(form.description ?? '').length} / 4000`}>
+              <textarea rows={6} maxLength={4000} value={form.description} onChange={set('description')} data-testid="pf-description" />
+            </Field>
+          </div>
           <fieldset className="deal-fields partner-fields">
             <legend>{t('partnerLegend')}</legend>
             <p className="hint">{t('partnerHint')}</p>

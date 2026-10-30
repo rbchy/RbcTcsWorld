@@ -733,3 +733,8 @@ article, .card { border-radius: 16px; }
 .partner-disclosure { font-size: 13px; color: var(--muted, #555); background: #fff8e1; border-left: 3px solid #f4b04a; padding: 6px 10px; border-radius: 4px; margin: 8px 0; }
 .partner-box { display: grid; gap: 8px; justify-items: start; }
 .partner-tag { background: #fff3e0; color: #8a4b00; }
+
+/* the owner's product description (ADR-0021) */
+.product-description { margin: 12px 0; max-width: 62ch; line-height: 1.55; }
+.product-description p { margin: 0 0 10px; white-space: pre-line; overflow-wrap: anywhere; }
+.description-field textarea { width: 100%; }

@@ -78,6 +78,10 @@ public class Product {
     @Column(name = "affiliate_url", length = 500)
     private String affiliateUrl;
 
+    /** The owner's own description (ADR-0021): plain text, blank lines between paragraphs; null = none. */
+    @Column(length = 4000)
+    private String description;
+
     protected Product() {
     }
 
@@ -160,6 +164,16 @@ public class Product {
         String options = java.util.stream.Stream.of(color, size).filter(v -> v != null && !v.isBlank())
                 .collect(java.util.stream.Collectors.joining(", "));
         return options.isEmpty() ? name : name + " (" + options + ")";
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getDescription() { return description; }
+
+    /** Trimmed; line endings made \n; more than one empty line becomes one; blank = no description. */
+    public void changeDescription(String text) {
+        if (text == null || text.isBlank()) { this.description = null; return; }
+        this.description = text.replace("\r\n", "\n").replace('\r', '\n').replaceAll("[ \t]+\n", "\n")
+                .replaceAll("\n{3,}", "\n\n").strip();
     }
 
     /** Affiliate link: null or blank = an ordinary product sold here. */

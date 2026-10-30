@@ -66,3 +66,24 @@ test('the admin adds the partner link in the product form; only https links are 
   // other tests' partner products are in the list too until the search applies: look in this product's row only
   await expect(page.locator('tr', { hasText: sku }).getByTestId('apr-partner')).toHaveText('Amazon');
 });
+
+test('the owner\'s own description is on the product page and in its search-engine description (REQ-CAT-16)', async ({ page, api, request }) => {
+  const admin = await api.admin();
+  const sku = `PWDS-${Date.now().toString(36).toUpperCase()}${Math.floor(Math.random() * 99)}`;
+  const description = 'Light trail shoe with a grippy sole.\n\nI wore it on wet rocks for a month: no slipping. Runs half a size small.';
+  const r = await request.post('/api/products', {
+    headers: { Authorization: `Bearer ${admin.token}` },
+    data: { name: `PW trail shoe ${sku}`, sku, category: 'shoes', price: 79.99, stock: 3, affiliateUrl: LINK, description },
+  });
+  expect(r.status(), await r.text()).toBe(201);
+  const p = await r.json();
+
+  await page.goto(`/#/products/${p.id}`);
+  const text = page.getByTestId('detail-description');
+  await expect(text.locator('p')).toHaveCount(2);
+  await expect(text.locator('p').nth(1)).toHaveText('I wore it on wet rocks for a month: no slipping. Runs half a size small.');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /^Light trail shoe with a grippy sole\. I wore it/);
+  const data = JSON.parse(await page.locator('script#ld-json').textContent() ?? '{}');
+  expect(data.description).toBe(description);
+});
+

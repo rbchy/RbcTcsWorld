@@ -15,8 +15,15 @@ async function createDeal(api: any, price: number, dealPrice: number, from: numb
   return r.json();
 }
 
+/**
+ * The shelf shows at most 12 deals, the one ending first on top. On a database that keeps earlier runs' deals (a local
+ * `make app` used all evening), a deal ending in hours is pushed off the shelf: this one ends in 20 minutes, sooner than
+ * any deal another run left behind.
+ */
+const ENDS_SOON = 20 / 60;
+
 test('a running deal shows the sale price, the old price, the percent off and a countdown', async ({ signedIn: page, api }) => {
-  const p = await createDeal(api, 40, 25, -1, 5);
+  const p = await createDeal(api, 40, 25, -1, ENDS_SOON);
   await page.goto(`/#/products/${p.id}`);
   await expect(page.getByTestId('detail-price')).toHaveText('$25.00');
   await expect(page.getByTestId('deal-was')).toHaveText('$40.00');

@@ -34,11 +34,18 @@ class FlashDealApiTest {
     private final CartClient cart = new CartClient();
     private final String tag = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
-    private static String utc(long hoursFromNow) {
-        return LocalDateTime.now(ZoneOffset.UTC).plusHours(hoursFromNow).withNano(0).toString();
+    private static String utc(double hoursFromNow) {
+        return LocalDateTime.now(ZoneOffset.UTC).plusMinutes(Math.round(hoursFromNow * 60)).withNano(0).toString();
     }
 
-    private Map<String, Object> deal(String sku, String price, String dealPrice, long startH, long endH) {
+    /**
+     * /api/products/deals lists at most 12 deals, the one ending first on top. On a database that keeps the deals of
+     * earlier runs (a local `make app` used all evening), a deal ending in hours is pushed off the list by older ones:
+     * the deal that must appear there ends in 20 minutes, sooner than any deal another run left behind.
+     */
+    static final double ENDS_SOON = 20 / 60.0;
+
+    private Map<String, Object> deal(String sku, String price, String dealPrice, double startH, double endH) {
         Map<String, Object> b = new HashMap<>(ProductClient.body("Deal Lamp " + tag, sku, "home", new BigDecimal(price), 5));
         if (dealPrice != null) b.put("dealPrice", new BigDecimal(dealPrice));
         b.put("dealStartsAt", utc(startH));
@@ -50,7 +57,7 @@ class FlashDealApiTest {
     @Tag("smoke")
     @DisplayName("A running deal shows in /deals, the cart charges the deal price and the product says so")
     void runningDeal() {
-        long id = products.create(Fixtures.adminToken(), deal("DL-" + tag, "40.00", "25.00", -1, 2))
+        long id = products.create(Fixtures.adminToken(), deal("DL-" + tag, "40.00", "25.00", -1, ENDS_SOON))
                 .then().statusCode(201).body("dealLive", equalTo(true)).body("dealPrice", equalTo(25.0f))
                 .extract().jsonPath().getLong("id");
 

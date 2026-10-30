@@ -237,14 +237,19 @@ project -> Maven -> Update Project.
 
 ## Run the tests
 
+The backend tests need nothing running. **Every other suite tests a running shop: start it first** (Docker Desktop
+running), otherwise each test fails with "Connection refused"; both suites then stop with one plain message instead.
+
 ```bash
-mvn -f backend/pom.xml verify                                          # unit + integration + coverage gate
+git pull                                                               # the newest code and tests
+mvn -f backend/pom.xml verify                                          # unit + integration + coverage gate (no shop needed)
+
+make app                                                               # start the shop: 5173 + 8081 (once per session)
 mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile        # API, contract, DB, BDD, security
 mvn -f automation/pom.xml clean test -Dgroups=ui -Dbrowser=edge        # UI: chrome | firefox | edge | safari
-cd playwright && npm ci && npx playwright test                         # Playwright, 5 browsers and devices
+cd playwright && npm ci && npx playwright install chromium firefox webkit && npx playwright test && cd ..
+make down                                                              # stop the shop (the data is kept)
 ```
-
-The automation suite needs the backend on 8081 (and the storefront on 5173 for UI and accessibility tests).
 
 ---
 

@@ -24,6 +24,8 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
   },
   // one baseline per picture, not per operating system: the visual tests run only in Linux Chromium
+  // stops at once with a plain message when the shop is not running or a browser is not installed
+  globalSetup: './support/global-setup.ts',
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
   reporter: [
     ['list'],

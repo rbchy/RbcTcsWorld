@@ -101,18 +101,33 @@ public class AuditService {
         return jdbc.query(sql.toString(), ROW, args.toArray());
     }
 
-    /** Recomputes the whole chain and compares its end with the head. */
+    /**
+     * Recomputes the whole chain and compares its end with the head.
+     *
+     * DEF-030: the rows and the head are read in ONE statement. Read in two, a change committed in between (any
+     * admin edit, an order) left the head one step ahead of the rows read a moment earlier, and an intact trail was
+     * reported as "the newest rows are missing". PostgreSQL gives each statement of a READ COMMITTED transaction its
+     * own snapshot, so only a single statement sees the rows and the head at the same moment.
+     */
     @Transactional(readOnly = true)
     public AuditChain.Verification verify() {
-        List<AuditRecord> rows = jdbc.query("select " + COLUMNS + " from audit_log order by seq", ROW);
+        List<AuditRecord> rows = new ArrayList<>();
         long[] headSeq = new long[1];
         String[] headHash = new String[1];
-        jdbc.query("select last_seq, last_hash from audit_head where id = 1", rs -> {
-            headSeq[0] = rs.getLong(1);
-            headHash[0] = rs.getString(2);
+        jdbc.query(VERIFY_SQL, rs -> {
+            headSeq[0] = rs.getLong("head_seq");                      // 0 / null when the head row is missing
+            headHash[0] = rs.getString("head_hash");
+            if (rs.getObject("seq") != null) rows.add(ROW.mapRow(rs, rows.size()));
         });
         return AuditChain.verify(rows, headSeq[0], headHash[0]);
     }
+
+    /** Every row with the head beside it; at least one result row (all log columns null) when the trail is empty. */
+    static final String VERIFY_SQL = "select (select last_seq from audit_head where id = 1) as head_seq, "
+            + "(select last_hash from audit_head where id = 1) as head_hash, "
+            + "l.seq, l.occurred_at, l.actor, l.entity_type, l.entity_id, l.action, l.field, l.old_value, l.new_value, "
+            + "l.prev_hash, l.hash "
+            + "from (select 1 as one) anchor left join audit_log l on 1 = 1 order by l.seq";
 
     /** The filtered rows as CSV (oldest first), safe to open in a spreadsheet. */
     @Transactional(readOnly = true)

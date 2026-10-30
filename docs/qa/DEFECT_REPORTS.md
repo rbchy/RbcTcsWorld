@@ -37,6 +37,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-027](#def-027) | Safari on a busy Mac: search helper returned before any result was on the page | Test code | Medium | P2 | Jenkins, Safari (build #56) | Closed |
 | [DEF-028](#def-028) | Mail test helper crashed instead of skipping when no mail server runs | Test code | Low | P3 | CI, Firefox job (PR #31) | Closed |
 | [DEF-029](#def-029) | Admin coupons: a late, unfiltered list replaced the search results | Product - store back office | Medium | P2 | CI, Playwright on `main` (first run of rbchy/RbcTcsWorld) | Closed |
+| [DEF-030](#def-030) | Audit trail check reported tampering when a change was saved during the check | Product - audit trail | Medium | P2 | Owner's local run, Playwright (second full round on one database) | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -753,6 +754,41 @@ delays the unfiltered answer with `page.route` and checks the table still shows 
 
 **Lesson:** a fix for a race belongs in every list that reloads while the user can still type; a test that waits for
 the right answer must also check that a wrong, later answer cannot replace it.
+
+---
+
+## DEF-030
+**Audit trail: an intact trail was reported as "Broken (the newest rows are missing)"**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Medium / P2 - a false tamper alarm on the store's evidence of who changed what; an owner could no longer trust a real alarm |
+| Component | `backend/.../audit/AuditService.java` (`verify`) |
+| Environment | Owner's Mac, `make app` (PostgreSQL 16), Playwright with 4 workers, second full round of every suite on the same database (29 Oct 2026); the first round passed, CI always passed |
+
+**Steps to reproduce:** keep changing audited data (e.g. product edits) while the store admin clicks Admin > Audit
+trail > Verify. Made reliable in a unit test by committing one more audit row exactly after the trail's rows are read.
+
+**Expected result:** "Intact".
+**Actual result:** "Broken at entry #5733 (the newest rows are missing)"; `audit.spec.ts` "the admin filters to one
+product, verifies the chain and downloads the CSV" failed.
+
+**Root cause:** `verify()` read the rows in one SQL statement and the chain head in a second. PostgreSQL gives each
+statement of a READ COMMITTED transaction its own snapshot, so a change committed between the two (another test
+worker, or in a live store any admin edit or order) left the head one row ahead of the rows. The larger the trail, the
+longer the first read and the wider the window: the second round had twice the rows of the first.
+
+**Fix:** the rows and the head are read in ONE statement (the head as two sub-selects beside every row), which always
+sees a single moment. Real tampering is still found exactly as before: an edited, missing or reordered row, removed
+newest rows, or a missing head row.
+**Regression tests:** `AuditServiceTest#aChangeCommittedWhileTheTrailIsVerifiedIsNotReportedAsTampering_DEF030`
+(a second writer commits in the middle of the verification; the old code reports "newest rows are missing", the new
+code reports the trail as it was at that moment) and `AuditServiceTest#aTrailWithoutItsHeadRowIsNotValid`. The query
+was also run on PostgreSQL itself (PGlite) for an empty trail, a filled trail and a missing head.
+
+**Lesson:** a consistency check that reads two things must read them at the same moment; on PostgreSQL that means one
+statement or a REPEATABLE READ transaction. A test suite that runs in parallel against one database finds such races
+that a single-threaded CI run does not.
 
 ---
 

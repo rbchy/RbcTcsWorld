@@ -171,6 +171,53 @@ class AuditServiceTest {
                 new AuditChain.Verification(false, 2, 3L, "the newest rows are missing"));
     }
 
+    /**
+     * DEF-030: an admin edit committed while the trail is being verified made an intact trail look tampered with
+     * ("the newest rows are missing"), because the rows and the head were read in two statements. Here a second
+     * writer commits exactly after the trail's rows are read; the verification must still see one moment.
+     */
+    @Test
+    void aChangeCommittedWhileTheTrailIsVerifiedIsNotReportedAsTampering_DEF030() {
+        service.on(new AuditEvent("a", List.of(price(1, "1", "2"), price(1, "2", "3"))));
+        AuditService otherWriter = new AuditService(jdbc, em, CLOCK);
+        boolean[] fired = {false};
+        JdbcTemplate racing = new JdbcTemplate(ds) {
+            private void afterTrailRead(String sql) {
+                boolean readsTheTrailInOrder = sql.contains("audit_log") && sql.contains("order by") && !sql.contains("desc");
+                if (readsTheTrailInOrder && !fired[0]) {
+                    fired[0] = true;
+                    otherWriter.append("other@shop.test", List.of(price(2, "5", "6")));    // commits in between
+                }
+            }
+
+            @Override
+            public <T> List<T> query(String sql, org.springframework.jdbc.core.RowMapper<T> rowMapper) {
+                List<T> result = super.query(sql, rowMapper);
+                afterTrailRead(sql);
+                return result;
+            }
+
+            @Override
+            public void query(String sql, org.springframework.jdbc.core.RowCallbackHandler rch) {
+                super.query(sql, rch);
+                afterTrailRead(sql);
+            }
+        };
+
+        AuditChain.Verification seen = new AuditService(racing, em, CLOCK).verify();
+
+        assertThat(fired[0]).as("the other writer committed during the verification").isTrue();
+        assertThat(seen).isEqualTo(new AuditChain.Verification(true, 2, null, null));     // the moment it read
+        assertThat(service.verify()).isEqualTo(new AuditChain.Verification(true, 3, null, null));
+    }
+
+    @Test
+    void aTrailWithoutItsHeadRowIsNotValid() {
+        service.on(new AuditEvent("a", List.of(price(1, "1", "2"))));
+        jdbc.update("delete from audit_head");
+        assertThat(service.verify()).isEqualTo(new AuditChain.Verification(false, 1, 2L, "the newest rows are missing"));
+    }
+
     @Test
     void anEmptyTrailVerifies() {
         assertThat(service.verify()).isEqualTo(new AuditChain.Verification(true, 0, null, null));

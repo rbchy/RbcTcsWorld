@@ -75,6 +75,12 @@ export default function ProductDetail({ id }) {
         <div>
           <h1 data-testid="detail-name">{product.name}</h1>
           <p className="muted">{product.category} · SKU <span data-testid="detail-sku">{product.sku}</span></p>
+          {/* the owner's own words (ADR-0021): for every product, partner products above all */}
+          {product.description && (
+            <div className="product-description" data-testid="detail-description">
+              {product.description.split(/\n{2,}/).map((para, i) => <p key={i}>{para}</p>)}
+            </div>
+          )}
           {product.affiliateUrl ? (
             /* partner product (ADR-0020): no price here (only the partner shows it), bought through the link */
             <div className="buy-box partner-box" data-testid="partner-box">
@@ -287,14 +293,16 @@ export function productHead(product, variants, reviews, t) {
   const average = Number(reviews?.averageRating ?? product.ratingAverage ?? 0);
   return {
     title: product.name,
-    description: product.affiliateUrl ? t('metaPartnerProduct', { name: product.name, shop: partnerName(product.affiliateUrl) })
-      : t('metaProduct', { name: product.name, price: money(price) }),
+    description: product.description ? summary(product.description)
+      : product.affiliateUrl ? t('metaPartnerProduct', { name: product.name, shop: partnerName(product.affiliateUrl) })
+        : t('metaProduct', { name: product.name, price: money(price) }),
     path,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: product.name,
       sku: product.sku,
+      ...(product.description ? { description: product.description } : {}),
       ...(product.category ? { category: product.category } : {}),
       image: image.startsWith('/') ? `${origin}${image}` : image,
       url: `${origin}${path}`,
@@ -310,4 +318,12 @@ export function productHead(product, variants, reviews, t) {
         : {}),
     },
   };
+}
+
+/** A search-engine description: the text on one line, cut at a word before 155 characters. */
+export function summary(text) {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  if (flat.length <= 155) return flat;
+  const cut = flat.slice(0, 154);
+  return `${cut.slice(0, cut.lastIndexOf(' ') > 100 ? cut.lastIndexOf(' ') : 154)}…`;
 }

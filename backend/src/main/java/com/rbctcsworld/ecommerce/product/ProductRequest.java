@@ -40,7 +40,17 @@ public record ProductRequest(
         java.time.LocalDateTime dealEndsAt,
         /** Affiliate product (ADR-0020): the partner shop's https link (e.g. an Amazon link with your tag); empty = sold here. */
         @Size(max = 500) @Pattern(regexp = "^\\s*$|^\\s*https://[^\\s\"'<>]+\\s*$", message = "must be an https:// link")
-        String affiliateUrl) {
+        String affiliateUrl,
+        /** The owner's own words about the product (ADR-0021): plain text, up to 4000 characters, no HTML. */
+        @Size(max = 4000) @Pattern(regexp = "^[^<>]*$", message = "may not contain < or >") String description) {
+
+    /** Without a description (older clients, tests). */
+    public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
+                          String variantGroup, String size, String color, BigDecimal dealPrice,
+                          java.time.LocalDateTime dealStartsAt, java.time.LocalDateTime dealEndsAt, String affiliateUrl) {
+        this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, dealPrice, dealStartsAt, dealEndsAt,
+                affiliateUrl, null);
+    }
 
     /** Without an affiliate link (older clients, tests). */
     public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,

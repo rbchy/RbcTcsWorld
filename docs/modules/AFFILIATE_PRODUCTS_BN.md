@@ -6,24 +6,62 @@
 
 > আমি আইনি বা ট্যাক্স পরামর্শদাতা নই। নিচের নিয়মগুলো Amazon Associates-এর Operating Agreement আর FTC-র নির্দেশনা থেকে নেওয়া। নিয়ম বদলায়, তাই যোগ দেওয়ার আগে Amazon-এর নিজের পাতাটা নিজে একবার পড়ে নিন।
 
-## ধাপ ১: Amazon Associates-এ যোগ দিন (একবার)
+## Amazon Associates: কোন ক্রমে কী করবেন
 
-1. আগে দোকানটা নিজের domain-এ চালু থাকতে হবে (Phase 5, আপনার অংশ)। Amazon আবেদন দেখে একটা খোলা, আসল ওয়েবসাইট দেখতে চায়, ডেমো নয়।
-2. affiliate-program.amazon.com → Sign up। ওয়েবসাইটের ঠিকানায় দোকানের domain দিন।
-3. আপনি একটা **tag** পাবেন, যেমন `rbctcsworld-20`। প্রতিটা লিংকে এটা থাকে, এটা দিয়েই Amazon বোঝে বিক্রিটা আপনার।
-4. **প্রথম ১৮০ দিনে অন্তত ৩টা বিক্রি** না হলে Amazon account বন্ধ করে দেয়। আপনি পরে আবার আবেদন করতে পারেন।
+Amazon আবেদনের পরে একজন মানুষ দিয়ে সাইট দেখে। সাইট তখন খোলা না থাকলে, "under construction" দেখালে, বা পাতায় নিজের লেখা না থাকলে আবেদন বাতিল হয়। আর আবেদনের দিন থেকেই **১৮০ দিনে ৩টা বিক্রির** ঘড়ি চলে। তাই আগে সাইট প্রস্তুত, তারপর আবেদন।
 
-## ধাপ ২: দোকানে partner পণ্য যোগ করুন
+### ধাপ ১: সাইট চালু (আবেদনের আগে, বাধ্যতামূলক)
 
-1. Amazon-এ পণ্যটা খুলুন, উপরের **SiteStripe** বার থেকে **Get Link → Text** দিয়ে আপনার tag-সহ লিংক কপি করুন।
+1. দোকান নিজের domain-এ চালু করুন (Phase 5: সার্ভার, domain, `deploy/production`)। [PRODUCTION_BN](../deploy/PRODUCTION_BN.md)
+2. domain-এর নামে **"amazon" শব্দ রাখবেন না**, এটা Amazon-এর নিয়মে নিষেধ।
+3. `.env`-এ দোকানের তথ্য দিন (`STORE_LEGAL_NAME`, ঠিকানা, `STORE_CONTACT_EMAIL`), যাতে privacy policy আর terms-এ আসল নাম-ঠিকানা দেখায়।
+4. নমুনা পণ্যগুলো (আঁকা ছবির mouse, mug, QA বই ইত্যাদি) Admin → Products → **Delete** দিয়ে সরান। Delete করলে পণ্য গ্রাহকের কাছ থেকে লুকায়, পুরোনো অর্ডারে থেকে যায়। নকল পণ্য দেখলে reviewer সাইটকে আসল দোকান মনে করবে না।
+
+### ধাপ ২: ১০-১৫টা partner পণ্য, নিজের লেখা আর ছবি দিয়ে
+
+প্রতিটা পণ্যের জন্য:
+
+1. Amazon-এ পণ্যটা খুলুন। ঠিকানা থেকে `https://www.amazon.com/dp/` আর তার পরের ১০ অক্ষরের কোড (ASIN) কপি করুন, যেমন `https://www.amazon.com/dp/B0XXXXXXXX`। tag পরে যোগ হবে।
 2. Admin → Products → **Add product**:
-   - নাম আর SKU (নিজের দেওয়া, যেমন `AMZ-SHOE-001`)।
-   - Category: `electronics`, `shoes` বা `clothing`।
-   - Price: যেকোনো আন্দাজ। এটা কোথাও দেখায় না, শুধু ঘরটা পূরণ করতে লাগে।
-   - Stock: যেকোনো সংখ্যা।
-   - **Sold by a partner shop → Partner link**-এ লিংকটা দিন।
-3. ছবি: **নিজের তোলা ছবি আপলোড করুন**, বা খালি রাখুন (category-র ছবি দেখাবে)। Amazon-এর ছবি কপি করা নিষেধ।
+   - **Name**: নিজের ভাষায় ছোট নাম। SKU নিজের দেওয়া, যেমন `AMZ-SHOE-001`।
+   - **Category**: `electronics`, `shoes` বা `clothing`।
+   - **Price, Stock**: যেকোনো আন্দাজ। এগুলো partner পণ্যে কোথাও দেখায় না।
+   - **Description** (নতুন ঘর): **নিজের ভাষায়** ৩-৬ লাইন: জিনিসটা কী, কার জন্য ভালো, কী খেয়াল রাখতে হবে (মাপ, ব্যাটারি, ধোয়া ইত্যাদি)। নিজে ব্যবহার করে থাকলে সেই অভিজ্ঞতা লিখুন। **Amazon-এর বর্ণনা বা review কপি করবেন না।** reviewer ঠিক এটাই দেখেন, আর Google-ও এটা দিয়েই পাতা খুঁজে পায়।
+   - **Partner link**: ধাপ ১-এর লিংক।
+3. **ছবি**: নিজের তোলা ছবি আপলোড করুন, অথবা খালি রাখুন (category-র আঁকা ছবি দেখাবে)। Amazon-এর ছবি কপি করা নিষেধ।
 4. Save। তালিকায় নামের পাশে **Amazon** লেবেল দেখাবে।
+
+### ধাপ ৩: আবেদন (affiliate-program.amazon.com → Sign up)
+
+হাতে রাখুন: Amazon-এর নিজের account, দোকানের ঠিকানা, SSN (বা ব্যবসা খুললে EIN), ব্যাংক account (টাকা আসবে direct deposit-এ)।
+
+1. **Account information**: টাকা কে পাবেন, তাঁর নাম আর ঠিকানা।
+2. **Website and mobile app list**: দোকানের ঠিকানা, যেমন `https://your-store.com`।
+3. **Profile**:
+   - **Store ID**: এটাই আপনার **tag** হবে, যেমন `rbctcsworld-20`।
+   - সাইট কী নিয়ে: "An online store with hand-picked electronics, shoes and clothing, each with our own short review" জাতীয় সত্যি বর্ণনা।
+   - Topics: Electronics, Clothing & Accessories, Shoes।
+   - Traffic কোথা থেকে: যা সত্যি (search engine, social media)।
+4. **Tax interview**: W-9, SSN বা EIN দিয়ে। আমি ট্যাক্স পরামর্শদাতা নই, কমিশন আয় কীভাবে দেখাবেন সেটা হিসাবরক্ষককে জিজ্ঞেস করুন।
+5. **Payment**: direct deposit, ব্যাংক account দিয়ে।
+
+### ধাপ ৪: লিংকে tag বসান
+
+1. Amazon-এ লগইন থাকলে পাতার উপরে **SiteStripe** বার আসে: **Get Link → Text** দিলে tag-সহ লিংক পাবেন, যেমন `https://www.amazon.com/dp/B0XXXXXXXX?tag=rbctcsworld-20`।
+2. Admin → Products → প্রতিটা partner পণ্য → **Edit** → Partner link বদলে tag-সহ লিংক দিন → **Update**।
+3. নিজের ফোনে একটা পণ্যের **Buy at Amazon** চাপুন: ঠিকানায় `tag=rbctcsworld-20` দেখা গেলে ঠিক আছে। (নিজে কিনবেন না, নিজের কেনা বিক্রি গোনা হয় না আর নিয়মবিরুদ্ধ।)
+
+### ধাপ ৫: ১৮০ দিনে ৩টা বিক্রি
+
+- দোকানের **নিজের ঠিকানা** (affiliate লিংক নয়) Facebook, Instagram, WhatsApp-এ শেয়ার করুন। মানুষ দোকানে এসে বোতাম চাপবেন।
+- Affiliate লিংক সরাসরি ইমেইল, PDF বা ছাপা কাগজে দেবেন না, এগুলো নিষেধ।
+- Google Search Console-এ sitemap জমা দিন ([SEARCH_ENGINES_BN](SEARCH_ENGINES_BN.md))।
+- প্রতি সপ্তাহে ২-৩টা নতুন পণ্য বা পুরোনো বর্ণনা উন্নত করুন। চালু সাইটই reviewer আর Google দুজনেই পছন্দ করে।
+- ৩টা বিক্রি হলে Amazon আবার দেখে চূড়ান্ত অনুমোদন দেয়। না হলে account বন্ধ হয়, তবে পরে আবার আবেদন করা যায়।
+
+### বিকল্প পথ
+
+দোকানের সাইট চালুর আগে Amazon YouTube, Instagram, Facebook বা TikTok-এর business account দিয়েও আবেদন নেয়। তবে সেই account-এ নিয়মিত নিজের তৈরি পোস্ট থাকতে হয়।
 
 ## গ্রাহক কী দেখেন
 

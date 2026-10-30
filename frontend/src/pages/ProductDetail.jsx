@@ -75,6 +75,12 @@ export default function ProductDetail({ id }) {
         <div>
           <h1 data-testid="detail-name">{product.name}</h1>
           <p className="muted">{product.category} · SKU <span data-testid="detail-sku">{product.sku}</span></p>
+          {/* the owner's own words (ADR-0021): for every product, partner products above all */}
+          {product.description && (
+            <div className="product-description" data-testid="detail-description">
+              {product.description.split(/\n{2,}/).map((para, i) => <p key={i}>{para}</p>)}
+            </div>
+          )}
           {product.affiliateUrl ? (
             /* partner product (ADR-0020): no price here (only the partner shows it), bought through the link */
             <div className="buy-box partner-box" data-testid="partner-box">
@@ -90,11 +96,6 @@ export default function ProductDetail({ id }) {
             </span>
           </p>
           {isLive(product) && <p><Countdown endsAt={product.dealEndsAt} testId="detail-countdown" /></p>}
-          {product.description && (
-            <div className="product-description" data-testid="detail-description">
-              {product.description.split(/\n{2,}/).map((para, i) => <p key={i}>{para}</p>)}
-            </div>
-          )}
           {variants.length > 1 && <VariantPicker product={product} variants={variants} t={t} />}
           <div className="buy-box">
             <div className="field qty-field">

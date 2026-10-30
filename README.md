@@ -247,7 +247,7 @@ mvn -f backend/pom.xml verify                                          # unit + 
 make app                                                               # start the shop: 5173 + 8081 (once per session)
 mvn -f automation/pom.xml clean test -DexcludedGroups=ui,mobile        # API, contract, DB, BDD, security
 mvn -f automation/pom.xml clean test -Dgroups=ui -Dbrowser=edge        # UI: chrome | firefox | edge | safari
-cd playwright && npm ci && npx playwright install chromium firefox webkit && npx playwright test && cd ..
+make playwright                                                        # Playwright: installs its browsers, 5 browsers and devices
 make down                                                              # stop the shop (the data is kept)
 ```
 

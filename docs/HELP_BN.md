@@ -378,6 +378,8 @@ make down                               # কাজ শেষে বন্ধ (�
 Playwright প্রথমবার চালানোর আগে browser-গুলো একবার install করুন:
 `cd playwright && npm ci && npx playwright install chromium firefox webkit`। না করলে Playwright শুরুতেই কোন browser নেই সেটা বলে থেমে যায়।
 
+সহজ পথ: প্রজেক্টের মূল ফোল্ডার থেকে `make playwright` চালান। এটা browser install করে আর টেস্ট চালায়, আর আপনি মূল ফোল্ডারেই থাকেন। `cd playwright && … && cd ..` লিখলে কোনো টেস্ট fail করলে শেষের `cd ..` চলে না, ফলে পরের `make down` ভুল ফোল্ডারে চলে "No rule to make target `down'" দেখায়। তখন আগে `cd ..` করে তারপর `make down` দিন।
+
 ```bash
 # Backend
 mvn -f backend/pom.xml verify                       # unit + integration + coverage gate (JaCoCo)

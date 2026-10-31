@@ -1,0 +1,11 @@
+{
+  "id": "tax_1QexampleReversal",
+  "object": "tax.transaction",
+  "currency": "usd",
+  "livemode": false,
+  "reference": "RBC-20261027-ABC-cancel",
+  "reversal": {
+    "original_transaction": "tax_1QexampleTransaction"
+  },
+  "type": "reversal"
+}

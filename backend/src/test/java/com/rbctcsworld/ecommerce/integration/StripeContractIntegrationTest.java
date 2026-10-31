@@ -135,4 +135,10 @@ class StripeContractIntegrationTest {
     void ourTaxSaleRecordIsAValidStripeRequest() {
         assertThat(StripeTaxTestSupport.recordSale(url, KEY, "taxcalc_contract")).startsWith("tax_");
     }
+
+    @Test
+    void ourTaxReversalsAreValidStripeRequests() {
+        assertThat(StripeTaxTestSupport.reverse(url, KEY, "tax_contract", null)).startsWith("tax_");      // full
+        assertThat(StripeTaxTestSupport.reverse(url, KEY, "tax_contract", 2160L)).startsWith("tax_");     // partial
+    }
 }

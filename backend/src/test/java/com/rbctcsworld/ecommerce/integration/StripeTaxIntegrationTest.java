@@ -112,6 +112,37 @@ class StripeTaxIntegrationTest {
     }
 
     @Test
+    void aCancelledPaidOrderReversesTheWholeSaleSoTheRefundedTaxIsNotFiled() throws Exception {
+        when(taxes.record(anyString(), anyString())).thenReturn("tax_sale_1");
+        when(taxes.reverse(anyString(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn("tax_reversal_1");
+        String body = mvc.perform(as(post("/api/orders"), customer).content(TestAddresses.ORDER_BODY))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long id = mapper.readTree(body).get("id").asLong();
+        String number = mapper.readTree(body).get("orderNumber").asString();
+        mvc.perform(as(post("/api/orders/" + id + "/pay"), customer)
+                        .content("{\"cardNumber\":\"4242424242424242\",\"expiryMonth\":12,\"expiryYear\":2035,\"cvv\":\"123\"}"))
+                .andExpect(status().isOk());
+        assertThat(jdbc.queryForObject("select tax_transaction_id from orders where id = ?", String.class, id))
+                .isEqualTo("tax_sale_1");
+        verify(taxes, never()).reverse(anyString(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
+
+        mvc.perform(as(post("/api/orders/" + id + "/cancel"), customer)).andExpect(status().isOk());
+
+        verify(taxes).reverse("tax_sale_1", number + "-cancel", new BigDecimal("27.59"), true);
+        assertThat(jdbc.queryForObject("select tax_reversal_id from orders where id = ?", String.class, id))
+                .isEqualTo("tax_reversal_1");
+    }
+
+    @Test
+    void anUnpaidOrderCancelledHasNothingToReverse() throws Exception {
+        long id = mapper.readTree(mvc.perform(as(post("/api/orders"), customer).content(TestAddresses.ORDER_BODY))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString()).get("id").asLong();
+        mvc.perform(as(post("/api/orders/" + id + "/cancel"), customer)).andExpect(status().isOk());
+        verify(taxes, never()).reverse(anyString(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
+        assertThat(jdbc.queryForObject("select tax_reversal_id from orders where id = ?", String.class, id)).isNull();
+    }
+
+    @Test
     void whenTheTaxProviderIsDownNoOrderIsPlacedAndTheCartStays() throws Exception {
         // doThrow: when(taxes.calculate(..)) would run the answer from setUp with a null request while restubbing
         doThrow(new PaymentUnavailableException("Tax calculation is not available right now.")).when(taxes).calculate(any());

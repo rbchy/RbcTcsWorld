@@ -26,7 +26,10 @@ report for filing. Keeping such a table ourselves is a full-time job.
 - Correct tax for every US address with no table to maintain; the Stripe Dashboard has the filing report.
 - Placing an order needs Stripe to answer when `TAX_PROVIDER=stripe`. That is accepted, because the alternative is a
   wrong tax on a real invoice.
-- Not done yet: refunds and returns do not yet send a tax reversal to Stripe, and product tax codes all use the account
-  default. Both are needed before live sales of mixed product types.
+- **Refunds reverse the tax** (REQ-PAY-12): the recorded sale's id is kept on the order (V31). A paid order cancelled
+  reverses the whole sale; an approved return reverses the refunded amount (Stripe's `flat_amount`, tax included, spread
+  over the sale's lines and shipping). Like the sale, the reversal is sent after the refund commits, once (the
+  reference `<order number>-cancel` / `-return` is the idempotency key), and an outage is logged, never undoing the refund.
+- Not done yet: product tax codes all use the account default; needed before live sales of mixed product types.
 - The owner must register in each state where the store collects tax (Phase 4); Stripe only calculates where the account
   has a registration.

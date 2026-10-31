@@ -118,6 +118,31 @@ class StripeTaxClientTest {
     }
 
     @Test
+    void aFullRefundReversesTheWholeSale() throws IOException {
+        answer(200, "tax_transaction_reversal.json");
+        StripeTaxClient.Transaction t = client().reverse("tax_1QexampleTransaction", "RBC-20261027-ABC-cancel", null,
+                "taxrev-RBC-20261027-ABC-cancel");
+        assertThat(t).isEqualTo(new StripeTaxClient.Transaction("tax_1QexampleReversal", "RBC-20261027-ABC-cancel"));
+        assertThat(last.path()).isEqualTo("/v1/tax/transactions/create_reversal");
+        assertThat(last.idempotencyKey()).isEqualTo("taxrev-RBC-20261027-ABC-cancel");
+        assertThat(last.form()).containsExactly(Map.entry("mode", "full"),
+                Map.entry("original_transaction", "tax_1QexampleTransaction"),
+                Map.entry("reference", "RBC-20261027-ABC-cancel"));
+    }
+
+    @Test
+    void aPartialRefundSendsTheRefundedAmountNegativeInCents() throws IOException {
+        answer(200, "tax_transaction_reversal.json");
+        client().reverse("tax_1QexampleTransaction", "RBC-20261027-ABC-return", 2160L, "k");
+        assertThat(last.form()).containsExactly(Map.entry("mode", "partial"),
+                Map.entry("original_transaction", "tax_1QexampleTransaction"),
+                Map.entry("reference", "RBC-20261027-ABC-return"),
+                Map.entry("flat_amount", "-2160"));
+        client().reverse("tax_1QexampleTransaction", "R", -500L, "k");          // a sign given either way is sent negative
+        assertThat(last.form()).containsEntry("flat_amount", "-500");
+    }
+
+    @Test
     void anErrorAnswerCarriesStripesStatusCodeAndMessage() throws IOException {
         answer(400, "tax_location_invalid.json");
         assertThatThrownBy(() -> client().calculate("usd", List.of(new TaxLine("A", BigDecimal.TEN, 1)), 0, PA, "k"))

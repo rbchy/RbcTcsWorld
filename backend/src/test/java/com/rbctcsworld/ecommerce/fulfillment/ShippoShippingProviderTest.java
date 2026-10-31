@@ -126,4 +126,59 @@ class ShippoShippingProviderTest {
         assertThat(ShippoShippingProvider.carrierCode("USPS")).isEqualTo("USPS");
         assertThat(ShippoShippingProvider.carrierCode(null)).isEmpty();
     }
+
+    // ---------- the parcel from the products' own weight and box size (ADR-0013) ----------
+
+    private static ShippingProvider.Piece piece(int qty, String oz, String l, String w, String h) {
+        return new ShippingProvider.Piece(qty, oz == null ? null : new BigDecimal(oz), l == null ? null : new BigDecimal(l),
+                w == null ? null : new BigDecimal(w), h == null ? null : new BigDecimal(h));
+    }
+
+    private static ShippoClient.Parcel parcelFor(ShippingProvider.Piece... pieces) {
+        return ShippoShippingProvider.parcel(BOX, 16, new LabelRequest("ORD-1", "USPS", TO,
+                java.util.Arrays.stream(pieces).mapToInt(ShippingProvider.Piece::quantity).sum(), List.of(pieces)));
+    }
+
+    @Test
+    void aSingleUnitWithItsOwnBoxShipsInThatBoxAtItsOwnWeight() {
+        assertThat(parcelFor(piece(1, "28.0", "13.0", "8.0", "5.0"))).isEqualTo(new ShippoClient.Parcel("13", "8", "5", "28"));
+        assertThat(parcelFor(piece(1, "6.5", "4.0", "4.0", "4.0"))).isEqualTo(new ShippoClient.Parcel("4", "4", "4", "6.5"));
+    }
+
+    @Test
+    void theWeightAddsEveryUnitAndUsesTheDefaultWhereNoneIsGiven() {
+        assertThat(parcelFor(piece(2, "12.5", null, null, null), piece(3, null, null, null, null)).weightOz())
+                .isEqualTo("73");                                                // 2 x 12.5 + 3 x 16
+    }
+
+    @Test
+    void severalUnitsShipInTheDefaultBoxGrownUntilEveryProductsBoxFits() {
+        // default 10 x 8 x 4; a long thin poster tube and a tall box: each side grows to the longest of its rank
+        assertThat(parcelFor(piece(1, "8", "3.0", "30.0", "3.0"), piece(1, "20", "6.0", "9.0", "7.0")))
+                .isEqualTo(new ShippoClient.Parcel("30", "8", "6", "28"));
+        assertThat(parcelFor(piece(2, "28.0", "13.0", "8.0", "5.0")))          // two of the same: not its own box
+                .isEqualTo(new ShippoClient.Parcel("13", "8", "5", "56"));
+    }
+
+    @Test
+    void piecesWithoutUnitsAreIgnoredAndNoPiecesMeansTheOldDefaults() {
+        assertThat(ShippoShippingProvider.parcel(BOX, 16, new LabelRequest("ORD-1", "USPS", TO, 2,
+                List.of(piece(0, "99", "50.0", "50.0", "50.0"))))).isEqualTo(new ShippoClient.Parcel("10", "8", "4", "32"));
+        assertThat(ShippoShippingProvider.parcel(BOX, 16, new LabelRequest("ORD-1", "USPS", TO, 2, null)))
+                .isEqualTo(new ShippoClient.Parcel("10", "8", "4", "32"));
+    }
+
+    @Test
+    void numbersGoToShippoWithoutTrailingZerosOrExponents() {
+        assertThat(ShippoShippingProvider.plain(new BigDecimal("1.0E+2"))).isEqualTo("100");
+        assertThat(ShippoShippingProvider.plain(new BigDecimal("7.50"))).isEqualTo("7.5");
+    }
+
+    @Test
+    void theLabelIsRatedForTheRealParcel() {
+        when(client.rates(any(), any(), any(), anyString())).thenReturn(RATES);
+        when(client.buy(anyString(), anyString())).thenReturn(ok("T"));
+        shippo.buyLabel(new LabelRequest("ORD-9", "USPS", TO, 1, List.of(piece(1, "28.0", "13.0", "8.0", "5.0"))));
+        verify(client).rates(FROM, TO, new ShippoClient.Parcel("13", "8", "5", "28"), "Order ORD-9");
+    }
 }

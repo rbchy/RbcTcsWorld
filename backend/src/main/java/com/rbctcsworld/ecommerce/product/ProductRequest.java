@@ -1,5 +1,6 @@
 package com.rbctcsworld.ecommerce.product;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -42,7 +43,22 @@ public record ProductRequest(
         @Size(max = 500) @Pattern(regexp = "^\\s*$|^\\s*https://[^\\s\"'<>]+\\s*$", message = "must be an https:// link")
         String affiliateUrl,
         /** The owner's own words about the product (ADR-0021): plain text, up to 4000 characters, no HTML. */
-        @Size(max = 4000) @Pattern(regexp = "^[^<>]*$", message = "may not contain < or >") String description) {
+        @Size(max = 4000) @Pattern(regexp = "^[^<>]*$", message = "may not contain < or >") String description,
+        /** Shipping weight in ounces, packed (ADR-0013): up to 150 lb, one decimal. Empty = 16 oz per item. */
+        @Positive @DecimalMax("2400") @Digits(integer = 4, fraction = 1) BigDecimal weightOz,
+        /** Size of the shipping box in inches, one decimal, at most 108 (the carriers' longest side); all three or none. */
+        @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal lengthIn,
+        @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal widthIn,
+        @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal heightIn) {
+
+    /** Without weight and size (older clients, tests). */
+    public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
+                          String variantGroup, String size, String color, BigDecimal dealPrice,
+                          java.time.LocalDateTime dealStartsAt, java.time.LocalDateTime dealEndsAt, String affiliateUrl,
+                          String description) {
+        this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, dealPrice, dealStartsAt, dealEndsAt,
+                affiliateUrl, description, null, null, null, null);
+    }
 
     /** Without a description (older clients, tests). */
     public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,

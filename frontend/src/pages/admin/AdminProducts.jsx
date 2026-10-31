@@ -10,7 +10,12 @@ import { partnerName } from '../../Partner';
 const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '', description: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '', description: '', weightOz: '', lengthIn: '', widthIn: '', heightIn: '' };
+
+/** A number from the API as the form shows it (28.0 -> "28"); none -> "". */
+const num = v => (v == null ? '' : String(Number(v)));
+/** A form field as the API takes it: a number, or null when empty. */
+const dec = v => (String(v ?? '').trim() ? Number(String(v).trim()) : null);
 
 /** Same rules as the backend ProductRequest: name/sku required, price > 0 with 2 decimals, stock >= 0,
  *  picture empty, /products/<name>.svg|png|jpg|webp or an https:// link. */
@@ -27,6 +32,17 @@ export function validateProduct(f) {
   const desc = f.description ?? '';
   if (desc.length > 4000) e.description = 'vTooLong';
   else if (/[<>]/.test(desc)) e.description = 'vNoMarkup';
+  // shipping weight and box (same rules as ProductRequest): one decimal, weight up to 2400 oz, sides up to 108 in,
+  // and a box needs all three sides or none
+  const tenth = (k, max, err) => {
+    const v = String(f[k] ?? '').trim();
+    if (!v) return;
+    if (!/^\d+(\.\d)?$/.test(v) || Number(v) <= 0 || Number(v) > max) e[k] = err;
+  };
+  tenth('weightOz', 2400, 'vWeight');
+  ['lengthIn', 'widthIn', 'heightIn'].forEach(k => tenth(k, 108, 'vSide'));
+  const sides = ['lengthIn', 'widthIn', 'heightIn'].filter(k => String(f[k] ?? '').trim());
+  if (sides.length && sides.length < 3) ['lengthIn', 'widthIn', 'heightIn'].forEach(k => { if (!e[k]) e[k] = 'vBoxAllThree'; });
   const aff = (f.affiliateUrl ?? '').trim();
   if (aff && (aff.length > 500 || !/^https:\/\/[^\s"'<>]+$/.test(aff))) e.affiliateUrl = 'vHttps';
   // variants (same rules as ProductService): a size or colour needs a group, a group needs a size or colour
@@ -110,7 +126,8 @@ export default function AdminProducts() {
     setForm(p ? { id: p.id, name: p.name, sku: p.sku, category: p.category || '', price: String(p.price), stock: String(p.stock), imageUrl: p.imageUrl || '',
       variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
       dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16),
-      affiliateUrl: p.affiliateUrl || '', description: p.description || '' } : { ...EMPTY });
+      affiliateUrl: p.affiliateUrl || '', description: p.description || '',
+      weightOz: num(p.weightOz), lengthIn: num(p.lengthIn), widthIn: num(p.widthIn), heightIn: num(p.heightIn) } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -147,7 +164,8 @@ export default function AdminProducts() {
       variantGroup: form.variantGroup.trim() || null, size: form.size.trim() || null, color: form.color.trim() || null,
       dealPrice: form.dealPrice.trim() ? Number(form.dealPrice) : null,
       dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null,
-      affiliateUrl: form.affiliateUrl.trim() || null, description: form.description.trim() || null };
+      affiliateUrl: form.affiliateUrl.trim() || null, description: form.description.trim() || null,
+      weightOz: dec(form.weightOz), lengthIn: dec(form.lengthIn), widthIn: dec(form.widthIn), heightIn: dec(form.heightIn) };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -256,6 +274,22 @@ export default function AdminProducts() {
             </Field>
             <Field id="pf-deal-end" label={t('dealEndLabel')} error={errors.dealEndsAt}>
               <input type="datetime-local" value={form.dealEndsAt} onChange={set('dealEndsAt')} data-testid="pf-deal-end" />
+            </Field>
+          </fieldset>
+          <fieldset className="deal-fields parcel-fields">
+            <legend>{t('parcelLegend')}</legend>
+            <p className="hint">{t('parcelHint')}</p>
+            <Field id="pf-weight" label={t('parcelWeight')} error={errors.weightOz}>
+              <input value={form.weightOz} onChange={set('weightOz')} inputMode="decimal" placeholder="16" data-testid="pf-weight" />
+            </Field>
+            <Field id="pf-length" label={t('parcelLength')} error={errors.lengthIn}>
+              <input value={form.lengthIn} onChange={set('lengthIn')} inputMode="decimal" placeholder="10" data-testid="pf-length" />
+            </Field>
+            <Field id="pf-width" label={t('parcelWidth')} error={errors.widthIn}>
+              <input value={form.widthIn} onChange={set('widthIn')} inputMode="decimal" placeholder="8" data-testid="pf-width" />
+            </Field>
+            <Field id="pf-height" label={t('parcelHeight')} error={errors.heightIn}>
+              <input value={form.heightIn} onChange={set('heightIn')} inputMode="decimal" placeholder="4" data-testid="pf-height" />
             </Field>
           </fieldset>
           <div className="full description-field">

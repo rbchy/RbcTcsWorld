@@ -166,4 +166,58 @@ class ShippoShippingIntegrationTest {
         webhook(TOKEN, "UNKNOWN-PARCEL").andExpect(status().isOk());
         assertThat(orderStatus(id)).isEqualTo("DELIVERED");
     }
+
+    // ---------- REQ-FUL-06: the product's own weight and box size go to the label ----------
+
+    private ResultActions createProduct(String extra) throws Exception {
+        return mvc.perform(as(post("/api/products"), admin).content("{\"name\":\"Boxed IT\",\"sku\":\"BOX-"
+                + UUID.randomUUID().toString().substring(0, 8) + "\",\"price\":10.00,\"stock\":5" + extra + "}"));
+    }
+
+    @Test
+    void aProductsWeightAndBoxSizeAreKeptAndGoToTheLabel() throws Exception {
+        String body = createProduct(",\"weightOz\":28,\"lengthIn\":13,\"widthIn\":8,\"heightIn\":4.5")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.weightOz").value(28.0))
+                .andExpect(jsonPath("$.lengthIn").value(13.0))
+                .andExpect(jsonPath("$.heightIn").value(4.5))
+                .andReturn().getResponse().getContentAsString();
+        long product = mapper.readTree(body).get("id").asLong();
+        mvc.perform(as(post("/api/cart/items"), customer).content("{\"productId\":" + product + ",\"quantity\":1}"))
+                .andExpect(status().isCreated());
+        long id = mapper.readTree(mvc.perform(as(post("/api/orders"), customer).content(TestAddresses.ORDER_BODY))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString()).get("id").asLong();
+        mvc.perform(as(post("/api/orders/" + id + "/pay"), customer)
+                        .content("{\"cardNumber\":\"4242424242424242\",\"expiryMonth\":12,\"expiryYear\":2035,\"cvv\":\"123\"}"))
+                .andExpect(status().isOk());
+
+        ship(id, "USPS").andExpect(status().isOk());
+
+        org.mockito.ArgumentCaptor<ShippingProvider.LabelRequest> asked = org.mockito.ArgumentCaptor.forClass(ShippingProvider.LabelRequest.class);
+        verify(shipping).buyLabel(asked.capture());
+        assertThat(asked.getValue().pieces()).hasSize(1);
+        ShippingProvider.Piece piece = asked.getValue().pieces().get(0);
+        assertThat(piece.quantity()).isEqualTo(1);
+        assertThat(piece.weightOz()).isEqualByComparingTo("28");
+        assertThat(piece.lengthIn()).isEqualByComparingTo("13");
+        assertThat(piece.widthIn()).isEqualByComparingTo("8");
+        assertThat(piece.heightIn()).isEqualByComparingTo("4.5");
+    }
+
+    @Test
+    void aProductWithoutWeightOrSizeShowsNoneAndShipsWithTheDefaults() throws Exception {
+        createProduct("").andExpect(status().isCreated())
+                .andExpect(jsonPath("$.weightOz").doesNotExist())
+                .andExpect(jsonPath("$.lengthIn").doesNotExist());
+    }
+
+    @Test
+    void impossibleWeightsAndSizesAre400() throws Exception {
+        createProduct(",\"lengthIn\":13,\"widthIn\":8").andExpect(status().isBadRequest());     // two sides
+        createProduct(",\"weightOz\":0").andExpect(status().isBadRequest());
+        createProduct(",\"weightOz\":2401").andExpect(status().isBadRequest());                   // over 150 lb
+        createProduct(",\"weightOz\":12.25").andExpect(status().isBadRequest());                  // one decimal
+        createProduct(",\"lengthIn\":109,\"widthIn\":8,\"heightIn\":4").andExpect(status().isBadRequest());
+        createProduct(",\"lengthIn\":13,\"widthIn\":-8,\"heightIn\":4").andExpect(status().isBadRequest());
+    }
 }

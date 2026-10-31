@@ -14,8 +14,10 @@ someone remembers to click.
   - `shippo`: Shippo, one account for USPS, UPS and FedEx, with free test labels (`shippo_test_...` token).
 - **What the customer pays does not change.** Shipping on the order stays the store's price ($5.99, free from $50).
   The label cost is the store's cost, kept on the order (`label_cost`) for the margin.
-- **Buying a label:** one parcel per order (default box 10 x 8 x 4 in, 16 oz per item, from config), rated from the
-  store's return address to the delivery address. The cheapest rate of the carrier the admin chose is bought. The real
+- **Buying a label:** one parcel per order, rated from the store's return address to the delivery address. Its weight
+  and size come from the products (V32, REQ-FUL-06): each unit's own packed weight, or 16 oz per item where none is
+  given; a single unit with its own box ships in that box, otherwise the default box (10 x 8 x 4 in, from config) is
+  grown side by side, longest to longest, until every product's own box fits. The cheapest rate of the carrier the admin chose is bought. The real
   tracking number replaces the made-up one; the label PDF link, cost and Shippo's id are kept on the order.
 - **Only a PAID order gets a label**, checked before Shippo is called. No rate for that carrier or an address the
   carrier refuses is 400; Shippo down is 503. Either way no label is bought, the order stays PAID, nothing is announced.
@@ -28,8 +30,9 @@ someone remembers to click.
 ## Consequences
 - The warehouse prints a real label from the admin's order list ("Label" -> "Print label ($7.58)").
 - Not done yet, needed before live shipping:
-  - Products have no weight or size yet, so every parcel is the configured box and weight. A wrong weight can cost a
-    carrier adjustment.
+  - The parcel size for several items is an estimate: each side is big enough for the biggest product, but the
+    volume of many items together is not added up. Products without a weight or box still use the defaults, and a
+    wrong weight can cost a carrier adjustment.
   - The return address is a placeholder until the store has one (`SHIP_FROM_*`). An order split over several
     warehouses still ships as one parcel from that address.
   - If the database fails right after Shippo sold the label, the order stays PAID and the label is unused. Shippo

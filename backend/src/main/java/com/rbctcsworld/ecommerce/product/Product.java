@@ -82,6 +82,20 @@ public class Product {
     @Column(length = 4000)
     private String description;
 
+    /** Shipping weight in ounces, packed (ADR-0013); null = the configured ounces per item. */
+    @Column(name = "weight_oz", precision = 6, scale = 1)
+    private BigDecimal weightOz;
+
+    /** Size of its shipping box in inches; all three or none (none = the configured box). */
+    @Column(name = "length_in", precision = 4, scale = 1)
+    private BigDecimal lengthIn;
+
+    @Column(name = "width_in", precision = 4, scale = 1)
+    private BigDecimal widthIn;
+
+    @Column(name = "height_in", precision = 4, scale = 1)
+    private BigDecimal heightIn;
+
     protected Product() {
     }
 
@@ -174,6 +188,31 @@ public class Product {
         if (text == null || text.isBlank()) { this.description = null; return; }
         this.description = text.replace("\r\n", "\n").replace('\r', '\n').replaceAll("[ \t]+\n", "\n")
                 .replaceAll("\n{3,}", "\n\n").strip();
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal getWeightOz() { return weightOz; }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal getLengthIn() { return lengthIn; }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal getWidthIn() { return widthIn; }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal getHeightIn() { return heightIn; }
+
+    /** Weight and box size for shipping labels; the caller has checked that the size is all three or none. */
+    public void changeParcel(BigDecimal weightOz, BigDecimal lengthIn, BigDecimal widthIn, BigDecimal heightIn) {
+        this.weightOz = tenth(weightOz);
+        this.lengthIn = tenth(lengthIn);
+        this.widthIn = tenth(widthIn);
+        this.heightIn = tenth(heightIn);
+    }
+
+    /** Stored with one decimal, as the columns hold it (so the audit trail compares like with like). */
+    private static BigDecimal tenth(BigDecimal v) {
+        return v == null ? null : v.setScale(1, java.math.RoundingMode.HALF_UP);
     }
 
     /** Affiliate link: null or blank = an ordinary product sold here. */

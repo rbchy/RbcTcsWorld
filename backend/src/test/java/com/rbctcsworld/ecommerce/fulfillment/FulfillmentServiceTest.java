@@ -121,6 +121,35 @@ class FulfillmentServiceTest {
     }
 
     @Test
+    void eachLineGoesToTheLabelWithItsProductsWeightAndBoxSize() {
+        CustomerOrder o = order(OrderStatus.PAID);
+        o.shipTo(com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+        o.addItem(new com.rbctcsworld.ecommerce.order.OrderItem(11L, "SHOE", "Shoe", java.math.BigDecimal.TEN, 2));
+        o.addItem(new com.rbctcsworld.ecommerce.order.OrderItem(12L, "MUG", "Mug", java.math.BigDecimal.ONE, 1));
+        o.addItem(new com.rbctcsworld.ecommerce.order.OrderItem(13L, "GONE", "Gone", java.math.BigDecimal.ONE, 1));
+        com.rbctcsworld.ecommerce.product.Product shoe = new com.rbctcsworld.ecommerce.product.Product("Shoe", "SHOE", "shoes", java.math.BigDecimal.TEN, 5);
+        ReflectionTestUtils.setField(shoe, "id", 11L);
+        shoe.changeParcel(new java.math.BigDecimal("28"), new java.math.BigDecimal("13"), new java.math.BigDecimal("8"), new java.math.BigDecimal("5"));
+        com.rbctcsworld.ecommerce.product.Product mug = new com.rbctcsworld.ecommerce.product.Product("Mug", "MUG", "home", java.math.BigDecimal.ONE, 5);
+        ReflectionTestUtils.setField(mug, "id", 12L);                             // no weight or size given
+        com.rbctcsworld.ecommerce.product.ProductRepository products = org.mockito.Mockito.mock(com.rbctcsworld.ecommerce.product.ProductRepository.class);
+        when(products.findAllById(java.util.List.of(11L, 12L, 13L))).thenReturn(java.util.List.of(shoe, mug));
+        ShippingProvider shippo = org.mockito.Mockito.mock(ShippingProvider.class);
+        when(shippo.buyLabel(org.mockito.ArgumentMatchers.any())).thenReturn(new ShippingProvider.Label("T1", null, null, null));
+
+        new FulfillmentService(orders, events, shippo, products).ship(3L, "USPS");
+
+        org.mockito.ArgumentCaptor<ShippingProvider.LabelRequest> asked = org.mockito.ArgumentCaptor.forClass(ShippingProvider.LabelRequest.class);
+        org.mockito.Mockito.verify(shippo).buyLabel(asked.capture());
+        assertThat(asked.getValue().items()).isEqualTo(4);
+        assertThat(asked.getValue().pieces()).containsExactly(
+                new ShippingProvider.Piece(2, new java.math.BigDecimal("28.0"), new java.math.BigDecimal("13.0"),
+                        new java.math.BigDecimal("8.0"), new java.math.BigDecimal("5.0")),
+                new ShippingProvider.Piece(1, null, null, null, null),
+                new ShippingProvider.Piece(1, null, null, null, null));             // a product no longer in the database
+    }
+
+    @Test
     void whenNoLabelCanBeBoughtTheOrderStaysPaidAndNothingIsAnnounced() {
         CustomerOrder o = paidWithAddress();
         ShippingProvider shippo = org.mockito.Mockito.mock(ShippingProvider.class);

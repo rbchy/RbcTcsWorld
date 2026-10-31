@@ -37,9 +37,21 @@ flowchart LR
 4. `docker compose up --build`, তারপর Pennsylvania-র একটা ঠিকানায় অর্ডার দিন। অর্ডারের ট্যাক্স Stripe-এর হিসাবের সাথে মিলবে
    (Philadelphia-তে 8 %: state 6 % + city 2 %)। পেমেন্টের পরে Dashboard → Tax → Transactions-এ অর্ডার নম্বরসহ বিক্রিটা দেখা যাবে।
 
+## Refund হলে ট্যাক্সও ফেরত (reversal)
+
+গ্রাহককে টাকা ফেরত দিলে সেই টাকার ট্যাক্সও আপনি ফেরত দিয়েছেন, তাই সেটা state-কে দিতে হবে না। দোকান নিজেই Stripe-কে জানায়:
+
+| কী হলো | Stripe-এ কী যায় | Dashboard-এ reference |
+|---|---|---|
+| পেমেন্টের পরে অর্ডার cancel | পুরো বিক্রি উল্টানো (full reversal) | `RBC-...-cancel` |
+| Return অনুমোদন | শুধু ফেরত দেওয়া টাকা (ট্যাক্সসহ), Stripe লাইন আর shipping-এ ভাগ করে | `RBC-...-return` |
+| পেমেন্টের আগে cancel | কিছু না (টাকা আসেইনি) | - |
+
+- Stripe সাময়িক বন্ধ থাকলে refund আটকায় না। log-এ অর্ডার নম্বর আর reference লেখা থাকে, পরে Dashboard থেকে হাতে reversal করা যায়।
+- Dashboard → Tax → Transactions-এ reversal-গুলো মাইনাস অঙ্কে দেখায়, filing report-এ বিক্রি থেকে বাদ যায়।
+
 ## এখনো বাকি
 
-- refund বা return হলে Stripe-এ ট্যাক্স ফেরত (reversal) এখনো পাঠানো হয় না।
 - সব পণ্য account-এর default tax code পায়। কাপড়, খাবার ইত্যাদি আলাদা হারের পণ্য বিক্রির আগে product অনুযায়ী tax code লাগবে।
 - কোন কোন state-এ ট্যাক্স নিতে হবে, সেটা মালিক আর accountant-এর সিদ্ধান্ত (Phase 4: sales tax license)।
 
@@ -50,9 +62,9 @@ flowchart LR
 | Unit | `TaxCalculatorTest` | flat 6 %, rounding, discount ভাগ করা |
 | Unit | `StripeTaxCalculatorTest`, `TaxConfigTest` | আন্দাজ বনাম আসল, 400/503, sale-এর key, চালু হওয়ার নিয়ম |
 | Unit | `StripeTaxClientTest` | Stripe-এ ঠিক কী যায় (প্রতিটা form field), প্রতিটা উত্তর পড়া |
-| Unit | `OrderServiceTest`, `TaxSaleRecorderTest` | অর্ডারে provider-এর ট্যাক্স, ব্যর্থ হলে কিছু সেভ হয় না, পেমেন্টের পরে sale |
-| Contract | `StripeContractIntegrationTest` | stripe-mock বলে আমাদের দুটো request বৈধ |
+| Unit | `OrderServiceTest`, `TaxSaleRecorderTest` | অর্ডারে provider-এর ট্যাক্স, ব্যর্থ হলে কিছু সেভ হয় না, পেমেন্টের পরে sale, refund-এর পরে reversal |
+| Contract | `StripeContractIntegrationTest` | stripe-mock বলে আমাদের request-গুলো (হিসাব, বিক্রি, reversal) বৈধ |
 | Integration | `StripeTaxIntegrationTest` | API আর database দিয়ে পুরো পথ |
 | Browser | `playwright/tests/checkout.spec.ts` | "Tax" বনাম "Estimated tax" লেখা |
 
-Requirement: REQ-PAY-11 ([traceability](../qa/TRACEABILITY_MATRIX.md))।
+Requirement: REQ-PAY-11, REQ-PAY-12 ([traceability](../qa/TRACEABILITY_MATRIX.md))।

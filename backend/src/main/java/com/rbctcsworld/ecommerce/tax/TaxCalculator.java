@@ -19,8 +19,22 @@ public interface TaxCalculator {
 
     TaxQuote calculate(TaxRequest request);
 
-    /** After the order is paid: records the sale for the tax report. Nothing to record for the flat rate. */
-    default void record(String calculationId, String orderNumber) {
+    /**
+     * After the order is paid: records the sale for the tax report and returns the provider's id of it (needed to
+     * reverse it after a refund). Nothing to record for the flat rate: null.
+     */
+    default String record(String calculationId, String orderNumber) {
+        return null;
+    }
+
+    /**
+     * After a refund: takes the refunded part of a recorded sale out of the tax report, so the shop does not file
+     * (and pay) tax it gave back. full = the whole order was refunded; otherwise refund is the amount given back,
+     * tax included, spread over the sale by the provider. reference names the reversal, unique per refund.
+     * Returns the provider's id of the reversal; null for the flat rate.
+     */
+    default String reverse(String transactionId, String reference, BigDecimal refund, boolean full) {
+        return null;
     }
 
     /** One order line after its share of the discount; reference is the SKU. */

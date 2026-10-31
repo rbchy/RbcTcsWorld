@@ -61,7 +61,14 @@ public class StripeTaxCalculator implements TaxCalculator {
 
     /** Same order number = same key: a retry after a timeout never records the sale twice. */
     @Override
-    public void record(String calculationId, String orderNumber) {
-        stripe.recordSale(calculationId, orderNumber, "tax-" + orderNumber);
+    public String record(String calculationId, String orderNumber) {
+        return stripe.recordSale(calculationId, orderNumber, "tax-" + orderNumber).id();
+    }
+
+    /** Same reference = same key: a retry never reverses twice. */
+    @Override
+    public String reverse(String transactionId, String reference, BigDecimal refund, boolean full) {
+        Long flat = full ? null : StripeTaxClient.cents(refund);
+        return stripe.reverse(transactionId, reference, flat, "taxrev-" + reference).id();
     }
 }

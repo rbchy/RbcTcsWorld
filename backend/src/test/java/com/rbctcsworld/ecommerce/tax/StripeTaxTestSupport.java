@@ -24,4 +24,10 @@ public final class StripeTaxTestSupport {
         return new StripeTaxClient(url, key, Duration.ofSeconds(10))
                 .recordSale(calculationId, "RBC-CONTRACT-1", "contract-tax-RBC-CONTRACT-1").id();
     }
+
+    /** flatCents null: a full reversal. */
+    public static String reverse(String url, String key, String transactionId, Long flatCents) {
+        return new StripeTaxClient(url, key, Duration.ofSeconds(10))
+                .reverse(transactionId, "RBC-CONTRACT-1-refund", flatCents, "contract-taxrev-" + flatCents).id();
+    }
 }

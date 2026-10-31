@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * The two Stripe Tax calls, over plain HTTP like the payment client:
  *  - POST /v1/tax/calculations                          the tax for the lines, shipping and delivery address
  *  - POST /v1/tax/transactions/create_from_calculation  after payment: the sale goes into Stripe's tax report
+ *  - POST /v1/tax/transactions/create_reversal          after a refund: all of the sale, or a flat amount of it, out
  * Amounts in cents, form encoded, an Idempotency-Key on every POST.
  */
 class StripeTaxClient {
@@ -75,6 +76,22 @@ class StripeTaxClient {
         form.put("calculation", calculationId);
         form.put("reference", reference);
         JsonNode n = post("/v1/tax/transactions/create_from_calculation", form, idempotencyKey);
+        return new Transaction(text(n, "id"), text(n, "reference"));
+    }
+
+    /**
+     * flatCents null: the whole sale (mode=full). Otherwise mode=partial with flat_amount, which Stripe wants
+     * negative and tax included, and spreads over the lines and shipping of the sale.
+     */
+    Transaction reverse(String transactionId, String reference, Long flatCents, String idempotencyKey) {
+        Map<String, String> form = new LinkedHashMap<>();
+        form.put("mode", flatCents == null ? "full" : "partial");
+        form.put("original_transaction", transactionId);
+        form.put("reference", reference);
+        if (flatCents != null) {
+            form.put("flat_amount", Long.toString(-Math.abs(flatCents)));
+        }
+        JsonNode n = post("/v1/tax/transactions/create_reversal", form, idempotencyKey);
         return new Transaction(text(n, "id"), text(n, "reference"));
     }
 

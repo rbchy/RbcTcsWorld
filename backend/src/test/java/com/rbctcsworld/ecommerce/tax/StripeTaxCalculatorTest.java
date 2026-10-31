@@ -88,8 +88,30 @@ class StripeTaxCalculatorTest {
 
     @Test
     void aPaidOrderIsRecordedWithItsOrderNumberAsTheIdempotencyKey() {
-        stripe.record("taxcalc_9", "RBC-20261027-ABC");
-        verify(client).recordSale("taxcalc_9", "RBC-20261027-ABC", "tax-RBC-20261027-ABC");
+        when(client.recordSale("taxcalc_9", "RBC-20261027-ABC", "tax-RBC-20261027-ABC"))
+                .thenReturn(new StripeTaxClient.Transaction("tax_sale_9", "RBC-20261027-ABC"));
+        assertThat(stripe.record("taxcalc_9", "RBC-20261027-ABC")).isEqualTo("tax_sale_9");
         assertThat(stripe.name()).isEqualTo("stripe");
+    }
+
+    @Test
+    void aFullRefundReversesTheWholeSaleWithItsReferenceAsTheIdempotencyKey() {
+        when(client.reverse("tax_sale_9", "RBC-1-cancel", null, "taxrev-RBC-1-cancel"))
+                .thenReturn(new StripeTaxClient.Transaction("tax_rev_1", "RBC-1-cancel"));
+        assertThat(stripe.reverse("tax_sale_9", "RBC-1-cancel", new BigDecimal("27.59"), true)).isEqualTo("tax_rev_1");
+    }
+
+    @Test
+    void aPartialRefundReversesThatAmountInCents() {
+        when(client.reverse("tax_sale_9", "RBC-1-return", 2160L, "taxrev-RBC-1-return"))
+                .thenReturn(new StripeTaxClient.Transaction("tax_rev_2", "RBC-1-return"));
+        assertThat(stripe.reverse("tax_sale_9", "RBC-1-return", new BigDecimal("21.60"), false)).isEqualTo("tax_rev_2");
+    }
+
+    @Test
+    void theFlatRateHasNothingToRecordOrReverse() {
+        FlatRateTaxCalculator flat = new FlatRateTaxCalculator(new BigDecimal("0.06"));
+        assertThat(flat.record("taxcalc_9", "RBC-1")).isNull();
+        assertThat(flat.reverse("tax_sale_9", "RBC-1-cancel", BigDecimal.TEN, true)).isNull();
     }
 }

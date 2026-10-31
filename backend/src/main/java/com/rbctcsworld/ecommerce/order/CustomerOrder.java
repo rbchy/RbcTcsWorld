@@ -70,6 +70,14 @@ public class CustomerOrder {
     @Column(name = "tax_calculation_id", length = 64)
     private String taxCalculationId;
 
+    /** The sale as recorded with Stripe Tax (tax_...), once paid. */
+    @Column(name = "tax_transaction_id", length = 64)
+    private String taxTransactionId;
+
+    /** The reversal of that sale (tax_...) after a refund, so the tax report does not count refunded tax. */
+    @Column(name = "tax_reversal_id", length = 64)
+    private String taxReversalId;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
@@ -236,6 +244,10 @@ public class CustomerOrder {
 
     public String getTaxCalculationId() { return taxCalculationId; }
 
+    public String getTaxTransactionId() { return taxTransactionId; }
+
+    public String getTaxReversalId() { return taxReversalId; }
+
     public String getLabelUrl() { return labelUrl; }
 
     public BigDecimal getLabelCost() { return labelCost; }
@@ -251,5 +263,13 @@ public class CustomerOrder {
 
     public void recordTaxCalculation(String calculationId) {
         this.taxCalculationId = calculationId;
+    }
+
+    public void recordTaxTransaction(String transactionId) {
+        this.taxTransactionId = transactionId;
+    }
+
+    public void recordTaxReversal(String reversalId) {
+        this.taxReversalId = reversalId;
     }
 }

@@ -1309,6 +1309,9 @@
             "format": "int32",
             "type": "integer"
           },
+          "taxCode": {
+            "type": "string"
+          },
           "variantGroup": {
             "type": "string"
           },
@@ -1394,6 +1397,10 @@
             "format": "int32",
             "minimum": 0,
             "type": "integer"
+          },
+          "taxCode": {
+            "pattern": "^\\s*$|^\\s*[tT][xX][cC][dD]_\\d{8}\\s*$",
+            "type": "string"
           },
           "variantGroup": {
             "maxLength": 40,

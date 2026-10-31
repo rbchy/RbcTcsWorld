@@ -26,7 +26,9 @@ class TaxSaleRecorderTest {
 
     private final OrderRepository orders = mock(OrderRepository.class);
     private final TaxCalculator taxes = mock(TaxCalculator.class);
-    private final TaxSaleRecorder recorder = new TaxSaleRecorder(orders, taxes);
+    // runs the work at once, in a "transaction" of a mocked manager: the class's own logic is what is tested here
+    private final TaxSaleRecorder recorder = new TaxSaleRecorder(orders, taxes,
+            mock(org.springframework.transaction.PlatformTransactionManager.class), Runnable::run);
 
     private static CustomerOrder order(String calculationId) {
         CustomerOrder o = new CustomerOrder("RBC-20261027-ABC", 7L);

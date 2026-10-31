@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -108,7 +109,17 @@ class StripeTaxIntegrationTest {
         mvc.perform(as(post("/api/orders/" + id + "/pay"), customer)
                         .content("{\"cardNumber\":\"4242424242424242\",\"expiryMonth\":12,\"expiryYear\":2035,\"cvv\":\"123\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PAID"));
-        verify(taxes).record("taxcalc_15213", number);
+        verify(taxes, timeout(5000)).record("taxcalc_15213", number);              // after the commit, off the request
+    }
+
+    /** The value once the background work has saved it (at most 5 s). */
+    private String column(String name, long id) throws InterruptedException {
+        String value = null;
+        for (int i = 0; i < 50 && value == null; i++) {
+            value = jdbc.queryForObject("select " + name + " from orders where id = ?", String.class, id);
+            if (value == null) Thread.sleep(100);
+        }
+        return value;
     }
 
     @Test
@@ -122,15 +133,13 @@ class StripeTaxIntegrationTest {
         mvc.perform(as(post("/api/orders/" + id + "/pay"), customer)
                         .content("{\"cardNumber\":\"4242424242424242\",\"expiryMonth\":12,\"expiryYear\":2035,\"cvv\":\"123\"}"))
                 .andExpect(status().isOk());
-        assertThat(jdbc.queryForObject("select tax_transaction_id from orders where id = ?", String.class, id))
-                .isEqualTo("tax_sale_1");
+        assertThat(column("tax_transaction_id", id)).isEqualTo("tax_sale_1");
         verify(taxes, never()).reverse(anyString(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
 
         mvc.perform(as(post("/api/orders/" + id + "/cancel"), customer)).andExpect(status().isOk());
 
-        verify(taxes).reverse("tax_sale_1", number + "-cancel", new BigDecimal("27.59"), true);
-        assertThat(jdbc.queryForObject("select tax_reversal_id from orders where id = ?", String.class, id))
-                .isEqualTo("tax_reversal_1");
+        verify(taxes, timeout(5000)).reverse("tax_sale_1", number + "-cancel", new BigDecimal("27.59"), true);
+        assertThat(column("tax_reversal_id", id)).isEqualTo("tax_reversal_1");
     }
 
     @Test

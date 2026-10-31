@@ -49,7 +49,20 @@ public record ProductRequest(
         /** Size of the shipping box in inches, one decimal, at most 108 (the carriers' longest side); all three or none. */
         @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal lengthIn,
         @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal widthIn,
-        @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal heightIn) {
+        @Positive @DecimalMax("108") @Digits(integer = 3, fraction = 1) BigDecimal heightIn,
+        /** Stripe Tax product tax code (ADR-0012), e.g. txcd_30011000 for clothing; empty = the account's default. */
+        @Pattern(regexp = "^\\s*$|^\\s*[tT][xX][cC][dD]_\\d{8}\\s*$", message = "must be a Stripe tax code such as txcd_99999999")
+        String taxCode) {
+
+    /** Without a tax code (older clients, tests). */
+    public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
+                          String variantGroup, String size, String color, BigDecimal dealPrice,
+                          java.time.LocalDateTime dealStartsAt, java.time.LocalDateTime dealEndsAt, String affiliateUrl,
+                          String description, BigDecimal weightOz, BigDecimal lengthIn, BigDecimal widthIn,
+                          BigDecimal heightIn) {
+        this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, dealPrice, dealStartsAt, dealEndsAt,
+                affiliateUrl, description, weightOz, lengthIn, widthIn, heightIn, null);
+    }
 
     /** Without weight and size (older clients, tests). */
     public ProductRequest(String name, String sku, String category, BigDecimal price, Integer stock, String imageUrl,
@@ -57,7 +70,7 @@ public record ProductRequest(
                           java.time.LocalDateTime dealStartsAt, java.time.LocalDateTime dealEndsAt, String affiliateUrl,
                           String description) {
         this(name, sku, category, price, stock, imageUrl, variantGroup, size, color, dealPrice, dealStartsAt, dealEndsAt,
-                affiliateUrl, description, null, null, null, null);
+                affiliateUrl, description, null, null, null, null, null);
     }
 
     /** Without a description (older clients, tests). */

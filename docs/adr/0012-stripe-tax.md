@@ -26,7 +26,9 @@ report for filing. Keeping such a table ourselves is a full-time job.
 - Correct tax for every US address with no table to maintain; the Stripe Dashboard has the filing report.
 - Placing an order needs Stripe to answer when `TAX_PROVIDER=stripe`. That is accepted, because the alternative is a
   wrong tax on a real invoice.
-- Not done yet: refunds and returns do not yet send a tax reversal to Stripe, and product tax codes all use the account
-  default. Both are needed before live sales of mixed product types.
+- **Product tax codes** (REQ-PAY-13): a product may carry its Stripe Tax code (V33, e.g. `txcd_30011000` clothing and
+  footwear), sent with each of its lines; products without one use the account's default (general tangible goods).
+  The admin form suggests the common codes; the full list is Stripe's.
+- Not done yet: refunds and returns do not yet send a tax reversal to Stripe.
 - The owner must register in each state where the store collects tax (Phase 4); Stripe only calculates where the account
   has a registration.

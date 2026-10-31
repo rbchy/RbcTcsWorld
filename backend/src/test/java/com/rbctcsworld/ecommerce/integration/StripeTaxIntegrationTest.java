@@ -120,4 +120,37 @@ class StripeTaxIntegrationTest {
         mvc.perform(as(get("/api/cart"), customer)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalQuantity").value(2));
     }
+
+    /** REQ-PAY-13: each product's own Stripe Tax code goes with its line (ADR-0012). */
+    @Test
+    void aProductsTaxCodeIsKeptAndGoesToTheTaxProviderWithItsLine() throws Exception {
+        String sku = "TEE-" + UUID.randomUUID().toString().substring(0, 8);
+        String body = mvc.perform(as(post("/api/products"), admin).content("{\"name\":\"Tee IT\",\"sku\":\"" + sku
+                        + "\",\"category\":\"clothing\",\"price\":15.00,\"stock\":5,\"taxCode\":\" TXCD_30011000 \"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.taxCode").value("txcd_30011000"))
+                .andReturn().getResponse().getContentAsString();
+        long tee = mapper.readTree(body).get("id").asLong();
+        mvc.perform(as(post("/api/cart/items"), customer).content("{\"productId\":" + tee + ",\"quantity\":1}"))
+                .andExpect(status().isCreated());
+
+        mvc.perform(as(post("/api/orders"), customer).content(TestAddresses.ORDER_BODY)).andExpect(status().isCreated());
+
+        org.mockito.ArgumentCaptor<TaxRequest> asked = org.mockito.ArgumentCaptor.forClass(TaxRequest.class);
+        verify(taxes, org.mockito.Mockito.atLeastOnce()).calculate(asked.capture());
+        TaxRequest placed = asked.getValue();
+        assertThat(placed.lines()).extracting(TaxCalculator.TaxLine::reference, TaxCalculator.TaxLine::taxCode)
+                .contains(org.assertj.core.groups.Tuple.tuple(sku, "txcd_30011000"));
+        assertThat(placed.lines()).filteredOn(l -> !l.reference().equals(sku))
+                .extracting(TaxCalculator.TaxLine::taxCode).containsOnlyNulls();      // no code: the account default
+    }
+
+    @Test
+    void anythingButAStripeTaxCodeIs400() throws Exception {
+        for (String bad : new String[] {"30011000", "txcd_3001100", "txcd_300110001", "txcd_3001100a", "tax_30011000"}) {
+            mvc.perform(as(post("/api/products"), admin).content("{\"name\":\"Bad code\",\"sku\":\"BAD-"
+                            + UUID.randomUUID().toString().substring(0, 8) + "\",\"price\":1.00,\"stock\":1,\"taxCode\":\"" + bad + "\"}"))
+                    .andExpect(status().isBadRequest());
+        }
+    }
 }

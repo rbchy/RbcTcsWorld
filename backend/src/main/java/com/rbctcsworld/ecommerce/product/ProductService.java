@@ -42,7 +42,8 @@ public class ProductService {
                 "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor(),
                 "dealPrice", p.getDealPrice(), "dealStartsAt", p.getDealStartsAt(), "dealEndsAt", p.getDealEndsAt(),
                 "affiliateUrl", p.getAffiliateUrl(), "description", p.getDescription(), "weightOz", p.getWeightOz(),
-                "lengthIn", p.getLengthIn(), "widthIn", p.getWidthIn(), "heightIn", p.getHeightIn());
+                "lengthIn", p.getLengthIn(), "widthIn", p.getWidthIn(), "heightIn", p.getHeightIn(),
+                "taxCode", p.getTaxCode());
     }
 
     private void audit(Product p, String action, Map<String, Object> before) {
@@ -299,6 +300,7 @@ public class ProductService {
         p.changeAffiliateUrl(r.affiliateUrl());
         p.changeDescription(r.description());
         p.changeParcel(r.weightOz(), r.lengthIn(), r.widthIn(), r.heightIn());
+        p.changeTaxCode(r.taxCode());
         Product saved = repo.save(p);
         inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
@@ -323,6 +325,7 @@ public class ProductService {
         p.changeAffiliateUrl(r.affiliateUrl());                       // ... and no link = sold here again
         p.changeDescription(r.description());                         // ... and no description = none
         p.changeParcel(r.weightOz(), r.lengthIn(), r.widthIn(), r.heightIn());  // ... and no weight or size = defaults
+        p.changeTaxCode(r.taxCode());                                 // ... and no tax code = the account default
         Product saved = repo.save(p);
         audit(saved, "PRODUCT_UPDATED", before);
         return saved;

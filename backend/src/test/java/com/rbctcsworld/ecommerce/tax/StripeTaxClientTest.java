@@ -108,6 +108,15 @@ class StripeTaxClientTest {
     }
 
     @Test
+    void aLineWithAProductTaxCodeSendsItAndALineWithoutLeavesItToTheAccountDefault() throws IOException {
+        answer(200, "tax_calculation_created.json");
+        client().calculate("usd", List.of(new TaxLine("TEE", new BigDecimal("20.00"), 1, "txcd_30011000"),
+                new TaxLine("MUG", new BigDecimal("12.00"), 1)), 599, PA, "k");
+        assertThat(last.form()).containsEntry("line_items[0][tax_code]", "txcd_30011000")
+                .doesNotContainKey("line_items[1][tax_code]");
+    }
+
+    @Test
     void aPaidOrderIsRecordedFromItsCalculation() throws IOException {
         answer(200, "tax_transaction_created.json");
         StripeTaxClient.Transaction t = client().recordSale("taxcalc_1", "RBC-20261027-ABC", "tax-RBC-20261027-ABC");

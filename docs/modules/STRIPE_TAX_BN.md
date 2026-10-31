@@ -37,10 +37,27 @@ flowchart LR
 4. `docker compose up --build`, তারপর Pennsylvania-র একটা ঠিকানায় অর্ডার দিন। অর্ডারের ট্যাক্স Stripe-এর হিসাবের সাথে মিলবে
    (Philadelphia-তে 8 %: state 6 % + city 2 %)। পেমেন্টের পরে Dashboard → Tax → Transactions-এ অর্ডার নম্বরসহ বিক্রিটা দেখা যাবে।
 
+## পণ্যের tax code
+
+কিছু state কাপড়, খাবার বা বইয়ে অন্য হারে ট্যাক্স নেয় (যেমন Pennsylvania-য় সাধারণ কাপড়ে ট্যাক্স নেই)। Stripe কোন হার বসাবে, সেটা পণ্যের **tax code** দেখে ঠিক করে।
+
+Admin → Products → পণ্য → **Edit** → **Sales tax code**: তালিকা থেকে বেছে নিন, অথবা Stripe-এর পুরো তালিকা (docs.stripe.com/tax/tax-codes) থেকে কোড লিখুন।
+
+| পণ্য | কোড |
+|---|---|
+| ইলেকট্রনিক্স, ঘরের জিনিস ইত্যাদি সাধারণ পণ্য | খালি রাখুন বা `txcd_99999999` |
+| কাপড় আর জুতা | `txcd_30011000` |
+| ব্যাগ, মানিব্যাগ (কাপড় নয় এমন আনুষঙ্গিক) | `txcd_30060010` |
+| গয়না | `txcd_30060007` |
+| খেলার সরঞ্জাম | `txcd_30071000` |
+
+- খালি রাখলে Stripe account-এর default কোড চলে (Dashboard → Tax → Settings; সাধারণত general tangible goods)।
+- কোন পণ্যে কোন কোড ঠিক, সন্দেহ থাকলে accountant-কে জিজ্ঞেস করুন; ভুল কোডে কম বা বেশি ট্যাক্স নেওয়া হবে।
+- Partner (Amazon) পণ্যে কোড লাগে না, ওগুলো দোকানে বিক্রি হয় না।
+
 ## এখনো বাকি
 
 - refund বা return হলে Stripe-এ ট্যাক্স ফেরত (reversal) এখনো পাঠানো হয় না।
-- সব পণ্য account-এর default tax code পায়। কাপড়, খাবার ইত্যাদি আলাদা হারের পণ্য বিক্রির আগে product অনুযায়ী tax code লাগবে।
 - কোন কোন state-এ ট্যাক্স নিতে হবে, সেটা মালিক আর accountant-এর সিদ্ধান্ত (Phase 4: sales tax license)।
 
 ## টেস্ট কোথায়
@@ -55,4 +72,4 @@ flowchart LR
 | Integration | `StripeTaxIntegrationTest` | API আর database দিয়ে পুরো পথ |
 | Browser | `playwright/tests/checkout.spec.ts` | "Tax" বনাম "Estimated tax" লেখা |
 
-Requirement: REQ-PAY-11 ([traceability](../qa/TRACEABILITY_MATRIX.md))।
+Requirement: REQ-PAY-11, REQ-PAY-13 ([traceability](../qa/TRACEABILITY_MATRIX.md))।

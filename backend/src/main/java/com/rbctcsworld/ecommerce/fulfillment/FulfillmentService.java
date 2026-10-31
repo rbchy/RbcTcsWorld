@@ -6,18 +6,27 @@ import com.rbctcsworld.ecommerce.fulfillment.FulfillmentDtos.LabelResponse;
 import com.rbctcsworld.ecommerce.fulfillment.ShippingProvider.Address;
 import com.rbctcsworld.ecommerce.fulfillment.ShippingProvider.Label;
 import com.rbctcsworld.ecommerce.fulfillment.ShippingProvider.LabelRequest;
+import com.rbctcsworld.ecommerce.fulfillment.ShippingProvider.Piece;
 import com.rbctcsworld.ecommerce.order.CustomerOrder;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.TrackingResponse;
+import com.rbctcsworld.ecommerce.order.OrderItem;
 import com.rbctcsworld.ecommerce.order.OrderRepository;
 import com.rbctcsworld.ecommerce.order.OrderStatus;
 import com.rbctcsworld.ecommerce.order.ShippingAddress;
 import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
+import com.rbctcsworld.ecommerce.product.Product;
+import com.rbctcsworld.ecommerce.product.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Warehouse side (ADMIN): ship a PAID order (with a label from the shipping provider), mark a SHIPPED order
@@ -33,11 +42,20 @@ public class FulfillmentService {
     private final OrderRepository orders;
     private final ApplicationEventPublisher events;
     private final ShippingProvider shipping;
+    private final ProductRepository products;
 
-    public FulfillmentService(OrderRepository orders, ApplicationEventPublisher events, ShippingProvider shipping) {
+    @Autowired
+    public FulfillmentService(OrderRepository orders, ApplicationEventPublisher events, ShippingProvider shipping,
+                              ProductRepository products) {
         this.orders = orders;
         this.events = events;
         this.shipping = shipping;
+        this.products = products;
+    }
+
+    /** Without products: every label uses the configured box and weight (tests). */
+    public FulfillmentService(OrderRepository orders, ApplicationEventPublisher events, ShippingProvider shipping) {
+        this(orders, events, shipping, null);
     }
 
     /**
@@ -49,7 +67,7 @@ public class FulfillmentService {
         order.assertCanMoveTo(OrderStatus.SHIPPED);
         String from = order.getStatus();
         Label label = shipping.buyLabel(new LabelRequest(order.getOrderNumber(), carrier, to(order.getShippingAddress()),
-                order.getTotalItems()));
+                order.getTotalItems(), pieces(order)));
         order.ship(carrier, label.trackingNumber());
         order.recordLabel(label.labelUrl(), label.cost(), label.reference());
         events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
@@ -111,5 +129,22 @@ public class FulfillmentService {
 
     private CustomerOrder order(Long id) {
         return orders.findById(id).orElseThrow(() -> new NotFoundException("Order not found: " + id));
+    }
+
+    /**
+     * Each order line with its product's weight and box size as they are now (a product deleted from the shop
+     * still has them). A product gone from the database ships with the defaults.
+     */
+    List<Piece> pieces(CustomerOrder order) {
+        if (products == null) {
+            return List.of();
+        }
+        Map<Long, Product> byId = products.findAllById(order.getItems().stream().map(OrderItem::getProductId).toList())
+                .stream().collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        return order.getItems().stream().map(i -> {
+            Product p = byId.get(i.getProductId());
+            return p == null ? new Piece(i.getQuantity(), null, null, null, null)
+                    : new Piece(i.getQuantity(), p.getWeightOz(), p.getLengthIn(), p.getWidthIn(), p.getHeightIn());
+        }).toList();
     }
 }

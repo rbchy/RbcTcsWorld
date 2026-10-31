@@ -41,7 +41,8 @@ public class ProductService {
                 "price", p.getPrice(), "stock", p.getStock(), "imageUrl", p.getImageUrl(), "active", p.isActive(),
                 "variantGroup", p.getVariantGroup(), "size", p.getSize(), "color", p.getColor(),
                 "dealPrice", p.getDealPrice(), "dealStartsAt", p.getDealStartsAt(), "dealEndsAt", p.getDealEndsAt(),
-                "affiliateUrl", p.getAffiliateUrl(), "description", p.getDescription());
+                "affiliateUrl", p.getAffiliateUrl(), "description", p.getDescription(), "weightOz", p.getWeightOz(),
+                "lengthIn", p.getLengthIn(), "widthIn", p.getWidthIn(), "heightIn", p.getHeightIn());
     }
 
     private void audit(Product p, String action, Map<String, Object> before) {
@@ -289,6 +290,7 @@ public class ProductService {
             throw new ConflictException("SKU already exists: " + sku);
         }
         VariantKey variant = variantOf(r, null);
+        checkBoxSize(r);
         Product p = new Product(r.name().trim(), sku, r.category(), r.price(), r.stock());
         p.changeImage(r.imageUrl());
         p.changeVariant(variant.group(), variant.size(), variant.color());
@@ -296,6 +298,7 @@ public class ProductService {
         p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());
         p.changeAffiliateUrl(r.affiliateUrl());
         p.changeDescription(r.description());
+        p.changeParcel(r.weightOz(), r.lengthIn(), r.widthIn(), r.heightIn());
         Product saved = repo.save(p);
         inventory.stockNewProduct(saved.getId(), saved.getStock());       // the first units go to the default warehouse
         audit(saved, "PRODUCT_CREATED", null);
@@ -310,6 +313,7 @@ public class ProductService {
                 .ifPresent(other -> { throw new ConflictException("SKU already exists: " + sku); });
         VariantKey variant = variantOf(r, p.getId());
         checkDeal(r, p);
+        checkBoxSize(r);
         Map<String, Object> before = audited(p);
         inventory.changeTotalFromProductForm(p.getId(), r.stock());        // atomic; the entity never writes stock
         p.update(r.name().trim(), sku, r.category(), r.price(), r.stock());
@@ -318,6 +322,7 @@ public class ProductService {
         p.changeDeal(r.dealPrice(), r.dealStartsAt(), r.dealEndsAt());      // ... and no deal fields = no deal
         p.changeAffiliateUrl(r.affiliateUrl());                       // ... and no link = sold here again
         p.changeDescription(r.description());                         // ... and no description = none
+        p.changeParcel(r.weightOz(), r.lengthIn(), r.widthIn(), r.heightIn());  // ... and no weight or size = defaults
         Product saved = repo.save(p);
         audit(saved, "PRODUCT_UPDATED", before);
         return saved;
@@ -361,5 +366,15 @@ public class ProductService {
         p.setActive(false);
         repo.save(p);
         audit(p, "PRODUCT_DELETED", before);
+    }
+
+    static final String BOX_SIZE = "Give the box length, width and height together, or none of them";
+
+    /** A box needs all three sides: one or two of them cannot be shipped (400). */
+    static void checkBoxSize(ProductRequest r) {
+        long given = java.util.stream.Stream.of(r.lengthIn(), r.widthIn(), r.heightIn()).filter(java.util.Objects::nonNull).count();
+        if (given != 0 && given != 3) {
+            throw new BusinessRuleException(BOX_SIZE);
+        }
     }
 }

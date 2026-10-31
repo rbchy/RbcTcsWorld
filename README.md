@@ -130,12 +130,12 @@ new behaviour arrives with its tests and a traced requirement.
 3. **Live reports:** [all reports](https://rbchy.github.io/RbcTcsWorld/reports/) · [Allure](https://rbchy.github.io/RbcTcsWorld/) ·
    [Cucumber](https://rbchy.github.io/RbcTcsWorld/cucumber/) · [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld/mutation/) · [Playwright](https://rbchy.github.io/RbcTcsWorld/playwright/)
-4. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 29 entries, each with
+4. **Defects the tests actually found:** [Defect Reports](docs/qa/DEFECT_REPORTS.md) - 30 entries, each with
    evidence, root cause, fix and regression test.
 5. **How release decisions are made:** [Test Strategy](docs/qa/TEST_STRATEGY.md) · [Risk Register](docs/qa/RISK_REGISTER.md) ·
    [Test Summary Report (GO / NO-GO)](docs/qa/TEST_SUMMARY_REPORT.md) · [UAT Plan](docs/qa/UAT_PLAN.md)
    (10 tasks for real users, phase 6 runs it with small real orders)
-6. **Why it is built this way:** [Architecture Decision Records](docs/adr/) - ten short records, each with the
+6. **Why it is built this way:** [Architecture Decision Records](docs/adr/) - 21 short records, each with the
    alternatives and the price paid. Commands: `make help` · [Contributing](CONTRIBUTING.md) · [MIT License](LICENSE)
 
 ---

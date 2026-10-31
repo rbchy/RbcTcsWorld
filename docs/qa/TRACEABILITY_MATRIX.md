@@ -134,6 +134,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-NTF-04 | Admins see the outbox (no e-mail bodies) and can re-send only FAILED e-mails; customers cannot see it | `NotificationServiceTest#onlyFailedNotificationsCanBeSentAgain`, `NotificationIntegrationTest#adminSeesTheOutboxWithoutTheBodyCustomersDoNot`, `NotificationEmailTest#adminSeesTheOutbox`, `AccessibilityTest#wcag21aa` | U I A UI | Pass |
 | REQ-NTF-05 | Mail from the store's own domain through Amazon SES (NOTIFICATIONS_CHANNEL=ses): API v2 SendEmail over HTTPS, signed with AWS Signature V4 (same signature as the AWS SDK, temporary keys included), sender MAIL_FROM, optional configuration set; any answer but 200 fails the attempt with SES's error type and message, so the outbox retries; the start stops without a valid region, keys or sender | `AwsSigV4Test#permanentKeysSignLikeTheAwsSdk`, `AwsSigV4Test#temporaryKeysSignTheSessionTokenToo`, `AwsSigV4Test#anythingThatChangesChangesTheSignature`, `SesMailChannelTest#theEmailIsSentFromTheStoresDomainSignedForSes`, `SesMailChannelTest#anErrorAnswerFailsTheAttemptWithSesTypeAndMessage`, `SesMailChannelTest#sesNotReachableFailsTheAttempt`, `SesMailChannelTest#theStartRefusesSesWithoutRegionKeysOrAValidSender`, `NotificationDeliveryServiceTest#channelChoice` | U | Pass |
 | REQ-NTF-06 | Bounces and complaints (SES -> SNS -> POST /api/notifications/ses/events, no login): only SNS-signed messages (SHA1/SHA256 with RSA, certificate only from an https SNS host) of the configured topic are accepted, otherwise 400 (503 until a topic is configured); the subscription is confirmed automatically; a permanent bounce or a complaint puts the address on the suppression list (once, any case), and the outbox never e-mails a suppressed address again (FAILED with the reason); temporary bounces and other events change nothing | `SnsMessageVerifierTest#messagesSignedOutsideJavaAreAcceptedForBothSignatureVersions`, `SnsMessageVerifierTest#anyChangedFieldBreaksTheSignature`, `SnsMessageVerifierTest#theCertificateMustComeFromSnsItself`, `SnsMessageVerifierTest#aMessageSignedWithAnotherKeyIsRefused`, `SesEventControllerTest#aPermanentBouncePutsTheAddressOnTheList`, `SesEventControllerTest#aComplaintPutsTheAddressOnTheList`, `SesEventControllerTest#theSubscriptionIsConfirmedByOpeningSnsSubscribeLink`, `SesEventControllerTest#anythingElseChangesNothing`, `SesEventControllerTest#anotherTopicIsRefusedBeforeAnythingElse`, `SesEventControllerTest#aForgedReportIsRefused`, `NotificationDeliveryServiceTest#anAddressThatBouncedIsNotSentToAndTheRowSaysWhy`, `SesEventsIntegrationTest#aBouncedAddressIsNeverEmailedAgain`, `SesEventsIntegrationTest#aComplaintIsKeptWithItsReason`, `SesEventsIntegrationTest#aForgedOrForeignReportIs400AndChangesNothing`, `AccessControlMatrixTest#matrix` | U I A | Pass |
+| REQ-NTF-07 | The admin sees the blocked (suppressed) e-mail addresses with the reason (bounce or spam complaint), the provider's detail and the date, newest first, and can search them (a typed % or _ is plain text); "allow again" removes an address (any case, spaces trimmed) so the outbox e-mails it again (204, 404 if not listed, 400 without an address); only the admin sees or changes the list | `EmailSuppressionAdminIntegrationTest#theAdminSeesBlockedAddressesWithTheReasonAndCanSearchThem`, `EmailSuppressionAdminIntegrationTest#allowingAnAddressAgainRemovesItSoTheOutboxSendsToItAgain`, `EmailSuppressionAdminIntegrationTest#onlyTheAdminSeesOrChangesTheList`, `AccessControlMatrixTest#matrix` | I A | Pass |
 
 ## Reviews and wishlist
 
@@ -255,7 +256,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Pricing, coupons, payments | 16 | 16 | - |
 | Address book | 3 | 3 | - |
 | Fulfilment and returns | 8 | 8 | - |
-| Customer e-mails | 6 | 6 | - |
+| Customer e-mails | 7 | 7 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 14 | 14 | - |
 | Audit trail | 4 | 4 | - |
@@ -264,4 +265,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Customer service | 4 | 4 | - |
 | Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **154** | **154 (100 %)** | **0** |
+| **Total** | **155** | **155 (100 %)** | **0** |

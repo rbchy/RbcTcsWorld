@@ -30,5 +30,5 @@ punish senders that keep doing so, up to suspending the account.
 ## Consequences
 - The store can send from its own domain as soon as the domain is verified and SES production access is granted
   (new SES accounts start in the sandbox: only verified recipients, 200 e-mails a day).
-- Not done yet: the admin cannot yet see or lift a suppression (for a customer who fixed a mailbox), and e-mails are
-  plain text only.
+- The admin sees the blocked addresses under Admin -> Notifications and can "allow again" one whose owner fixed the
+  mailbox (REQ-NTF-07); if it bounces again, SES puts it back. E-mails are still plain text only.

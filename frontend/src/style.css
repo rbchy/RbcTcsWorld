@@ -738,3 +738,4 @@ article, .card { border-radius: 16px; }
 .product-description { margin: 12px 0; max-width: 62ch; line-height: 1.55; }
 .product-description p { margin: 0 0 10px; white-space: pre-line; overflow-wrap: anywhere; }
 .description-field textarea { width: 100%; }
+.blocked-addresses { margin-top: 28px; }

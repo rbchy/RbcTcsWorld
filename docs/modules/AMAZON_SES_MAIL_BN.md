@@ -75,9 +75,16 @@ SES-এর নিজের পরীক্ষার ঠিকানায় অ
 - `complaint@simulator.amazonses.com`: complaint, একইভাবে তালিকায় ওঠে।
 Admin → Notifications পাতায় পরের ইমেইলগুলো FAILED দেখাবে, কারণসহ: "Not sent: the address is on the suppression list after a bounce"।
 
+### ৭. বন্ধ ঠিকানা দেখা আর আবার চালু করা
+
+Admin → Notifications পাতার নিচে **Blocked e-mail addresses** তালিকা: কোন ঠিকানা, কেন (Bounced মানে mailbox নেই বা ভরা; Spam complaint মানে গ্রাহক ইমেইলকে spam বলেছেন), SES-এর বিস্তারিত, আর তারিখ। উপরের ঘরে ঠিকানার অংশ লিখে খোঁজা যায়।
+
+- গ্রাহক ফোন বা contact form-এ বললেন "ইমেইল পাচ্ছি না, এখন mailbox ঠিক আছে": ঠিকানার পাশে **Allow again** → নিশ্চিত করুন। পরের ইমেইল থেকে আবার যাবে। আগের FAILED ইমেইল দরকার হলে outbox-এ **Send again** চাপুন।
+- আবার bounce হলে SES নিজেই ঠিকানাটা তালিকায় ফিরিয়ে দেবে, তাই ভুল করে চালু করলেও ক্ষতি নেই।
+- **Spam complaint** ঠিকানা শুধু গ্রাহক নিজে লিখিতভাবে চাইলে চালু করুন। বারবার complaint হলে Amazon SES account আটকে দিতে পারে।
+
 ## এখনো বাকি
 
-- Admin এখনো suppression তালিকা দেখতে বা কোনো ঠিকানা সরাতে পারে না (কেউ mailbox ঠিক করলে)।
 - ইমেইল শুধু সাধারণ লেখা (plain text), HTML design নেই।
 - domain কেনা হয়নি: `MAIL_FROM` এখনো placeholder।
 
@@ -90,6 +97,7 @@ Admin → Notifications পাতায় পরের ইমেইলগুল
 | Unit | `SnsMessageVerifierTest` | openssl দিয়ে সই করা বার্তা গ্রহণ, যেকোনো বদলে বাতিল, অন্য host-এর certificate বাতিল |
 | Unit | `SesEventControllerTest`, `NotificationDeliveryServiceTest` | কোন রিপোর্ট তালিকায় তোলে, তালিকার ঠিকানায় পাঠানো হয় না |
 | Integration | `SesEventsIntegrationTest` | API আর database দিয়ে পুরো পথ |
+| Integration | `EmailSuppressionAdminIntegrationTest` | admin তালিকা দেখে, খোঁজে, আবার চালু করে; অন্য কেউ পারে না (REQ-NTF-07) |
 | Security | `AccessControlMatrixTest` | topic ছাড়া সবার জন্য 503 |
 
 Requirement: REQ-NTF-05 আর REQ-NTF-06 ([traceability](../qa/TRACEABILITY_MATRIX.md))।

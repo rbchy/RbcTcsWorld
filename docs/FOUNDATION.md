@@ -85,7 +85,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
    [JaCoCo coverage](https://rbchy.github.io/RbcTcsWorld/coverage/) ·
    [PIT mutation](https://rbchy.github.io/RbcTcsWorld/mutation/) ·
    [Playwright](https://rbchy.github.io/RbcTcsWorld/playwright/)
-3. **Defects the tests actually found:** [Defect Reports](qa/DEFECT_REPORTS.md) - 30 entries, each with
+3. **Defects the tests actually found:** [Defect Reports](qa/DEFECT_REPORTS.md) - 29 entries, each with
    evidence, root cause, fix and regression test.
 4. **How release decisions are made:** [Test Strategy](qa/TEST_STRATEGY.md) ·
    [Risk Register](qa/RISK_REGISTER.md) · [Test Summary Report (GO / NO-GO)](qa/TEST_SUMMARY_REPORT.md)

@@ -132,6 +132,11 @@ class StripeContractIntegrationTest {
     }
 
     @Test
+    void ourTaxCalculationWithAProductTaxCodeIsAValidStripeRequest() {
+        assertThat(StripeTaxTestSupport.calculateWithTaxCode(url, KEY).id()).startsWith("taxcalc_");
+    }
+
+    @Test
     void ourTaxSaleRecordIsAValidStripeRequest() {
         assertThat(StripeTaxTestSupport.recordSale(url, KEY, "taxcalc_contract")).startsWith("tax_");
     }

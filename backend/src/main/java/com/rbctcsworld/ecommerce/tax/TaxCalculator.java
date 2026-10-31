@@ -23,8 +23,12 @@ public interface TaxCalculator {
     default void record(String calculationId, String orderNumber) {
     }
 
-    /** One order line after its share of the discount; reference is the SKU. */
-    record TaxLine(String reference, BigDecimal amount, int quantity) {
+    /** One order line after its share of the discount; reference is the SKU; taxCode null = the provider's default. */
+    record TaxLine(String reference, BigDecimal amount, int quantity, String taxCode) {
+
+        public TaxLine(String reference, BigDecimal amount, int quantity) {
+            this(reference, amount, quantity, null);
+        }
     }
 
     record TaxAddress(String line1, String city, String state, String zip) {
@@ -54,7 +58,7 @@ public interface TaxCalculator {
                 BigDecimal share = i == lines.size() - 1 ? left
                         : discount.multiply(l.amount()).divide(total, 2, RoundingMode.HALF_UP);
                 left = left.subtract(share);
-                out.add(new TaxLine(l.reference(), l.amount().subtract(share), l.quantity()));
+                out.add(new TaxLine(l.reference(), l.amount().subtract(share), l.quantity(), l.taxCode()));
             }
             return out;
         }

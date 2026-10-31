@@ -62,6 +62,14 @@ class TaxCalculatorTest {
     }
 
     @Test
+    void theProductsTaxCodeTravelsWithTheDiscountedLine() {
+        List<TaxLine> out = TaxRequest.discounted(List.of(new TaxLine("TEE", new BigDecimal("20.00"), 1, "txcd_30011000"),
+                new TaxLine("MUG", new BigDecimal("20.00"), 1)), new BigDecimal("4.00"));
+        assertThat(out).containsExactly(new TaxLine("TEE", new BigDecimal("18.00"), 1, "txcd_30011000"),
+                new TaxLine("MUG", new BigDecimal("18.00"), 1, null));
+    }
+
+    @Test
     void noDiscountOrNothingToDiscountLeavesTheLinesAsTheyAre() {
         List<TaxLine> lines = List.of(line("A", "30.00"));
         assertThat(TaxRequest.discounted(lines, new BigDecimal("0.00"))).isSameAs(lines);

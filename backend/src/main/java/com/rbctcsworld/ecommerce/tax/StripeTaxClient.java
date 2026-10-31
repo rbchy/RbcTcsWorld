@@ -58,6 +58,9 @@ class StripeTaxClient {
             form.put("line_items[" + i + "][reference]", l.reference());
             form.put("line_items[" + i + "][quantity]", Integer.toString(l.quantity()));
             form.put("line_items[" + i + "][tax_behavior]", "exclusive");
+            if (l.taxCode() != null) {
+                form.put("line_items[" + i + "][tax_code]", l.taxCode());
+            }
         }
         form.put("shipping_cost[amount]", Long.toString(shippingCents));
         form.put("customer_details[address][line1]", address.line1());

@@ -10,7 +10,11 @@ import { partnerName } from '../../Partner';
 const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 const PAGE = 25;
-const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '', description: '', weightOz: '', lengthIn: '', widthIn: '', heightIn: '' };
+const EMPTY = { name: '', sku: '', category: '', price: '', stock: '', imageUrl: '', variantGroup: '', size: '', color: '', dealPrice: '', dealStartsAt: '', dealEndsAt: '', affiliateUrl: '', description: '', weightOz: '', lengthIn: '', widthIn: '', heightIn: '', taxCode: '' };
+
+/** Common Stripe Tax product codes (the full list: docs.stripe.com/tax/tax-codes); empty = the account default. */
+const TAX_CODES = [['txcd_99999999', 'taxCodeGeneral'], ['txcd_30011000', 'taxCodeClothing'],
+  ['txcd_30060010', 'taxCodeAccessories'], ['txcd_30060007', 'taxCodeJewelry'], ['txcd_30071000', 'taxCodeSports']];
 
 /** A number from the API as the form shows it (28.0 -> "28"); none -> "". */
 const num = v => (v == null ? '' : String(Number(v)));
@@ -43,6 +47,8 @@ export function validateProduct(f) {
   ['lengthIn', 'widthIn', 'heightIn'].forEach(k => tenth(k, 108, 'vSide'));
   const sides = ['lengthIn', 'widthIn', 'heightIn'].filter(k => String(f[k] ?? '').trim());
   if (sides.length && sides.length < 3) ['lengthIn', 'widthIn', 'heightIn'].forEach(k => { if (!e[k]) e[k] = 'vBoxAllThree'; });
+  const code = (f.taxCode ?? '').trim();
+  if (code && !/^txcd_\d{8}$/i.test(code)) e.taxCode = 'vTaxCode';
   const aff = (f.affiliateUrl ?? '').trim();
   if (aff && (aff.length > 500 || !/^https:\/\/[^\s"'<>]+$/.test(aff))) e.affiliateUrl = 'vHttps';
   // variants (same rules as ProductService): a size or colour needs a group, a group needs a size or colour
@@ -127,7 +133,7 @@ export default function AdminProducts() {
       variantGroup: p.variantGroup || '', size: p.size || '', color: p.color || '',
       dealPrice: p.dealPrice != null ? String(p.dealPrice) : '', dealStartsAt: (p.dealStartsAt || '').slice(0, 16), dealEndsAt: (p.dealEndsAt || '').slice(0, 16),
       affiliateUrl: p.affiliateUrl || '', description: p.description || '',
-      weightOz: num(p.weightOz), lengthIn: num(p.lengthIn), widthIn: num(p.widthIn), heightIn: num(p.heightIn) } : { ...EMPTY });
+      weightOz: num(p.weightOz), lengthIn: num(p.lengthIn), widthIn: num(p.widthIn), heightIn: num(p.heightIn), taxCode: p.taxCode || '' } : { ...EMPTY });
   };
   const set = k => e => {
     const next = { ...form, [k]: e.target.value };
@@ -165,7 +171,8 @@ export default function AdminProducts() {
       dealPrice: form.dealPrice.trim() ? Number(form.dealPrice) : null,
       dealStartsAt: form.dealStartsAt ? `${form.dealStartsAt}:00` : null, dealEndsAt: form.dealEndsAt ? `${form.dealEndsAt}:00` : null,
       affiliateUrl: form.affiliateUrl.trim() || null, description: form.description.trim() || null,
-      weightOz: dec(form.weightOz), lengthIn: dec(form.lengthIn), widthIn: dec(form.widthIn), heightIn: dec(form.heightIn) };
+      weightOz: dec(form.weightOz), lengthIn: dec(form.lengthIn), widthIn: dec(form.widthIn), heightIn: dec(form.heightIn),
+      taxCode: form.taxCode.trim() || null };
     try {
       if (form.id) await api.put(`/products/${form.id}`, body);
       else await api.post('/products', body);
@@ -276,6 +283,15 @@ export default function AdminProducts() {
               <input type="datetime-local" value={form.dealEndsAt} onChange={set('dealEndsAt')} data-testid="pf-deal-end" />
             </Field>
           </fieldset>
+          <div className="full">
+            <Field id="pf-tax-code" label={t('taxCodeLabel')} error={errors.taxCode} hint={t('taxCodeHint')}>
+              <input value={form.taxCode} onChange={set('taxCode')} maxLength={20} list="pf-tax-code-list" spellCheck={false}
+                     placeholder="txcd_99999999" data-testid="pf-tax-code" />
+            </Field>
+            <datalist id="pf-tax-code-list">
+              {TAX_CODES.map(([code, key]) => <option key={code} value={code} label={t(key)} />)}
+            </datalist>
+          </div>
           <fieldset className="deal-fields parcel-fields">
             <legend>{t('parcelLegend')}</legend>
             <p className="hint">{t('parcelHint')}</p>

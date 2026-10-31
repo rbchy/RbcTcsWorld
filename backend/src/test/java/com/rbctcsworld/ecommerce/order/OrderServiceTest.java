@@ -341,6 +341,26 @@ class OrderServiceTest {
     }
 
     @Test
+    void eachLineGoesToTheTaxProviderWithItsProductsTaxCode() {
+        keyboard.changeTaxCode("txcd_99999999");
+        when(cartItems.findByUserIdOrderByIdAsc(7L))
+                .thenReturn(List.of(new CartItem(7L, keyboard, 1), new CartItem(7L, mouse, 2)));
+
+        service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+        service.quote(EMAIL, null, null);
+
+        ArgumentCaptor<com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest> asked =
+                ArgumentCaptor.forClass(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest.class);
+        verify(taxes, org.mockito.Mockito.times(2)).calculate(asked.capture());
+        for (com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxRequest r : asked.getAllValues()) {
+            assertThat(r.lines()).extracting(com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine::reference,
+                            com.rbctcsworld.ecommerce.tax.TaxCalculator.TaxLine::taxCode)
+                    .containsExactlyInAnyOrder(org.assertj.core.groups.Tuple.tuple("SKU-K", "txcd_99999999"),
+                            org.assertj.core.groups.Tuple.tuple("SKU-M", null));
+        }
+    }
+
+    @Test
     void theTaxProviderSeesTheLinesAfterTheDiscount() {
         when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, keyboard, 1)));
         when(coupons.validate(eq("save10"), eq(7L), any()))

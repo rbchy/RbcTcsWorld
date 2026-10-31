@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Place order = ONE database transaction:
@@ -100,12 +101,24 @@ public class OrderService {
         BigDecimal subtotal = orderLines.stream().map(OrderLine::lineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         Coupon coupon = hasText(couponCode) ? coupons.validate(couponCode, user.getId(), subtotal) : null;
         PriceBreakdown base = pricing.price(subtotal, coupon == null ? BigDecimal.ZERO : coupon.discountFor(subtotal));
-        List<TaxLine> taxLines = orderLines.stream().map(l -> new TaxLine(l.sku(), l.lineTotal(), l.quantity())).toList();
+        Map<Long, String> codes = taxCodes(lines);
+        List<TaxLine> taxLines = orderLines.stream()
+                .map(l -> new TaxLine(l.sku(), l.lineTotal(), l.quantity(), codes.get(l.productId()))).toList();
         TaxQuote tax = taxes.calculate(taxRequest(taxLines, base, address == null ? null : address.normalized()));
         PriceBreakdown p = base.withTax(tax.tax());
         int qty = orderLines.stream().mapToInt(OrderLine::quantity).sum();
         return new QuoteResponse(orderLines, qty, p.subtotal(), coupon == null ? null : coupon.getCode(),
                 p.discount(), p.shippingFee(), p.tax(), p.total(), tax.estimated());
+    }
+
+    /** Product id -> its Stripe Tax code, for the products that have one (the others use the account default). */
+    static Map<Long, String> taxCodes(List<CartItem> lines) {
+        Map<Long, String> codes = new java.util.HashMap<>();
+        for (CartItem line : lines) {
+            Product p = line.getProduct();
+            if (p.getTaxCode() != null) codes.put(p.getId(), p.getTaxCode());
+        }
+        return codes;
     }
 
     public OrderResponse placeOrder(String email, String couponCode, ShippingAddress address) {
@@ -125,8 +138,9 @@ public class OrderService {
         Coupon coupon = hasText(couponCode) ? coupons.validate(couponCode, user.getId(), order.getSubtotal()) : null;
         PriceBreakdown base = pricing.price(order.getSubtotal(),
                 coupon == null ? BigDecimal.ZERO : coupon.discountFor(order.getSubtotal()));
+        Map<Long, String> codes = taxCodes(lines);
         List<TaxLine> taxLines = order.getItems().stream()
-                .map(i -> new TaxLine(i.getSku(), i.getLineTotal(), i.getQuantity())).toList();
+                .map(i -> new TaxLine(i.getSku(), i.getLineTotal(), i.getQuantity(), codes.get(i.getProductId()))).toList();
         TaxQuote tax = taxes.calculate(taxRequest(taxLines, base, address.normalized()));   // 400 / 503 before anything is saved
         PriceBreakdown price = base.withTax(tax.tax());
         order.recordTaxCalculation(tax.calculationId());

@@ -30,4 +30,12 @@ public final class StripeTaxTestSupport {
         return new StripeTaxClient(url, key, Duration.ofSeconds(10))
                 .reverse(transactionId, "RBC-CONTRACT-1-refund", flatCents, "contract-taxrev-" + flatCents).id();
     }
+
+    /** A line with a product tax code (clothing): Stripe accepts the code field. */
+    public static Calc calculateWithTaxCode(String url, String key) {
+        StripeTaxClient.Calculation c = new StripeTaxClient(url, key, Duration.ofSeconds(10)).calculate("usd",
+                List.of(new TaxCalculator.TaxLine("TEE-CONTRACT", new BigDecimal("19.99"), 1, "txcd_30011000")), 599,
+                new TaxCalculator.TaxAddress("1 Market St", "Philadelphia", "PA", "19107"), "contract-taxcalc-code");
+        return new Calc(c.id(), c.taxCents());
+    }
 }

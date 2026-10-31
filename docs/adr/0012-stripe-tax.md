@@ -30,6 +30,8 @@ report for filing. Keeping such a table ourselves is a full-time job.
   reverses the whole sale; an approved return reverses the refunded amount (Stripe's `flat_amount`, tax included, spread
   over the sale's lines and shipping). Like the sale, the reversal is sent after the refund commits, once (the
   reference `<order number>-cancel` / `-return` is the idempotency key), and an outage is logged, never undoing the refund.
-- Not done yet: product tax codes all use the account default; needed before live sales of mixed product types.
+- **Product tax codes** (REQ-PAY-13): a product may carry its Stripe Tax code (V33, e.g. `txcd_30011000` clothing and
+  footwear), sent with each of its lines; products without one use the account's default (general tangible goods).
+  The admin form suggests the common codes; the full list is Stripe's.
 - The owner must register in each state where the store collects tax (Phase 4); Stripe only calculates where the account
   has a registration.

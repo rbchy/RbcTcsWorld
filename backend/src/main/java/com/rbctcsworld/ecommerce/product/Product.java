@@ -96,6 +96,10 @@ public class Product {
     @Column(name = "height_in", precision = 4, scale = 1)
     private BigDecimal heightIn;
 
+    /** Stripe Tax product tax code (txcd_ and 8 digits); null = the account's default code. */
+    @Column(name = "tax_code", length = 20)
+    private String taxCode;
+
     protected Product() {
     }
 
@@ -213,6 +217,14 @@ public class Product {
     /** Stored with one decimal, as the columns hold it (so the audit trail compares like with like). */
     private static BigDecimal tenth(BigDecimal v) {
         return v == null ? null : v.setScale(1, java.math.RoundingMode.HALF_UP);
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getTaxCode() { return taxCode; }
+
+    /** Trimmed, lower case; blank = the account's default code. */
+    public void changeTaxCode(String code) {
+        this.taxCode = code == null || code.isBlank() ? null : code.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     /** Affiliate link: null or blank = an ordinary product sold here. */

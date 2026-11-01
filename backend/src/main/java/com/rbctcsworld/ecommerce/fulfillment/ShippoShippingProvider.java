@@ -43,28 +43,50 @@ class ShippoShippingProvider implements ShippingProvider {
         if (request.to() == null) {
             throw new BusinessRuleException(NO_ADDRESS);   // orders from before addresses were required
         }
-        String metadata = "Order " + request.orderNumber();
-        ShippoClient.Parcel parcel = parcel(box, ouncesPerItem, request);
+        Bought b = buy(from, request.to(), parcel(box, ouncesPerItem, request), request.carrier(),
+                "Order " + request.orderNumber(), request.orderNumber());
+        return new Label(b.transaction().trackingNumber(), b.transaction().labelUrl(), b.rate().amount(), b.transaction().id());
+    }
+
+    /** From the customer back to the store's return address, the cheapest rate of any carrier. */
+    @Override
+    public ReturnLabel buyReturnLabel(LabelRequest request) {
+        if (request.to() == null) {
+            throw new BusinessRuleException(NO_ADDRESS);
+        }
+        Bought b = buy(request.to(), from, parcel(box, ouncesPerItem, request), null,
+                "Return " + request.orderNumber(), request.orderNumber());
+        return new ReturnLabel(carrierCode(b.rate().provider()), b.transaction().trackingNumber(),
+                b.transaction().labelUrl(), b.rate().amount(), b.transaction().id());
+    }
+
+    private record Bought(ShippoClient.Rate rate, ShippoClient.Transaction transaction) {
+    }
+
+    /** carrier null: any carrier. 400 no rate / refused / not sold; 503 Shippo down. */
+    private Bought buy(Address sender, Address recipient, ShippoClient.Parcel parcel, String carrier, String metadata,
+                       String orderNumber) {
         try {
-            List<ShippoClient.Rate> rates = shippo.rates(from, request.to(), parcel, metadata);
+            List<ShippoClient.Rate> rates = shippo.rates(sender, recipient, parcel, metadata);
             ShippoClient.Rate cheapest = rates.stream()
-                    .filter(r -> carrierCode(r.provider()).equals(request.carrier()))
+                    .filter(r -> carrier == null || carrierCode(r.provider()).equals(carrier))
                     .min(Comparator.comparing(ShippoClient.Rate::amount))
-                    .orElseThrow(() -> new BusinessRuleException("No " + request.carrier()
-                            + " rate for this parcel and address. Choose another carrier or check the address."));
+                    .orElseThrow(() -> new BusinessRuleException(carrier == null
+                            ? "No carrier has a rate for this parcel and address. Check the address."
+                            : "No " + carrier + " rate for this parcel and address. Choose another carrier or check the address."));
             ShippoClient.Transaction t = shippo.buy(cheapest.id(), metadata);
             if (!"SUCCESS".equals(t.status())) {
                 throw new BusinessRuleException("The label could not be bought: "
                         + (t.messages() == null || t.messages().isBlank() ? "no reason given" : t.messages()));
             }
-            log.info("Order {}: {} {} label {} for {} {}", request.orderNumber(), cheapest.provider(), cheapest.service(),
+            log.info("{}: {} {} label {} for {} {}", metadata, cheapest.provider(), cheapest.service(),
                     t.trackingNumber(), cheapest.amount(), cheapest.currency());
-            return new Label(t.trackingNumber(), t.labelUrl(), cheapest.amount(), t.id());
+            return new Bought(cheapest, t);
         } catch (ShippoException e) {
             if (e.status() == 400) {
                 throw new BusinessRuleException("The carrier refused the shipment: " + e.getMessage());
             }
-            log.error("Shippo failed for order {} (HTTP {}): {}", request.orderNumber(), e.status(), e.getMessage());
+            log.error("Shippo failed for order {} (HTTP {}): {}", orderNumber, e.status(), e.getMessage());
             throw new ServiceUnavailableException(UNAVAILABLE);
         }
     }

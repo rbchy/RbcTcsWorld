@@ -181,4 +181,34 @@ class ShippoShippingProviderTest {
         shippo.buyLabel(new LabelRequest("ORD-9", "USPS", TO, 1, List.of(piece(1, "28.0", "13.0", "8.0", "5.0"))));
         verify(client).rates(FROM, TO, new ShippoClient.Parcel("13", "8", "5", "28"), "Order ORD-9");
     }
+
+    // ---------- prepaid return labels (REQ-RET-04, ADR-0023) ----------
+
+    @Test
+    void aReturnLabelGoesFromTheCustomerToTheStoreAtTheCheapestRateOfAnyCarrier() {
+        when(client.rates(any(), any(), any(), anyString())).thenReturn(RATES);
+        when(client.buy("r_usps_ground", "Return ORD-1")).thenReturn(ok("R1"));
+
+        ShippingProvider.ReturnLabel l = shippo.buyReturnLabel(new LabelRequest("ORD-1", null, TO, 2));
+
+        verify(client).rates(TO, FROM, new ShippoClient.Parcel("10", "8", "4", "32"), "Return ORD-1");   // swapped
+        assertThat(l).isEqualTo(new ShippingProvider.ReturnLabel("USPS", "R1", "https://label/R1.pdf", new BigDecimal("7.58"), "txn_R1"));
+    }
+
+    @Test
+    void aReturnLabelNeedsTheCustomersAddressAndARate() {
+        assertThatThrownBy(() -> shippo.buyReturnLabel(new LabelRequest("ORD-1", null, null, 1)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(ShippoShippingProvider.NO_ADDRESS);
+        when(client.rates(any(), any(), any(), anyString())).thenReturn(List.of());
+        assertThatThrownBy(() -> shippo.buyReturnLabel(new LabelRequest("ORD-1", null, TO, 1)))
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("No carrier has a rate");
+        verify(client, never()).buy(anyString(), anyString());
+    }
+
+    @Test
+    void theSimulatedProviderBuysNoReturnLabels() {
+        ShippingProvider simulated = new SimulatedShippingProvider(mock(com.rbctcsworld.ecommerce.order.OrderRepository.class));
+        assertThatThrownBy(() -> simulated.buyReturnLabel(new LabelRequest("ORD-1", null, TO, 1)))
+                .isInstanceOf(BusinessRuleException.class).hasMessage(ShippingProvider.NO_RETURN_LABELS);
+    }
 }

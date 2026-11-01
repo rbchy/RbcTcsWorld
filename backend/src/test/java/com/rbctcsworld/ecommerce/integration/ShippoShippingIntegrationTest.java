@@ -220,4 +220,45 @@ class ShippoShippingIntegrationTest {
         createProduct(",\"lengthIn\":109,\"widthIn\":8,\"heightIn\":4").andExpect(status().isBadRequest());
         createProduct(",\"lengthIn\":13,\"widthIn\":-8,\"heightIn\":4").andExpect(status().isBadRequest());
     }
+
+    // ---------- REQ-RET-04: a prepaid return label for an approved return ----------
+
+    @Test
+    void anApprovedReturnGetsAPrepaidLabelTheCustomerCanPrintOnce() throws Exception {
+        when(shipping.buyReturnLabel(any())).thenAnswer(i -> {
+            ShippingProvider.LabelRequest r = i.getArgument(0);
+            return new ShippingProvider.ReturnLabel("USPS", "9205590164917312751089",
+                    "https://deliver.goshippo.com/return-" + r.orderNumber() + ".pdf", new BigDecimal("6.95"), "txn_r_" + r.orderNumber());
+        });
+        long id = paidOrder();
+        ship(id, "USPS").andExpect(status().isOk());
+        mvc.perform(as(post("/api/admin/orders/" + id + "/deliver"), admin)).andExpect(status().isOk());
+        mvc.perform(as(post("/api/orders/" + id + "/return"), customer).content("{\"reason\":\"WRONG_ITEM\"}"))
+                .andExpect(status().isCreated());
+        long returnId = jdbc.queryForObject("select id from return_requests where order_id = ?", Long.class, id);
+        mvc.perform(as(post("/api/admin/returns/" + returnId + "/label"), admin)).andExpect(status().isConflict()); // not approved yet
+        mvc.perform(as(post("/api/admin/returns/" + returnId + "/approve"), admin)).andExpect(status().isOk());
+
+        mvc.perform(as(post("/api/admin/returns/" + returnId + "/label"), customer)).andExpect(status().isForbidden());
+        mvc.perform(as(post("/api/admin/returns/" + returnId + "/label"), admin)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.returnCarrier").value("USPS"))
+                .andExpect(jsonPath("$.returnTrackingNumber").value("9205590164917312751089"));
+
+        org.mockito.ArgumentCaptor<ShippingProvider.LabelRequest> asked = org.mockito.ArgumentCaptor.forClass(ShippingProvider.LabelRequest.class);
+        verify(shipping).buyReturnLabel(asked.capture());
+        assertThat(asked.getValue().to().zip()).isEqualTo("15213");                  // from the customer's address
+        assertThat(asked.getValue().items()).isEqualTo(3);
+
+        mvc.perform(as(get("/api/orders/" + id + "/return"), customer)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.returnLabelUrl").value(org.hamcrest.Matchers.endsWith(".pdf")))
+                .andExpect(jsonPath("$.returnLabelCost").doesNotExist())            // the store's cost stays private
+                .andExpect(jsonPath("$.returnLabelRef").doesNotExist());
+        assertThat(jdbc.queryForObject("select return_label_cost from return_requests where id = ?", BigDecimal.class, returnId))
+                .isEqualByComparingTo("6.95");
+        assertThat(jdbc.queryForObject("select count(*) from notifications where order_id = ? and type = 'RETURN_LABEL_READY'",
+                Long.class, id)).isEqualTo(1);
+
+        mvc.perform(as(post("/api/admin/returns/" + returnId + "/label"), admin)).andExpect(status().isConflict()); // only once
+        mvc.perform(as(post("/api/admin/returns/99999999/label"), admin)).andExpect(status().isNotFound());
+    }
 }

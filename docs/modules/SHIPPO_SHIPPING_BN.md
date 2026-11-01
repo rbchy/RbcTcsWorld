@@ -74,12 +74,25 @@ Label কেনার সময় দোকান হিসাব করে:
    event `track_updated`, URL `https://<আপনার-domain>/api/shipping/shippo/webhook?token=<SHIPPO_WEBHOOK_TOKEN>`।
    নিজের কম্পিউটারে পরীক্ষা করতে `ngrok http 8081` দিয়ে একটা সাময়িক public URL নিন।
 
+## গ্রাহকের return-এর জন্য ফেরত label
+
+Return অনুমোদন (Approve) করলে টাকা সাথে সাথে ফেরত যায়। এরপর গ্রাহককে জিনিসটা পাঠানোর একটা label দিন:
+
+1. Admin → Returns → status **APPROVED** → সারির **Buy return label**।
+2. দোকান Shippo থেকে গ্রাহকের ঠিকানা থেকে দোকানের ফেরত ঠিকানায় (`SHIP_FROM_*`) label কেনে, যে carrier-এর দাম সবচেয়ে কম তার।
+3. গ্রাহক ইমেইল পান। অর্ডারের পাতায় **Print return label** দেখায়, সাথে carrier আর tracking নম্বর। গ্রাহককে কিছু দিতে হয় না।
+
+- একটা return-এ একবারই কেনা যায়। Label-এর খরচ দোকানের, গ্রাহক সেটা দেখেন না।
+- "No longer needed" return-এ label কিনবেন কি না, সেটা আপনার সিদ্ধান্ত। না কিনলে গ্রাহক নিজে পাঠাবেন।
+- Label ব্যবহার না হলে Shippo-র Dashboard থেকে তার টাকা ফেরত চাওয়া যায়।
+- Simulated shipping-এ (Shippo ছাড়া) বোতাম চাপলে বার্তা আসে যে ফেরত label-এর জন্য Shippo লাগবে।
+
 ## এখনো বাকি
 
 - কয়েকটা জিনিসের অর্ডারে বাক্সের মাপ আন্দাজ; ওজন-মাপ না দেওয়া পণ্যে default চলে। ভুল ওজনে carrier পরে বাড়তি টাকা কাটতে পারে।
 - ফেরত ঠিকানা এখনো placeholder। কয়েকটা warehouse থেকে ভাগ হওয়া অর্ডারও এক প্যাকেট হিসেবে ওই ঠিকানা থেকে যায়।
 - Label কেনার ঠিক পরে database বিফল হলে অর্ডার PAID থাকে আর label অব্যবহৃত পড়ে থাকে। Shippo অব্যবহৃত label-এর টাকা ফেরত দেয়; log-এ অর্ডার নম্বর থাকে।
-- গ্রাহকের return-এর জন্য ফেরত label এখনো কেনা হয় না।
+- ফেরত পার্সেল দোকানে পৌঁছাল কি না, সেটা এখনো আপনা থেকে দেখা হয় না (tracking নম্বর দেখা যায়)।
 
 ## টেস্ট কোথায়
 
@@ -88,6 +101,7 @@ Label কেনার সময় দোকান হিসাব করে:
 | Unit | `ShippoClientTest` | Shippo-তে ঠিক কী JSON যায়, প্রতিটা উত্তর (rate, label, ভুল, অচেনা উত্তর) পড়া |
 | Unit | `ShippoShippingProviderTest` | বেছে নেওয়া carrier-এর সবচেয়ে সস্তা rate, ওজন আর বাক্সের হিসাব, 400/503 |
 | Unit | `ProductParcelTest` | পণ্যের ওজন-মাপ রাখা, audit, তিন দিক একসাথে |
+| Unit | `ReturnServiceTest` | ফেরত label শুধু অনুমোদিত return-এ, একবার, ব্যর্থ হলে কিছু সেভ হয় না |
 | Unit | `FulfillmentServiceTest` | PAID ছাড়া label নয়, ব্যর্থ হলে অর্ডার PAID থাকে, শুধু Shippo DELIVERED বললে DELIVERED |
 | Unit | `ShippoWebhookControllerTest`, `ShippingConfigTest` | token-এর নিয়ম, চালু হওয়ার নিয়ম |
 | Integration | `ShippoShippingIntegrationTest`, `ShippingSimulatedIntegrationTest` | API আর database দিয়ে পুরো পথ |
@@ -95,4 +109,4 @@ Label কেনার সময় দোকান হিসাব করে:
 | Browser | `playwright/tests/shipping-label.spec.ts` | Admin-এর "Label" → "Print label ($7.58)" |
 | Browser | `playwright/tests/shipping-box.spec.ts` | পণ্যের form-এ ওজন আর বাক্স, ভুল মাপে বার্তা |
 
-Requirement: REQ-FUL-04, REQ-FUL-05, REQ-FUL-06 ([traceability](../qa/TRACEABILITY_MATRIX.md))।
+Requirement: REQ-FUL-04, REQ-FUL-05, REQ-FUL-06, REQ-RET-04 ([traceability](../qa/TRACEABILITY_MATRIX.md))।

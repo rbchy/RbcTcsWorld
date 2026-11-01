@@ -127,6 +127,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-RET-01 | Return only for DELIVERED orders, within 30 days, once per order | `ReturnServiceTest#lastMomentOfTheWindowIsAccepted`, `ReturnServiceTest#oneSecondAfterTheWindowIsRejected`, `ReturnServiceTest#notYetDeliveredCannotBeReturned`, `ReturnServiceTest#onlyOneReturnPerOrder`, `ReturnApiTest#notDeliveredYet`, `ReturnApiTest#validationAndDuplicates` | U A | Pass |
 | REQ-RET-02 | Decision table: DAMAGED full refund no restock; NO_LONGER_NEEDED total minus shipping; others full refund + restock | `ReturnServiceTest#approvalFollowsTheDecisionTable`, `ReturnApiTest#decisionTable`, `FulfillmentReturnIntegrationTest#damagedReturnIsNotRestockedAndRemorseReturnKeepsShipping`, `LifecycleDatabaseTest#fullLifecycleIsConsistent`, `bdd:Return decision table - refund and restock depend on the reason` | U I A B D | Pass |
 | REQ-RET-03 | Rejection puts the order back to DELIVERED without refund; a resolved return cannot be resolved again | `ReturnServiceTest#rejectionPutsOrderBackToDeliveredWithoutRefund`, `ReturnServiceTest#resolvedReturnCannotBeResolvedAgain`, `ReturnApiTest#rejection`, `bdd:A rejected return sends the order back to DELIVERED` | U A B | Pass |
+| REQ-RET-04 | Prepaid return label (admin only): for an APPROVED return, once (else 409), from the customer's delivery address to the store at the cheapest rate of any carrier, the order's own parcel; 400 when the provider cannot (simulated shipping, no rate, no address), 503 provider down, nothing stored or announced then; the customer sees carrier, tracking number and the label link (never the store's cost) and gets an e-mail | `ShippoShippingProviderTest#aReturnLabelGoesFromTheCustomerToTheStoreAtTheCheapestRateOfAnyCarrier`, `ShippoShippingProviderTest#aReturnLabelNeedsTheCustomersAddressAndARate`, `ShippoShippingProviderTest#theSimulatedProviderBuysNoReturnLabels`, `ReturnServiceTest#anApprovedReturnGetsItsLabelOnceAndTheCustomerIsTold`, `ReturnServiceTest#onlyAnApprovedReturnGetsALabel`, `ReturnServiceTest#whenTheProviderCannotNothingIsStoredOrAnnounced`, `ShippoShippingIntegrationTest#anApprovedReturnGetsAPrepaidLabelTheCustomerCanPrintOnce`, `AccessControlMatrixTest#matrix` | U I A | Pass |
 
 ## Customer e-mails
 
@@ -259,7 +260,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Orders and inventory | 16 | 16 | - |
 | Pricing, coupons, payments | 18 | 18 | - |
 | Address book | 3 | 3 | - |
-| Fulfilment and returns | 9 | 9 | - |
+| Fulfilment and returns | 10 | 10 | - |
 | Customer e-mails | 7 | 7 | - |
 | Reviews and wishlist | 11 | 11 | - |
 | Storefront UI | 14 | 14 | - |
@@ -269,4 +270,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Customer service | 4 | 4 | - |
 | Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **159** | **159 (100 %)** | **0** |
+| **Total** | **160** | **160 (100 %)** | **0** |

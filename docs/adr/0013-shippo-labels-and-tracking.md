@@ -37,4 +37,4 @@ someone remembers to click.
     warehouses still ships as one parcel from that address.
   - If the database fails right after Shippo sold the label, the order stays PAID and the label is unused. Shippo
     refunds unused labels on request; the log line has the order number.
-  - Return labels for customer returns are not bought yet.
+  - Return labels: bought by the admin for an approved return ([ADR-0023](0023-prepaid-return-labels.md)).

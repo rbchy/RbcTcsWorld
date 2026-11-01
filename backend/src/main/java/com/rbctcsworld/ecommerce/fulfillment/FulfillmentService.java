@@ -147,4 +147,13 @@ public class FulfillmentService {
                     : new Piece(i.getQuantity(), p.getWeightOz(), p.getLengthIn(), p.getWidthIn(), p.getHeightIn());
         }).toList();
     }
+
+    /**
+     * ADMIN: a prepaid return label for a delivered order's parcel, from the customer's delivery address back to the
+     * store (ADR-0023). The caller checks that the return was approved and stores the label.
+     */
+    public ShippingProvider.ReturnLabel returnLabel(CustomerOrder order) {
+        return shipping.buyReturnLabel(new LabelRequest(order.getOrderNumber(), null, to(order.getShippingAddress()),
+                order.getTotalItems(), pieces(order)));
+    }
 }

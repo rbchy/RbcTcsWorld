@@ -75,6 +75,7 @@ class AccessControlMatrixTest {
             "GET,    /api/admin/email-suppressions,         401, 403, 200",
             "DELETE, /api/admin/email-suppressions?email=nobody@example.com, 401, 403, 404",
             "GET,    /api/admin/returns,                    401, 403, 200",
+            "POST,   /api/admin/returns/99999999/label,     401, 403, 404",
             "GET,    /api/admin/reviews,                    401, 403, 200",
             "POST,   /api/admin/reviews/99999999/hide,      401, 403, 404",
             "POST,   /api/admin/orders/99999999/deliver,    401, 403, 404",

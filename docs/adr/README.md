@@ -27,5 +27,6 @@
 | [0019](0019-search-engines.md) | আসল ঠিকানা (`/products/12/mug`), page tag, JSON-LD, robots.txt আর sitemap; hash router থাকে | Google প্রতিটা পণ্য আলাদা পাতা হিসেবে পায়, ব্যক্তিগত পাতা আর ডেমো কখনো ফলাফলে নয় |
 | [0020](0020-affiliate-products.md) | Partner (affiliate, যেমন Amazon) পণ্য: একটা লিংক, দাম আর cart ছাড়া, ঘোষণাসহ | নিজের পণ্যের আগেই আয়, Amazon আর FTC-র নিয়ম মেনে, partner পণ্য কখনো আমাদের অর্ডারে নয় |
 | [0021](0021-product-descriptions.md) | পণ্যের বর্ণনা মালিকের নিজের ভাষায়, শুধু সাধারণ লেখা | Amazon আর Google মূল লেখা দেখে; কোনো HTML বা script পাতায় ঢুকতে পারে না |
+| [0022](0022-self-service-account-deletion.md) | গ্রাহক নিজেই account মুছতে পারেন; অর্ডার ট্যাক্সের হিসাবের জন্য থাকে | Privacy আইনের মুছে ফেলার অধিকার এক বোতামে; চালান, পেমেন্ট আর refund আইন মেনে রাখা থাকে |
 
 **Interview-এ:** "Architecture-এর প্রতিটা বড় সিদ্ধান্তের ADR আছে: কী বিকল্প ছিল, কেন এটা বেছেছি, আর কী দাম দিতে হয়েছে (যেমন logout-এর পরেও ১৫ মিনিট access token কাজ করে, সেটা জেনে-বুঝে মেনে নেওয়া)।"

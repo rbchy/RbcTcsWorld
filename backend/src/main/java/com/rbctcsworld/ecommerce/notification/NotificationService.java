@@ -48,7 +48,8 @@ public class NotificationService {
     @Transactional(propagation = Propagation.MANDATORY)
     public void on(OrderNotificationEvent event) {
         CustomerOrder order = orders.findById(event.orderId()).orElseThrow();
-        String recipient = users.findById(order.getUserId()).map(AppUser::getEmail).orElse(null);
+        String recipient = users.findById(order.getUserId()).filter(u -> u.getDeletedAt() == null)
+                .map(AppUser::getEmail).orElse(null);
         if (recipient == null) return;                               // account deleted: nobody to tell
         Email email = compose(event, order);
         notifications.save(new Notification(order.getId(), recipient, event.type().name(), email.subject(),

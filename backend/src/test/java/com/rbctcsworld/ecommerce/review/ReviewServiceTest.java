@@ -66,6 +66,39 @@ class ReviewServiceTest {
         lenient().when(products.lockById(1L)).thenReturn(Optional.of(product));
     }
 
+    // ---------- account deleted (REQ-AUTH-17, ADR-0022) ----------
+
+    @Test
+    void anAccountDeletedTakesItsReviewsAndEachProductsRatingIsRecalculatedOnce() {
+        Product other = new Product("Pad", "SKU-P", "e", new BigDecimal("5.00"), 5);
+        ReflectionTestUtils.setField(other, "id", 2L);
+        product.applyRating(new BigDecimal("3.0"), 2);
+        other.applyRating(new BigDecimal("1.0"), 1);
+        List<Review> mine = List.of(new Review(2L, 7L, 1, null, null, java.time.LocalDateTime.now(CLOCK)),
+                new Review(1L, 7L, 1, null, null, java.time.LocalDateTime.now(CLOCK)));
+        when(reviews.findByUserId(7L)).thenReturn(mine);
+        when(products.lockById(2L)).thenReturn(Optional.of(other));
+        when(reviews.ratingHistogram(1L)).thenReturn(List.<Object[]>of(new Object[] {5, 1L}));   // the other customer's 5
+        when(reviews.ratingHistogram(2L)).thenReturn(List.of());
+
+        assertThat(service.removeAllBy(7L)).isEqualTo(2);
+
+        verify(reviews).deleteAll(mine);
+        assertThat(product.getRatingCount()).isEqualTo(1);
+        assertThat(product.getRatingAverage()).isEqualByComparingTo("5.0");
+        assertThat(other.getRatingCount()).isZero();
+        verify(products).save(product);
+        verify(products).save(other);
+    }
+
+    @Test
+    void noReviewsNothingToRecalculate() {
+        when(reviews.findByUserId(7L)).thenReturn(List.of());
+        assertThat(service.removeAllBy(7L)).isZero();
+        verify(reviews, never()).deleteAll(org.mockito.ArgumentMatchers.anyIterable());
+        verify(products, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
     // ---------- rating maths ----------
 
     /** Each row: the star values of all published reviews, expected average. */

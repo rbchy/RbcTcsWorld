@@ -739,3 +739,4 @@ article, .card { border-radius: 16px; }
 .product-description p { margin: 0 0 10px; white-space: pre-line; overflow-wrap: anywhere; }
 .description-field textarea { width: 100%; }
 .blocked-addresses { margin-top: 28px; }
+.delete-account { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line, #ddd); }

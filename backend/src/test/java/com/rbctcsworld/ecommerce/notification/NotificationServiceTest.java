@@ -177,6 +177,21 @@ class NotificationServiceTest {
         verify(notifications, never()).save(any());
     }
 
+    /** REQ-AUTH-17: the row stays for the orders, but a deleted account (ADR-0022) gets no more order e-mails. */
+    @Test
+    void anAccountItsOwnerDeletedGetsNoOrderEmail() {
+        com.rbctcsworld.ecommerce.auth.AppUser gone = new com.rbctcsworld.ecommerce.auth.AppUser("ada@test.com", "x");
+        org.springframework.test.util.ReflectionTestUtils.setField(gone, "id", 7L);
+        gone.erase("hash", LocalDateTime.now(CLOCK));
+        when(orders.findById(55L)).thenReturn(Optional.of(order));
+        when(users.findById(7L)).thenReturn(Optional.of(gone));
+        service.on(OrderNotificationEvent.of(55L, Type.ORDER_SHIPPED));
+        verify(notifications, never()).save(any());
+        assertThat(gone.getEmail()).isEqualTo("deleted-7@deleted.invalid");
+        assertThat(gone.isActive()).isFalse();
+        assertThat(gone.isTwoFactorEnabled()).isFalse();
+    }
+
     @Test
     void adminListByOrderByStatusOrLatest() {
         Notification n = new Notification(55L, "a@test.com", "ORDER_PLACED", "s", "b", LocalDateTime.now(CLOCK));

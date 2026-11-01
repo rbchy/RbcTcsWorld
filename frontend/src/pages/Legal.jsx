@@ -97,9 +97,10 @@ function Privacy({ d }) {
 
       <h2>Your choices</h2>
       <p>You can see and change your details, addresses and saved cards in your account at any time. To get a copy of your
-        information, to correct it, or to have your account deleted, e-mail us from the address on your account. We
-        answer within 45 days, and asking never changes the price or service you get. Records the law makes us keep
-        (for example invoices) stay until that duty ends.</p>
+        information or to correct it, e-mail us from the address on your account. We answer within 45 days, and asking
+        never changes the price or service you get. You can delete your account yourself at any time under Security
+        -&gt; Delete my account; or e-mail us and we do it for you. Records the law makes us keep (for example invoices)
+        stay until that duty ends, no longer linked to your e-mail address.</p>
 
       <h2>Children</h2>
       <p>The shop is not meant for children under 13, and we do not knowingly collect their information. If you think a

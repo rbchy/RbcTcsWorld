@@ -28,6 +28,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-AUTH-14 | A reset sets the new password (8-72), ends every session, lifts a login lockout and e-mails "your password was changed"; the delivered reset e-mail is removed from the database | `PasswordResetServiceTest#aValidLinkSetsTheNewPasswordAndEndsEverySession`, `PasswordResetIntegrationTest#aResetChangesThePasswordEndsEverySessionAndTheLinkWorksOnce`, `PasswordResetIntegrationTest#aResetLiftsALoginLockout`, `PasswordResetIntegrationTest#theDeliveredResetEmailNoLongerContainsTheLink`, `NotificationDeliveryServiceTest#aDeliveredResetLinkIsRemovedFromTheDatabase`, `PasswordResetApiTest#resetByEmail`, `UiPasswordResetTest#resetFromTheLoginPage`, `UiPasswordResetTest#mistakesOnTheResetPage` | U I A UI | Pass |
 | REQ-AUTH-15 | Guest checkout: a customer session from just an e-mail (random password nobody knows, guest flag in the answer); an e-mail with an account - full or guest - is refused (409) so nobody opens somebody else's orders; "Forgot password" turns a guest into a full account | `GuestCheckoutTest#aGuestGetsACustomerSessionWithAPasswordNobodyKnows`, `GuestCheckoutTest#twoGuestsNeverShareASecret`, `GuestCheckoutTest#anEmailWithAnAccountCannotCheckOutAsAGuest`, `GuestCheckoutTest#aSecondGuestCheckoutWithTheSameEmailIsToldToSetAPassword`, `GuestCheckoutTest#normalAccountsAreNotGuestsAndAClaimedGuestIsNoLongerOne`, `PasswordResetServiceTest#aGuestWhoSetsAPasswordNowHasAFullAccount`, `CheckoutExtrasIntegrationTest#aGuestShopsPaysAndLaterClaimsTheAccountWithForgotPassword`, `CheckoutExtrasIntegrationTest#anEmailWithAnAccountMustLogInInstead`, `CheckoutExtrasApiTest#guestCheckout`, `CheckoutExtrasApiTest#guestClaimsTheAccount`, `CheckoutExtrasApiTest#guestRules`, `bdd:A guest buys without a password`, `bdd:The same guest e-mail twice is sent to Forgot password`, `playwright/tests/checkout-extras.spec.ts` | U I A B UI | Pass |
 | REQ-AUTH-16 | Two-factor sign-in (opt-in, needs the current password to turn on or off; not for guests): after the right password a 6-digit code is e-mailed and login answers 200 `twoFactorRequired` with no tokens; `/login/verify` finishes it; the code works once, for 10 minutes and 5 wrong guesses; only hashes are stored and the delivered e-mail is redacted; at most 5 codes per hour (429) | `TwoFactorServiceTest`, `TwoFactorApiTest`, `playwright/tests/two-factor.spec.ts` | U A UI | Pass |
+| REQ-AUTH-17 | A customer deletes their own account (POST /api/account/delete with the current password; the page also asks for the word DELETE): refused while an order is placed, paid, shipped or has a return pending (409), for a wrong password, a guest or staff (400), without login (401); cart, wishlist, addresses, saved cards, reviews (ratings recalculated), sessions, reset links, sign-in codes, contact messages and waiting e-mails are removed; orders, payments and refunds stay; the e-mail becomes `deleted-<id>@deleted.invalid`, sign-in and the old token stop working, the address may register again, no more order e-mails, one confirmation e-mail, audited without the address | `AccountDeletionIntegrationTest#theAccountIsDeletedTheOrdersStayAndTheAddressCanRegisterAgain`, `AccountDeletionIntegrationTest#anOrderStillMovingKeepsTheAccount`, `AccountDeletionIntegrationTest#theWrongPasswordAStaffAccountAndNoLoginAreRefused`, `ReviewServiceTest#anAccountDeletedTakesItsReviewsAndEachProductsRatingIsRecalculatedOnce`, `ReviewServiceTest#noReviewsNothingToRecalculate`, `NotificationServiceTest#anAccountItsOwnerDeletedGetsNoOrderEmail`, `AccessControlMatrixTest#matrix`, `playwright/tests/account-deletion.spec.ts` | U I A UI | Pass |
 
 ## Catalog
 
@@ -252,7 +253,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
-| Identity and access | 16 | 16 | - |
+| Identity and access | 17 | 17 | - |
 | Catalog | 19 | 19 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
@@ -268,4 +269,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Customer service | 4 | 4 | - |
 | Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **158** | **158 (100 %)** | **0** |
+| **Total** | **159** | **159 (100 %)** | **0** |

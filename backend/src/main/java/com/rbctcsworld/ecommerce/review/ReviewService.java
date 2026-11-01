@@ -181,6 +181,20 @@ public class ReviewService {
         return (local.length() <= 2 ? local.substring(0, 1) : local.substring(0, 2)) + "***";
     }
 
+    /**
+     * Account deleted (ADR-0022): the customer's reviews go, and every product they had reviewed gets its rating and
+     * review count recalculated without them. Returns how many reviews were removed.
+     */
+    public int removeAllBy(long userId) {
+        List<Review> mine = reviews.findByUserId(userId);
+        if (mine.isEmpty()) return 0;
+        reviews.deleteAll(mine);
+        reviews.flush();
+        mine.stream().map(Review::getProductId).distinct().sorted()
+                .forEach(id -> products.lockById(id).ifPresent(this::recalculate));
+        return mine.size();
+    }
+
     // ---------- helpers ----------
 
     private void recalculate(Product product) {

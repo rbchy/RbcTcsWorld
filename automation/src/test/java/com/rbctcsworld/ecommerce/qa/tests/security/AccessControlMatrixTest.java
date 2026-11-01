@@ -58,6 +58,8 @@ class AccessControlMatrixTest {
             "GET,    /api/cart,                             401, 200, 200",
             "GET,    /api/orders,                           401, 200, 200",
             "GET,    /api/wishlist,                         401, 200, 200",
+            // deleting one's own account needs the password: an empty body is 400 for everyone signed in
+            "POST,   /api/account/delete,                   401, 400, 400",
             "GET,    /api/reviews/mine,                     401, 200, 200",
             "POST,   /api/checkout/quote,                   401, 400, 400",
             "GET,    /api/payments/config,                  401, 200, 200",

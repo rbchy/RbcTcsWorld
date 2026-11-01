@@ -87,7 +87,8 @@ class AccountDeletionIntegrationTest {
         mvc.perform(as(post("/api/admin/orders/" + order + "/ship"), admin).content("{\"carrier\":\"UPS\"}")).andExpect(status().isOk());
         mvc.perform(as(post("/api/admin/orders/" + order + "/deliver"), admin)).andExpect(status().isOk());
         String address = TestAddresses.JSON.substring(TestAddresses.JSON.indexOf('{'));
-        mvc.perform(as(post("/api/addresses"), customer).content(address)).andExpect(status().isCreated());
+        mvc.perform(as(post("/api/addresses"), customer).content("{\"label\":\"Home\",\"address\":" + address + "}"))
+                .andExpect(status().isCreated());
         mvc.perform(as(post("/api/wishlist"), customer).content("{\"productId\":" + product + "}"));
         mvc.perform(as(post("/api/reviews"), customer).content("{\"productId\":" + product + ",\"rating\":1,\"title\":\"Meh\"}"))
                 .andExpect(status().isCreated());

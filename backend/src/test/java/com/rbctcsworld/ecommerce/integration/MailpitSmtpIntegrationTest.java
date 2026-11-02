@@ -67,6 +67,8 @@ class MailpitSmtpIntegrationTest {
 
         JsonNode message = get("/api/v1/message/" + summary.path("ID").asString());
         assertThat(message.path("Text").asString()).contains("ধন্যবাদ, Gracias, 谢谢");
+        assertThat(message.path("HTML").asString())                                         // ADR-0025: both parts arrive
+                .contains("ধন্যবাদ, Gracias, 谢谢").contains("Order ORD-1 received - $29.84");
     }
 
     @Test

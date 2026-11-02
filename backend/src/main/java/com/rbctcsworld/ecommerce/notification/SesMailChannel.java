@@ -36,6 +36,8 @@ class SesMailChannel implements MailChannel {
     private final Duration timeout;
     private final Clock clock;
     private final HttpClient http;
+    /** The name in the header of the HTML part (ADR-0025); app.store.name in production. */
+    private String storeName = "RbcTcsWorld Shop";
 
     SesMailChannel(String endpointBase, String region, String accessKeyId, String secretAccessKey, String sessionToken,
                    String from, String configurationSet, Duration timeout, Clock clock) {
@@ -81,11 +83,24 @@ class SesMailChannel implements MailChannel {
         req.put("Destination", Map.of("ToAddresses", List.of(to)));
         req.put("Content", Map.of("Simple", Map.of(
                 "Subject", Map.of("Data", subject, "Charset", "UTF-8"),
-                "Body", Map.of("Text", Map.of("Data", body, "Charset", "UTF-8")))));
+                "Body", body(subject, body))));
         if (configurationSet != null && !configurationSet.isBlank()) {
             req.put("ConfigurationSetName", configurationSet);
         }
         return req;
+    }
+
+    /** Text first, then its HTML twin (ADR-0025): SES sends both as multipart/alternative. */
+    private Map<String, Object> body(String subject, String text) {
+        Map<String, Object> b = new LinkedHashMap<>();
+        b.put("Text", Map.of("Data", text, "Charset", "UTF-8"));
+        b.put("Html", Map.of("Data", EmailHtml.render(storeName, subject, text), "Charset", "UTF-8"));
+        return b;
+    }
+
+    SesMailChannel storeName(String name) {
+        if (name != null && !name.isBlank()) this.storeName = name.trim();
+        return this;
     }
 
     /** SES error bodies: {"message": "..."} (sometimes "Message"); anything else is shown as it came. */

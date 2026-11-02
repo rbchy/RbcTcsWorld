@@ -83,9 +83,18 @@ Admin → Notifications পাতার নিচে **Blocked e-mail addresses*
 - আবার bounce হলে SES নিজেই ঠিকানাটা তালিকায় ফিরিয়ে দেবে, তাই ভুল করে চালু করলেও ক্ষতি নেই।
 - **Spam complaint** ঠিকানা শুধু গ্রাহক নিজে লিখিতভাবে চাইলে চালু করুন। বারবার complaint হলে Amazon SES account আটকে দিতে পারে।
 
+## ইমেইলের চেহারা (HTML)
+
+প্রতিটা ইমেইল দুই রূপে যায়: সাধারণ লেখা আর HTML। গ্রাহকের mail app যেটা পারে সেটা দেখায় ([ADR-0025](../adr/0025-html-email-twin.md))।
+
+- উপরে বেগুনি পটিতে দোকানের নাম (`STORE_NAME`), নিচে ছোট footer।
+- লিংকে চাপা যায় (শুধু `https://`), দামের তালিকা কলাম ধরে সাজানো থাকে।
+- কোনো ছবি নেই। তাই ইমেইল খুললে কিছু ডাউনলোড হয় না, গ্রাহককে track করা হয় না।
+- HTML তৈরি হয় সাধারণ লেখা থেকেই। ইমেইলের কথা বদলাতে চাইলে শুধু লেখা বদলালেই দুটোই বদলায়। গ্রাহকের নিজের লেখা (যেমন contact form-এর বার্তা) কখনো HTML হয়ে চলে না।
+- দেখতে চাইলে: `make app` চালিয়ে একটা অর্ডার দিন, তারপর Mailpit (http://localhost:8025) → ইমেইল → **HTML** tab।
+
 ## এখনো বাকি
 
-- ইমেইল শুধু সাধারণ লেখা (plain text), HTML design নেই।
 - domain কেনা হয়নি: `MAIL_FROM` এখনো placeholder।
 
 ## টেস্ট কোথায়
@@ -93,6 +102,7 @@ Admin → Notifications পাতার নিচে **Blocked e-mail addresses*
 | স্তর | টেস্ট | কী প্রমাণ করে |
 |---|---|---|
 | Unit | `AwsSigV4Test` | সই AWS-এর Python SDK-র সইয়ের সাথে হুবহু মেলে (স্থায়ী আর সাময়িক key) |
+| Unit | `EmailHtmlTest` | HTML-এ লেখা ঠিকঠাক, গ্রাহকের লেখা escape হয়, শুধু https লিংক (REQ-NTF-08) |
 | Unit | `SesMailChannelTest` | SES-এ কী যায়, প্রতিটা ভুলের উত্তর, চালু হওয়ার নিয়ম |
 | Unit | `SnsMessageVerifierTest` | openssl দিয়ে সই করা বার্তা গ্রহণ, যেকোনো বদলে বাতিল, অন্য host-এর certificate বাতিল |
 | Unit | `SesEventControllerTest`, `NotificationDeliveryServiceTest` | কোন রিপোর্ট তালিকায় তোলে, তালিকার ঠিকানায় পাঠানো হয় না |

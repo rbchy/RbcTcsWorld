@@ -125,4 +125,19 @@ class InvoicePdfTest {
         assertThat(InvoicePdf.width("$1.50", 10)).isGreaterThan(InvoicePdf.width("1", 10));
         assertThat(InvoicePdf.width("-,", 10)).isEqualTo(6.11);
     }
+
+    /** REQ-LEG-04 (ADR-0024): the invoice names the terms and policies the order was placed under. */
+    @Test
+    void theInvoiceNamesThePoliciesTheOrderWasPlacedUnder() {
+        OrderResponse base = order(List.of(line(1, "Lamp", 1, "30.00")), "0", null, null);
+        OrderResponse withDraft = new OrderResponse(base.id(), base.orderNumber(), base.customerId(), base.status(), base.items(),
+                base.totalQuantity(), base.subtotal(), base.couponCode(), base.discount(), base.shippingFee(), base.tax(),
+                base.total(), null, null, base.createdAt(), null, null, null, null, ADDRESS,
+                new com.rbctcsworld.ecommerce.order.OrderDtos.PolicyRef(java.time.LocalDate.of(2026, 10, 28), false));
+        assertThat(text(InvoicePdf.render(withDraft)))
+                .contains("(Placed under the terms and policies effective October 28, 2026 \\(draft\\))");
+        assertThat(InvoicePdf.policyLine(new com.rbctcsworld.ecommerce.order.OrderDtos.PolicyRef(java.time.LocalDate.of(2027, 1, 5), true)))
+                .isEqualTo("Placed under the terms and policies effective January 5, 2027");
+        assertThat(text(InvoicePdf.render(base))).doesNotContain("Placed under");           // an older order: no line
+    }
 }

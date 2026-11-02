@@ -28,4 +28,4 @@ address), and no lawyer has read anything.
 ## Consequences
 - The owner's lawyer reviews one short set of texts that already match the shop; changes go into `Legal.jsx`.
 - Customers delete their own account from Security ([ADR-0022](0022-self-service-account-deletion.md)).
-- Not done yet: policy versions per order (the effective date is shown, not stored with each order).
+- Every order records the policies' effective date it was placed under ([ADR-0024](0024-policy-version-per-order.md)).

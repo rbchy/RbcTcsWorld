@@ -230,6 +230,26 @@
             "maxLength": 20
           }
         }
+      },
+      "policies": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "required": [
+          "effective",
+          "reviewed"
+        ],
+        "properties": {
+          "effective": {
+            "type": "string",
+            "format": "date"
+          },
+          "reviewed": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

@@ -35,7 +35,19 @@ public final class OrderDtos {
                                 BigDecimal tax, BigDecimal total, String carrier, String trackingNumber,
                                 LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime shippedAt,
                                 LocalDateTime deliveredAt, LocalDateTime cancelledAt,
-                                ShippingAddress shippingAddress) {
+                                ShippingAddress shippingAddress, PolicyRef policies) {
+
+        /** Before policy versions were recorded (tests, older callers). */
+        public OrderResponse(Long id, String orderNumber, Long customerId, String status,
+                             List<OrderLine> items, int totalQuantity, BigDecimal subtotal,
+                             String couponCode, BigDecimal discount, BigDecimal shippingFee,
+                             BigDecimal tax, BigDecimal total, String carrier, String trackingNumber,
+                             LocalDateTime createdAt, LocalDateTime paidAt, LocalDateTime shippedAt,
+                             LocalDateTime deliveredAt, LocalDateTime cancelledAt, ShippingAddress shippingAddress) {
+            this(id, orderNumber, customerId, status, items, totalQuantity, subtotal, couponCode, discount, shippingFee,
+                    tax, total, carrier, trackingNumber, createdAt, paidAt, shippedAt, deliveredAt, cancelledAt,
+                    shippingAddress, null);
+        }
 
         public static OrderResponse from(CustomerOrder o) {
             List<OrderLine> lines = o.getItems().stream()
@@ -45,8 +57,14 @@ public final class OrderDtos {
             return new OrderResponse(o.getId(), o.getOrderNumber(), o.getUserId(), o.getStatus(), lines,
                     o.getTotalItems(), o.getSubtotal(), o.getCouponCode(), o.getDiscount(), o.getShippingFee(),
                     o.getTax(), o.getTotal(), o.getCarrier(), o.getTrackingNumber(), o.getCreatedAt(),
-                    o.getPaidAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt(), o.getShippingAddress());
+                    o.getPaidAt(), o.getShippedAt(), o.getDeliveredAt(), o.getCancelledAt(), o.getShippingAddress(),
+                    o.getPoliciesEffective() == null ? null
+                            : new PolicyRef(o.getPoliciesEffective(), Boolean.TRUE.equals(o.getPoliciesReviewed())));
         }
+    }
+
+    /** The terms and policies the order was placed under (ADR-0024); null for orders from before they were recorded. */
+    public record PolicyRef(java.time.LocalDate effective, boolean reviewed) {
     }
 
     public record TrackingEvent(String status, String note, LocalDateTime at) {

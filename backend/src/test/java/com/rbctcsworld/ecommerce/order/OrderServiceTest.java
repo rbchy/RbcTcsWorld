@@ -59,6 +59,8 @@ class OrderServiceTest {
     @Mock org.springframework.context.ApplicationEventPublisher events;
     @Spy PricingService pricing = new PricingService(new BigDecimal("0.06"), new BigDecimal("50.00"), new BigDecimal("5.99"));
     @Spy com.rbctcsworld.ecommerce.tax.TaxCalculator taxes = new com.rbctcsworld.ecommerce.tax.FlatRateTaxCalculator(new BigDecimal("0.06"));
+    @Spy com.rbctcsworld.ecommerce.legal.PolicyVersion policies =
+            new com.rbctcsworld.ecommerce.legal.PolicyVersion(java.time.LocalDate.of(2026, 10, 28), false);
     @InjectMocks OrderService service;
 
     private Product mouse;
@@ -358,6 +360,20 @@ class OrderServiceTest {
                     .containsExactlyInAnyOrder(org.assertj.core.groups.Tuple.tuple("SKU-K", "txcd_99999999"),
                             org.assertj.core.groups.Tuple.tuple("SKU-M", null));
         }
+    }
+
+    /** REQ-LEG-04 (ADR-0024): an order keeps the version of the policies it was placed under. */
+    @Test
+    void anOrderRecordsThePoliciesInForceAtCheckout() {
+        when(cartItems.findByUserIdOrderByIdAsc(7L)).thenReturn(List.of(new CartItem(7L, mouse, 1)));
+
+        OrderResponse r = service.placeOrder(EMAIL, null, com.rbctcsworld.ecommerce.TestAddresses.ADDRESS);
+
+        assertThat(r.policies()).isEqualTo(new OrderDtos.PolicyRef(java.time.LocalDate.of(2026, 10, 28), false));
+        ArgumentCaptor<CustomerOrder> saved = ArgumentCaptor.forClass(CustomerOrder.class);
+        verify(orders).save(saved.capture());
+        assertThat(saved.getValue().getPoliciesEffective()).isEqualTo(java.time.LocalDate.of(2026, 10, 28));
+        assertThat(saved.getValue().getPoliciesReviewed()).isFalse();
     }
 
     @Test

@@ -11,6 +11,7 @@ import com.rbctcsworld.ecommerce.common.exception.PaymentDeclinedException;
 import com.rbctcsworld.ecommerce.coupon.Coupon;
 import com.rbctcsworld.ecommerce.coupon.CouponService;
 import com.rbctcsworld.ecommerce.inventory.InventoryService;
+import com.rbctcsworld.ecommerce.legal.PolicyVersion;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderLine;
 import com.rbctcsworld.ecommerce.order.OrderDtos.OrderResponse;
 import com.rbctcsworld.ecommerce.order.OrderDtos.QuoteResponse;
@@ -70,11 +71,12 @@ public class OrderService {
     private final PaymentMethodService paymentMethods;
     private final ApplicationEventPublisher events;
     private final TaxCalculator taxes;
+    private final PolicyVersion policies;
 
     public OrderService(OrderRepository orders, CartItemRepository cartItems, UserRepository users,
                         InventoryService inventory, PricingService pricing, CouponService coupons,
                         PaymentService payments, PaymentMethodService paymentMethods, ApplicationEventPublisher events,
-                        TaxCalculator taxes) {
+                        TaxCalculator taxes, PolicyVersion policies) {
         this.orders = orders;
         this.cartItems = cartItems;
         this.users = users;
@@ -85,6 +87,7 @@ public class OrderService {
         this.paymentMethods = paymentMethods;
         this.events = events;
         this.taxes = taxes;
+        this.policies = policies;
     }
 
     // ---------------------------------------------------------------- checkout
@@ -130,6 +133,8 @@ public class OrderService {
 
         CustomerOrder order = new CustomerOrder(newOrderNumber(), user.getId());
         order.shipTo(address.normalized());
+        PolicyVersion.Version agreed = policies.current();            // what the customer agreed to at checkout
+        order.recordPolicies(agreed.effective(), agreed.reviewed());
         for (CartItem line : lines) {
             Product p = line.getProduct();
             order.addItem(new OrderItem(p.getId(), p.getSku(), p.displayName(), p.currentPrice(), line.getQuantity()));

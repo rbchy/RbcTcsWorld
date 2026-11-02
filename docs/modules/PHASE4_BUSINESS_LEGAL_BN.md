@@ -93,11 +93,19 @@
   ```
   একটা তথ্যও খালি থাকলে `REVIEWED=true` দিলেও পাতায় "Draft" থাকে। ভুল করে অসম্পূর্ণ নীতিমালা "চূড়ান্ত" দেখানো যায় না।
 
+### প্রতিটা অর্ডারে নীতিমালার তারিখ
+
+প্রতিটা নতুন অর্ডারে লেখা থাকে কোন তারিখের নীতিমালা মেনে গ্রাহক কিনেছেন, আর সেটা তখন lawyer-এর দেখা ছিল নাকি draft। এটা দেখা যায় অর্ডারের পাতায় ("Placed under the terms and policies effective …") আর invoice PDF-এর নিচে। কোনো বিরোধ বা chargeback হলে এই তারিখ দিয়েই প্রমাণ হয় কোন return window বা শর্ত প্রযোজ্য ছিল ([ADR-0024](../adr/0024-policy-version-per-order.md))।
+
+**নিয়ম:** নীতিমালার লেখা (`Legal.jsx`) বদলালে `STORE_POLICIES_EFFECTIVE`-ও নতুন তারিখে বদলাবেন। তারিখ না বদলালে নতুন লেখা পুরোনো তারিখের নামে চলে যাবে। পুরোনো লেখা git history-তে থেকে যায়।
+
 ## টেস্ট কোথায়
 
 | স্তর | টেস্ট | কী প্রমাণ করে |
 |---|---|---|
 | Unit | `LegalInfoControllerTest` | খালি তথ্য মানে placeholder; কিছু বাকি থাকলে কখনো "reviewed" নয় |
+| Unit | `OrderServiceTest`, `InvoicePdfTest` | অর্ডারে নীতিমালার তারিখ রাখা, invoice-এ লেখা (REQ-LEG-04) |
+| Integration | `OrderPolicyVersionIntegrationTest` | অর্ডারের তারিখ নীতিমালার পাতার তারিখের সাথে মেলে |
 | Integration | `LegalInfoIntegrationTest` | login ছাড়া পড়া যায়, সংখ্যা দোকানের setting-এর সাথে মেলে |
 | Browser | `playwright/tests/legal.spec.ts` | footer থেকে চারটা পাতা, পাতার সংখ্যা = API-র সংখ্যা, cookie notice, শর্তের link, বাংলায় "ইংরেজিতে" নোট |
 | Accessibility | `playwright/tests/a11y.spec.ts` | privacy আর return পাতায় কোনো গুরুতর WCAG ভুল নেই |

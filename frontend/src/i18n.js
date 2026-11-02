@@ -453,6 +453,9 @@ const T = {
   returnLabelBuy: ['Buy return label', 'ফেরত label কিনুন', 'Comprar etiqueta de devolución', 'Acheter l’étiquette de retour', 'شراء ملصق إرجاع', '购买退货标签'],
   returnLabelBought: ['Return label bought; the customer was e-mailed', 'ফেরত label কেনা হয়েছে; গ্রাহককে ইমেইল পাঠানো হয়েছে', 'Etiqueta comprada; se envió un correo al cliente', 'Étiquette achetée ; le client a reçu un e-mail', 'تم شراء الملصق وإرسال بريد إلى العميل', '已购买退货标签，并已邮件通知客户'],
   returnLabelOpen: ['{carrier} return label', '{carrier} ফেরত label', 'Etiqueta de devolución {carrier}', 'Étiquette de retour {carrier}', 'ملصق إرجاع {carrier}', '{carrier} 退货标签'],
+  // ---- policy version per order (ADR-0024) ----
+  orderPolicies: ['Placed under the terms and policies effective {date}.', '{date} থেকে চালু শর্ত আর নীতিমালা মেনে অর্ডার করা হয়েছে।', 'Realizado según los términos y políticas vigentes desde el {date}.', 'Passée selon les conditions et politiques en vigueur au {date}.', 'تم الطلب وفق الشروط والسياسات السارية منذ {date}.', '按 {date} 起生效的条款和政策下单。'],
+  orderPoliciesLink: ['Read the terms', 'শর্তগুলো পড়ুন', 'Leer los términos', 'Lire les conditions', 'اقرأ الشروط', '阅读条款'],
   // ---- banners and admin menu ----
   heroTitle: ['Your store, from the dock to the doorstep', 'আপনার দোকান, ডক থেকে দরজা পর্যন্ত', 'Tu tienda, del muelle a la puerta', 'Votre boutique, du quai à la porte', 'متجرك، من الرصيف إلى الباب', '您的商店，从码头到家门'],
   heroLead: ['Log in to shop, follow every parcel and run the store.', 'কেনাকাটা, প্রতিটা পার্সেল দেখা আর স্টোর চালাতে লগ ইন করুন।', 'Inicia sesión para comprar, seguir cada paquete y gestionar la tienda.', 'Connectez-vous pour acheter, suivre chaque colis et gérer la boutique.', 'سجّل الدخول للتسوق ومتابعة كل طرد وإدارة المتجر.', '登录即可购物、跟踪每个包裹并管理商店。'],

@@ -3,6 +3,7 @@ import api, { errorText, money } from '../api';
 import { PriceTable } from './Checkout';
 import { addressLine } from '../usStates';
 import { useI18n } from '../i18n';
+import { longDate } from './Legal';
 
 /** One order: price breakdown, payment form, cancel, return request, payments and tracking timeline. */
 export default function OrderDetail({ id }) {
@@ -67,6 +68,12 @@ export default function OrderDetail({ id }) {
           <PriceTable q={order} />
           {order.shippingAddress && (
             <p data-testid="order-ship-to"><strong>{t('shipsTo')}:</strong> {addressLine(order.shippingAddress)}</p>
+          )}
+          {order.policies && (
+            <p className="small muted" data-testid="order-policies">
+              {t('orderPolicies', { date: longDate(order.policies.effective) })}{' '}
+              <a href="#/terms">{t('orderPoliciesLink')}</a>
+            </p>
           )}
         </div>
         <div>

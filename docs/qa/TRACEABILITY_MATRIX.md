@@ -207,6 +207,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | REQ-LEG-01 | Privacy policy, terms of service, return and refund policy and shipping policy are public pages, one click from the footer of every page; they quote the return window, shipping fee and free-shipping threshold from the shop's own settings (GET /api/store/legal, no login) and the business details from configuration; until the business details are complete and a lawyer has reviewed them, every policy shows placeholders and says it is a draft ("reviewed" can never be true while a detail is missing) | `LegalInfoControllerTest#aRegisteredBusinessIsShownAsConfigured`, `LegalInfoControllerTest#beforeTheBusinessIsRegisteredEverythingIsEmptyAndThePoliciesAreDrafts`, `LegalInfoControllerTest#anyMissingDetailKeepsThePoliciesDrafts`, `LegalInfoControllerTest#completeButNotYetReviewedIsADraft`, `LegalInfoIntegrationTest#anyoneCanReadTheStoresLegalDetailsAndTheyMatchTheShopsRules`, `AccessControlMatrixTest#matrix`, `playwright/tests/legal.spec.ts`, `playwright/tests/a11y.spec.ts` | U I A UI | Pass |
 | REQ-LEG-02 | Cookie notice: says the shop keeps only what it needs in the browser (sign-in, language) and no advertising or tracking cookies, links to the privacy policy, sits under the page content (never over anything, never moves the header or menu), and "OK" hides it for good in that browser | `playwright/tests/legal.spec.ts` | UI | Pass |
 | REQ-LEG-03 | Creating an account names the terms and privacy policy it agrees to, placing an order the terms, return policy and privacy policy (links); in another language the pages say the policy is in English | `playwright/tests/legal.spec.ts` | UI | Pass |
+| REQ-LEG-04 | Every new order records the effective date of the terms and policies and whether they were reviewed or drafts at checkout (the values the policy pages show); the order API returns them as `policies`, the order page and the invoice name them ("(draft)" while unreviewed); orders from before keep none | `OrderServiceTest#anOrderRecordsThePoliciesInForceAtCheckout`, `InvoicePdfTest#theInvoiceNamesThePoliciesTheOrderWasPlacedUnder`, `OrderPolicyVersionIntegrationTest#theOrderNamesThePoliciesThePolicyPagesShowedAtCheckout` | U I | Pass |
 
 ## Customer service
 
@@ -266,8 +267,8 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Storefront UI | 14 | 14 | - |
 | Audit trail | 4 | 4 | - |
 | Store admin back office | 8 | 8 | - |
-| Legal and policies | 3 | 3 | - |
+| Legal and policies | 4 | 4 | - |
 | Customer service | 4 | 4 | - |
 | Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **160** | **160 (100 %)** | **0** |
+| **Total** | **161** | **161 (100 %)** | **0** |

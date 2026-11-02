@@ -78,6 +78,13 @@ public class CustomerOrder {
     @Column(name = "tax_reversal_id", length = 64)
     private String taxReversalId;
 
+    /** The terms and policies this order was placed under (ADR-0024); null for older orders. */
+    @Column(name = "policies_effective")
+    private java.time.LocalDate policiesEffective;
+
+    @Column(name = "policies_reviewed")
+    private Boolean policiesReviewed;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
@@ -271,5 +278,14 @@ public class CustomerOrder {
 
     public void recordTaxReversal(String reversalId) {
         this.taxReversalId = reversalId;
+    }
+
+    public java.time.LocalDate getPoliciesEffective() { return policiesEffective; }
+
+    public Boolean getPoliciesReviewed() { return policiesReviewed; }
+
+    public void recordPolicies(java.time.LocalDate effective, boolean reviewed) {
+        this.policiesEffective = effective;
+        this.policiesReviewed = reviewed;
     }
 }

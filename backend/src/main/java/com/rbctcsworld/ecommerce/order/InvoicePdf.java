@@ -136,13 +136,22 @@ public final class InvoicePdf {
         }
         y = total(p, y, "Shipping", money(o.shippingFee()), false);
         y = total(p, y, "Tax", money(o.tax()), false);
-        total(p, y - 2, "Total", money(o.total()), true);
+        y = total(p, y - 2, "Total", money(o.total()), true);
+        if (o.policies() != null) {                                   // ADR-0024: the terms this order was placed under
+            p.text(50, y - 14, "F1", 8, policyLine(o.policies()));
+        }
 
         int last = pages.size();
         for (int i = 0; i < last; i++) {
             pages.get(i).text(50, 30, "F1", 8, "RbcTcsWorld Shop  |  " + o.orderNumber() + "  |  page " + (i + 1) + " of " + last);
         }
         return assemble(pages);
+    }
+
+    /** "Placed under the terms and policies effective October 28, 2026 (draft)". */
+    static String policyLine(OrderDtos.PolicyRef ref) {
+        String date = ref.effective().format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy", java.util.Locale.US));
+        return "Placed under the terms and policies effective " + date + (ref.reviewed() ? "" : " (draft)");
     }
 
     private static void header(Page p, double y) {

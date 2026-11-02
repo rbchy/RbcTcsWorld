@@ -626,6 +626,19 @@
         },
         "type": "object"
       },
+      "DeleteRequest": {
+        "properties": {
+          "password": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "type": "object"
+      },
       "Facets": {
         "properties": {
           "categories": {
@@ -1644,6 +1657,15 @@
           "restocked": {
             "type": "boolean"
           },
+          "returnCarrier": {
+            "type": "string"
+          },
+          "returnLabelUrl": {
+            "type": "string"
+          },
+          "returnTrackingNumber": {
+            "type": "string"
+          },
           "status": {
             "type": "string"
           }
@@ -2210,6 +2232,29 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/account/delete": {
+      "post": {
+        "operationId": "delete_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "account-deletion-controller"
+        ]
+      }
+    },
     "/api/account/two-factor": {
       "get": {
         "operationId": "get_1",
@@ -3634,6 +3679,37 @@
         ]
       }
     },
+    "/api/admin/returns/{id}/label": {
+      "post": {
+        "operationId": "returnLabel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnRequest"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "admin-fulfillment-controller"
+        ]
+      }
+    },
     "/api/admin/returns/{id}/reject": {
       "post": {
         "operationId": "reject",
@@ -4863,7 +4939,7 @@
     },
     "/api/payment-methods/{id}": {
       "delete": {
-        "operationId": "delete_3",
+        "operationId": "delete_4",
         "parameters": [
           {
             "in": "path",

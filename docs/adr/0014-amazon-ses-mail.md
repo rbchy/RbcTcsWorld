@@ -31,4 +31,4 @@ punish senders that keep doing so, up to suspending the account.
 - The store can send from its own domain as soon as the domain is verified and SES production access is granted
   (new SES accounts start in the sandbox: only verified recipients, 200 e-mails a day).
 - The admin sees the blocked addresses under Admin -> Notifications and can "allow again" one whose owner fixed the
-  mailbox (REQ-NTF-07); if it bounces again, SES puts it back. E-mails are still plain text only.
+  mailbox (REQ-NTF-07); if it bounces again, SES puts it back. Every e-mail also has an HTML part ([ADR-0025](0025-html-email-twin.md)).

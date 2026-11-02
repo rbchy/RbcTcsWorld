@@ -197,10 +197,12 @@ class NotificationDeliveryServiceTest {
         assertThat(NotificationConfig.create(" SMTP ", "localhost", 1025, "a@b.c").name()).isEqualTo("smtp");
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> NotificationConfig.create("email", "h", 1, "f"))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("'email'");
-        assertThat(new NotificationConfig().mailChannel("log", "h", 1, "f", "", "", "", "", "", "", java.time.Clock.systemUTC()))
+        assertThat(new NotificationConfig().mailChannel("log", "h", 1, "f", "", "", "", "", "", "", "Shop", java.time.Clock.systemUTC()))
                 .isInstanceOf(LogMailChannel.class);
         assertThat(new NotificationConfig().mailChannel("ses", "h", 1, "a@b.c", "us-east-1", "AKID", "s", "", "", "",
-                java.time.Clock.systemUTC())).isInstanceOf(SesMailChannel.class);
+                "Shop", java.time.Clock.systemUTC())).isInstanceOf(SesMailChannel.class);
+        assertThat(new NotificationConfig().mailChannel("smtp", "localhost", 1025, "a@b.c", "", "", "", "", "", "",
+                "Shop", java.time.Clock.systemUTC())).isInstanceOf(SmtpMailChannel.class);
         new LogMailChannel().send("a@b.c", "subject", "body");      // only logs
     }
 

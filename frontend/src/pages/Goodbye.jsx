@@ -13,6 +13,10 @@ export default function Goodbye({ session }) {
     setTimeout(() => setStillOpen(true), 300);   // still here: the browser did not allow it
   };
   const mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const [deleted] = useState(() => {               // just deleted the account (ADR-0022): say so once
+    try { const d = sessionStorage.getItem('accountDeleted') === '1'; sessionStorage.removeItem('accountDeleted'); return d; }
+    catch { return false; }
+  });
   return (
     <section className="card narrow goodbye" data-testid="goodbye" aria-labelledby="goodbye-title">
       <svg className="goodbye-mark" viewBox="0 0 120 80" aria-hidden="true" focusable="false">
@@ -22,6 +26,7 @@ export default function Goodbye({ session }) {
         <path d="M46 54l10 10 20-22" stroke="#12313f" strokeWidth="6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <h1 id="goodbye-title">{t('exitTitle')}</h1>
+      {deleted && <p className="success" role="status" data-testid="goodbye-account-deleted">{t('accountDeleted')}</p>}
       {!session && <p data-testid="goodbye-signed-out">{t('exitSignedOut')}</p>}
       <p>{t('exitCloseTab', { keys: mac ? '⌘ W' : 'Ctrl + W' })}</p>
       {stillOpen && <p className="hint" role="status" data-testid="goodbye-still-open">{t('exitBrowserRefused')}</p>}

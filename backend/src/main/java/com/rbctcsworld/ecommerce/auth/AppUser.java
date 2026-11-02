@@ -40,6 +40,10 @@ public class AppUser {
     @Column(name = "created_at", insertable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
 
+    /** Set when the customer deleted the account (ADR-0022); the row only stays for the orders that point at it. */
+    @Column(name = "deleted_at")
+    private java.time.LocalDateTime deletedAt;
+
     protected AppUser() {
     }
 
@@ -81,4 +85,18 @@ public class AppUser {
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setActive(boolean active) { this.active = active; }
+
+    public java.time.LocalDateTime getDeletedAt() { return deletedAt; }
+
+    /**
+     * Account deleted by its owner: no e-mail (a placeholder that can never receive mail), no usable password, no
+     * second factor, inactive. Signing in, password reset and new e-mails all stop; the address may register again.
+     */
+    public void erase(String unusablePasswordHash, java.time.LocalDateTime now) {
+        this.email = "deleted-" + id + "@deleted.invalid";
+        this.password = unusablePasswordHash;
+        this.twoFactorEnabled = false;
+        this.active = false;
+        this.deletedAt = now;
+    }
 }

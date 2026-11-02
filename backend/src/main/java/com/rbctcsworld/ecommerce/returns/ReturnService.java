@@ -12,6 +12,8 @@ import com.rbctcsworld.ecommerce.order.OrderRepository;
 import com.rbctcsworld.ecommerce.order.OrderService;
 import com.rbctcsworld.ecommerce.order.OrderStatus;
 import com.rbctcsworld.ecommerce.payment.PaymentService;
+import com.rbctcsworld.ecommerce.fulfillment.FulfillmentService;
+import com.rbctcsworld.ecommerce.fulfillment.ShippingProvider;
 import org.springframework.beans.factory.annotation.Value;
 import com.rbctcsworld.ecommerce.notification.OrderNotificationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,10 +43,12 @@ public class ReturnService {
     private final Clock clock;
     private final int windowDays;
     private final ApplicationEventPublisher events;
+    private final FulfillmentService fulfillment;
 
     public ReturnService(ReturnRequestRepository returns, OrderRepository orders, OrderService orderService,
                          InventoryService inventory, PaymentService payments, Clock clock,
-                         @Value("${app.returns.window-days}") int windowDays, ApplicationEventPublisher events) {
+                         @Value("${app.returns.window-days}") int windowDays, ApplicationEventPublisher events,
+                         FulfillmentService fulfillment) {
         this.returns = returns;
         this.orders = orders;
         this.orderService = orderService;
@@ -53,6 +57,7 @@ public class ReturnService {
         this.clock = clock;
         this.windowDays = windowDays;
         this.events = events;
+        this.fulfillment = fulfillment;
     }
 
     /** 201 | 400 window closed | 404 not mine | 409 not delivered / already requested */
@@ -91,6 +96,26 @@ public class ReturnService {
         events.publishEvent(AuditEvent.orderStatus(order.getId(), from, order.getStatus()));
         r.approve(refund, restock, note);
         events.publishEvent(new OrderNotificationEvent(order.getId(), OrderNotificationEvent.Type.RETURN_APPROVED, refund));
+        return r;
+    }
+
+    /**
+     * ADMIN: a prepaid return label for an APPROVED return, once (ADR-0023). 404 | 409 not approved or already has one
+     * | 400 the provider cannot (simulated shipping, no rate, address refused) | 503 provider down. The customer sees
+     * the label on the order page and gets an e-mail.
+     */
+    public ReturnRequest buyReturnLabel(Long returnId) {
+        ReturnRequest r = returns.findById(returnId).orElseThrow(() -> new NotFoundException("Return not found: " + returnId));
+        if (!ReturnRequest.APPROVED.equals(r.getStatus())) {
+            throw new ConflictException("A return label is only bought for an approved return (this one is " + r.getStatus() + ")");
+        }
+        if (r.getReturnLabelUrl() != null) {
+            throw new ConflictException("Return " + returnId + " already has a return label");
+        }
+        CustomerOrder order = orders.findById(r.getOrderId()).orElseThrow();
+        ShippingProvider.ReturnLabel label = fulfillment.returnLabel(order);
+        r.recordReturnLabel(label.carrier(), label.trackingNumber(), label.labelUrl(), label.cost(), label.reference());
+        events.publishEvent(OrderNotificationEvent.of(order.getId(), OrderNotificationEvent.Type.RETURN_LABEL_READY));
         return r;
     }
 

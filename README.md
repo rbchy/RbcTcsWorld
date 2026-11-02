@@ -29,7 +29,7 @@ Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github
 
 ## 🚦 Project Status Board
 
-<img src="docs/images/project-status.svg" alt="Project status board: 1,911 automated tests (1,908 passed, 3 skipped by design), 19 of 19 CI gates passed, 97.2 % line coverage, 87.6 % mutation score, 159 of 159 requirements traced; road to launch: phases 1, 2 and 3 done, phases 0, 4 and 5 in progress" width="100%">
+<img src="docs/images/project-status.svg" alt="Project status board: 1,911 automated tests (1,908 passed, 3 skipped by design), 19 of 19 CI gates passed, 97.2 % line coverage, 87.6 % mutation score, 160 of 160 requirements traced; road to launch: phases 1, 2 and 3 done, phases 0, 4 and 5 in progress" width="100%">
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
@@ -52,7 +52,7 @@ pie showData
 
 ```mermaid
 pie showData
-    title 159 traced requirements by area
+    title 160 traced requirements by area
     "Orders and inventory" : 16
     "Identity and access" : 17
     "Non-functional" : 20
@@ -61,7 +61,7 @@ pie showData
     "Pricing, coupons, payments" : 18
     "Reviews and wishlist" : 11
     "Store admin back office" : 8
-    "Fulfilment and returns" : 9
+    "Fulfilment and returns" : 10
     "Customer e-mails" : 7
     "Legal and policies" : 3
     "Audit trail" : 4
@@ -94,7 +94,7 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 |---|---|
 | Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
-| Quality bar | 1,911 automated tests, 19 CI quality gates, 97.2 % line coverage, 87.6 % mutation score, 159 traced requirements |
+| Quality bar | 1,911 automated tests, 19 CI quality gates, 97.2 % line coverage, 87.6 % mutation score, 160 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
 | Phase 3 (done) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
 | Product photos (done) | The owner uploads a photo from the admin form (phone or computer); the backend turns it upright, scales it to 1600 px and saves a new file without EXIF or GPS data, in the database so the backups cover it ([ADR-0017](docs/adr/0017-product-photo-uploads.md)) |
@@ -135,7 +135,7 @@ new behaviour arrives with its tests and a traced requirement.
 5. **How release decisions are made:** [Test Strategy](docs/qa/TEST_STRATEGY.md) · [Risk Register](docs/qa/RISK_REGISTER.md) ·
    [Test Summary Report (GO / NO-GO)](docs/qa/TEST_SUMMARY_REPORT.md) · [UAT Plan](docs/qa/UAT_PLAN.md)
    (10 tasks for real users, phase 6 runs it with small real orders)
-6. **Why it is built this way:** [Architecture Decision Records](docs/adr/) - 21 short records, each with the
+6. **Why it is built this way:** [Architecture Decision Records](docs/adr/) - 23 short records, each with the
    alternatives and the price paid. Commands: `make help` · [Contributing](CONTRIBUTING.md) · [MIT License](LICENSE)
 
 ---
@@ -158,7 +158,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 10 | DAST | 0 Medium / High | 0 | OWASP ZAP API scan |
 | 11 | Dependencies | 0 known vulnerabilities, 0 open exceptions | 0 (complete SBOMs, self-test passed) | OSV-Scanner on CycloneDX SBOMs |
 | 12 | Containers | stack healthy, smoke tests pass | 63 / 63 | Docker Compose |
-| 13 | Traceability | every requirement has a test | 159 / 159 | `docs/qa/check_rtm.py` |
+| 13 | Traceability | every requirement has a test | 160 / 160 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
 | 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 326 / 326 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
@@ -264,11 +264,11 @@ make down                                                              # stop th
 [ADR-0018: contact form](docs/adr/0018-contact-form.md) · [Contact form guide (Bangla)](docs/modules/CONTACT_FORM_BN.md) ·
 [ADR-0019: search engines](docs/adr/0019-search-engines.md) · [Search engine guide (Bangla)](docs/modules/SEARCH_ENGINES_BN.md) ·
 [ADR-0020: partner products](docs/adr/0020-affiliate-products.md) · [Amazon affiliate guide (Bangla)](docs/modules/AFFILIATE_PRODUCTS_BN.md) ·
-[ADR-0021: product descriptions](docs/adr/0021-product-descriptions.md) · [ADR-0022: account deletion](docs/adr/0022-self-service-account-deletion.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
+[ADR-0021: product descriptions](docs/adr/0021-product-descriptions.md) · [ADR-0022: account deletion](docs/adr/0022-self-service-account-deletion.md) · [ADR-0023: return labels](docs/adr/0023-prepaid-return-labels.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
 [The inherited foundation](docs/FOUNDATION.md)
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
-[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (159 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
+[Risks](docs/qa/RISK_REGISTER.md) · [Traceability (160 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
 [Defects (29)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
 [UAT Plan](docs/qa/UAT_PLAN.md) · [UAT Summary](docs/qa/UAT_SUMMARY.md)
 

@@ -89,6 +89,10 @@ public class NotificationService {
                             + " to your card; it can take a few days to appear.");
             case RETURN_REJECTED -> new Email("Return for order " + no + " was not approved",
                     "Your return for order " + no + " was not approved. Questions? Reply to this e-mail.");
+            case RETURN_LABEL_READY -> new Email("Your return label for order " + no,
+                    "A prepaid return label for order " + no + " is ready. Sign in, open the order and choose "
+                            + "\"Print return label\". Pack the items, stick the label on the parcel and hand it to the "
+                            + "carrier; there is nothing to pay.");
         };
     }
 

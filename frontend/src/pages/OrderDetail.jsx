@@ -82,6 +82,13 @@ export default function OrderDetail({ id }) {
           {s === 'DELIVERED' && !ret && <ReturnForm onSubmit={reason => act(() => api.post(`/orders/${id}/return`, { reason }), 'Return requested')} />}
           {ret && <p data-testid="return-status">Return ({ret.reason}): <strong>{ret.status}</strong>
             {ret.refundAmount != null && <> · refunded {money(ret.refundAmount)}</>}</p>}
+          {ret?.returnLabelUrl && (
+            <p className="return-label" data-testid="return-label">
+              <a className="button-link" href={ret.returnLabelUrl} target="_blank" rel="noopener noreferrer"
+                 data-testid="return-label-link">{t('returnLabelPrint')}</a>{' '}
+              <span className="small muted">{t('returnLabelHint', { carrier: ret.returnCarrier, tracking: ret.returnTrackingNumber })}</span>
+            </p>
+          )}
 
           <h2>Tracking</h2>
           <ol className="timeline" data-testid="timeline">

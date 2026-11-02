@@ -27,6 +27,8 @@ import java.util.List;
  * GET  /api/admin/returns?status=REQUESTED     200
  * POST /api/admin/returns/{id}/approve {note?} 200 | 404 | 409 already resolved
  * POST /api/admin/returns/{id}/reject  {note?} 200 | 404 | 409 already resolved
+ * POST /api/admin/returns/{id}/label           200 prepaid return label | 400 provider cannot | 404 | 409 not approved
+ *                                              or already bought | 503 provider down
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -63,6 +65,11 @@ public class AdminFulfillmentController {
     @PostMapping("/returns/{id}/approve")
     public ReturnRequest approve(@PathVariable Long id, @Valid @RequestBody(required = false) ResolveReturnRequest r) {
         return returns.approve(id, r == null ? null : r.note());
+    }
+
+    @PostMapping("/returns/{id}/label")
+    public ReturnRequest returnLabel(@PathVariable Long id) {
+        return returns.buyReturnLabel(id);
     }
 
     @PostMapping("/returns/{id}/reject")

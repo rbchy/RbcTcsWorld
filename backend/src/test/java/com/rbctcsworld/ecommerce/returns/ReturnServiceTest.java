@@ -50,11 +50,12 @@ class ReturnServiceTest {
     @Mock InventoryService inventory;
     @Mock PaymentService payments;
     @Mock org.springframework.context.ApplicationEventPublisher events;
+    @Mock com.rbctcsworld.ecommerce.fulfillment.FulfillmentService fulfillment;
     private ReturnService service;
 
     @BeforeEach
     void setUp() {
-        service = new ReturnService(returns, orders, orderService, inventory, payments, CLOCK, 30, events);
+        service = new ReturnService(returns, orders, orderService, inventory, payments, CLOCK, 30, events, fulfillment);
     }
 
     /** Order total 27.19 = 20.00 + 5.99 shipping + 1.20 tax, delivered at the given time. */
@@ -187,5 +188,59 @@ class ReturnServiceTest {
             assertThat(e.getStatus()).isEqualTo(OrderStatus.DELIVERED);
             assertThat(e.getNote()).isEqualTo("Return rejected");
         });
+    }
+
+    // ---------- prepaid return label (REQ-RET-04, ADR-0023) ----------
+
+    private ReturnRequest approvedReturn(long id) {
+        ReturnRequest r = new ReturnRequest(10L, ReturnPolicy.WRONG_ITEM, null);
+        ReflectionTestUtils.setField(r, "id", id);
+        r.approve(new BigDecimal("27.19"), true, null);
+        when(returns.findById(id)).thenReturn(java.util.Optional.of(r));
+        return r;
+    }
+
+    @Test
+    void anApprovedReturnGetsItsLabelOnceAndTheCustomerIsTold() {
+        ReturnRequest r = approvedReturn(5L);
+        CustomerOrder o = deliveredOrder(NOW.minusDays(2));
+        when(orders.findById(10L)).thenReturn(java.util.Optional.of(o));
+        when(fulfillment.returnLabel(o)).thenReturn(new com.rbctcsworld.ecommerce.fulfillment.ShippingProvider.ReturnLabel(
+                "USPS", "9205590164917312751089", "https://shippo.example/return.pdf", new BigDecimal("6.95"), "txn_r1"));
+
+        ReturnRequest out = service.buyReturnLabel(5L);
+
+        assertThat(out.getReturnCarrier()).isEqualTo("USPS");
+        assertThat(out.getReturnTrackingNumber()).isEqualTo("9205590164917312751089");
+        assertThat(out.getReturnLabelUrl()).isEqualTo("https://shippo.example/return.pdf");
+        assertThat(out.getReturnLabelCost()).isEqualByComparingTo("6.95");
+        assertThat(out.getReturnLabelRef()).isEqualTo("txn_r1");
+        verify(events).publishEvent(com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.of(10L,
+                com.rbctcsworld.ecommerce.notification.OrderNotificationEvent.Type.RETURN_LABEL_READY));
+
+        assertThatThrownBy(() -> service.buyReturnLabel(5L))
+                .isInstanceOf(ConflictException.class).hasMessageContaining("already has a return label");
+    }
+
+    @Test
+    void onlyAnApprovedReturnGetsALabel() {
+        ReturnRequest r = new ReturnRequest(10L, ReturnPolicy.DAMAGED, null);
+        when(returns.findById(6L)).thenReturn(java.util.Optional.of(r));
+        assertThatThrownBy(() -> service.buyReturnLabel(6L))
+                .isInstanceOf(ConflictException.class).hasMessageContaining("REQUESTED");
+        when(returns.findById(7L)).thenReturn(java.util.Optional.empty());
+        assertThatThrownBy(() -> service.buyReturnLabel(7L)).isInstanceOf(com.rbctcsworld.ecommerce.common.exception.NotFoundException.class);
+        verify(fulfillment, never()).returnLabel(any());
+    }
+
+    @Test
+    void whenTheProviderCannotNothingIsStoredOrAnnounced() {
+        ReturnRequest r = approvedReturn(8L);
+        CustomerOrder o = deliveredOrder(NOW.minusDays(2));
+        when(orders.findById(10L)).thenReturn(java.util.Optional.of(o));
+        when(fulfillment.returnLabel(o)).thenThrow(new BusinessRuleException("Return labels need a shipping provider"));
+        assertThatThrownBy(() -> service.buyReturnLabel(8L)).isInstanceOf(BusinessRuleException.class);
+        assertThat(r.getReturnLabelUrl()).isNull();
+        verify(events, never()).publishEvent(any());
     }
 }

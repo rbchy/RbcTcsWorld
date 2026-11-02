@@ -22,6 +22,17 @@ export default function AdminReturns() {
     } catch (err) { setOk(''); setError(errorText(err)); }
   };
 
+  /** A prepaid label from the customer back to the store (ADR-0023); the customer gets an e-mail. */
+  const [buying, setBuying] = useState(null);
+  const buyLabel = async r => {
+    setBuying(r.id);
+    try {
+      await api.post(`/admin/returns/${r.id}/label`);
+      setOk(t('returnLabelBought')); setError(''); load();
+    } catch (err) { setOk(''); setError(errorText(err)); }
+    finally { setBuying(null); }
+  };
+
   return (
     <section data-testid="admin-returns">
       <header className="page-head">
@@ -55,6 +66,13 @@ export default function AdminReturns() {
                         <button className="ghost" onClick={() => decide(r, 'reject')} data-testid="arr-reject">{t('reject')}</button>
                       </>
                     )}
+                    {r.status === 'APPROVED' && (r.returnLabelUrl ? (
+                      <a href={r.returnLabelUrl} target="_blank" rel="noopener noreferrer" data-testid="arr-label-link">
+                        {t('returnLabelOpen', { carrier: r.returnCarrier })}</a>
+                    ) : (
+                      <button className="ghost" onClick={() => buyLabel(r)} disabled={buying === r.id} data-testid="arr-buy-label">
+                        {buying === r.id ? t('loading') : t('returnLabelBuy')}</button>
+                    ))}
                   </td>
                 </tr>
               ))}

@@ -50,6 +50,23 @@ public class ReturnRequest {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
+    /** Prepaid return label (ADR-0023); all null until one is bought. */
+    @Column(name = "return_carrier", length = 10)
+    private String returnCarrier;
+
+    @Column(name = "return_tracking_number", length = 40)
+    private String returnTrackingNumber;
+
+    @Column(name = "return_label_url", length = 500)
+    private String returnLabelUrl;
+
+    /** The store's cost: kept for the margin, never shown to the customer. */
+    @Column(name = "return_label_cost", precision = 12, scale = 2)
+    private BigDecimal returnLabelCost;
+
+    @Column(name = "return_label_ref", length = 64)
+    private String returnLabelRef;
+
     protected ReturnRequest() {
     }
 
@@ -88,4 +105,27 @@ public class ReturnRequest {
     public String getAdminNote() { return adminNote; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getResolvedAt() { return resolvedAt; }
+
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    public String getReturnCarrier() { return returnCarrier; }
+
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    public String getReturnTrackingNumber() { return returnTrackingNumber; }
+
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    public String getReturnLabelUrl() { return returnLabelUrl; }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public BigDecimal getReturnLabelCost() { return returnLabelCost; }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getReturnLabelRef() { return returnLabelRef; }
+
+    void recordReturnLabel(String carrier, String trackingNumber, String labelUrl, BigDecimal cost, String reference) {
+        this.returnCarrier = carrier;
+        this.returnTrackingNumber = trackingNumber;
+        this.returnLabelUrl = labelUrl;
+        this.returnLabelCost = cost;
+        this.returnLabelRef = reference;
+    }
 }

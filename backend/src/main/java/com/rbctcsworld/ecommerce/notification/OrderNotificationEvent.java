@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 public record OrderNotificationEvent(Long orderId, Type type, BigDecimal amount) {
 
     public enum Type {
-        ORDER_PLACED, PAYMENT_RECEIVED, ORDER_SHIPPED, ORDER_DELIVERED, ORDER_CANCELLED, RETURN_APPROVED, RETURN_REJECTED
+        ORDER_PLACED, PAYMENT_RECEIVED, ORDER_SHIPPED, ORDER_DELIVERED, ORDER_CANCELLED, RETURN_APPROVED, RETURN_REJECTED,
+        /** A prepaid return label was bought (ADR-0023). */
+        RETURN_LABEL_READY
     }
 
     public static OrderNotificationEvent of(Long orderId, Type type) {

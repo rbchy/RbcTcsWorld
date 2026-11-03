@@ -53,6 +53,7 @@ Levels: **U** unit · **I** integration (Spring + H2) · **A** API (REST Assured
 | REQ-AFF-01 | Partner (affiliate) products (ADR-0020): an optional `affiliateUrl` per product, https only (400 otherwise), kept trimmed, removed by a PUT without it, in the JSON only when set; refused in the public demo | `ProductImagePolicyTest#partnerLinksAreOnlyRefusedInTheDemo`, `AffiliateIntegrationTest#theAdminAddsAPartnerProductAndCustomersSeeItsLink`, `AffiliateIntegrationTest#onlyHttpsLinksAreAccepted`, `DemoModeIntegrationTest#partnerLinksAreSwitchedOffInTheDemo`, `playwright/tests/affiliate.spec.ts` | U I UI | Pass |
 | REQ-AFF-02 | A partner product is never bought here: adding it to the cart is 400; a product that became a partner product while in a cart shows as unavailable and stops the order (400) until the link is removed | `CartServiceTest#aPartnerProductCannotBeAddedAndAnOldLineShowsUnavailable`, `OrderServiceTest#aPartnerProductInTheCartStopsTheOrder`, `AffiliateIntegrationTest#aPartnerProductCannotGoIntoTheCart`, `AffiliateIntegrationTest#aProductThatBecomesAPartnerProductInTheCartCannotBeOrdered` | U I | Pass |
 | REQ-AFF-03 | The storefront shows a partner product without price, stock or cart: "Buy at <shop>" (Amazon recognised), new tab, `rel="sponsored nofollow"`; the disclosure (Amazon's sentence for Amazon links) right above the button and above the catalog grid; no offer in its Product data; the admin form checks the link and the list marks partner products | `playwright/tests/affiliate.spec.ts` | UI | Pass |
+| REQ-AFF-04 | Partner (affiliate) site, STORE_SALES=off (default on; a typo stops the start): cart, checkout, orders, payments, saved cards, guest checkout and move-to-cart are 409 (no login still 401); visitors and customers see only partner products (catalog, facets, categories, deals, similar, product pages; others 404) while the admin sees all; the sitemap lists only partner products and no shipping or return policy; the storefront (GET /api/store/mode) hides cart, orders, wallet, coupon banner and shop policies and shows "Not sold here yet"; the privacy policy names Amazon as a third party that may set cookies | `StoreSalesTest#onMeansTheFullShop`, `StoreSalesTest#offMeansAPartnerSite`, `StoreSalesTest#aTypoStopsTheStart`, `StoreSalesTest#nullIsATypoToo`, `SeoServiceTest#aPartnerSiteMapsOnlyPartnerProductsAndNoShopPolicies`, `PartnerOnlyModeIntegrationTest#theStorefrontIsToldItIsAPartnerSite`, `PartnerOnlyModeIntegrationTest#visitorsAndCustomersSeeOnlyPartnerProductsTheAdminSeesAll`, `PartnerOnlyModeIntegrationTest#everyWayToBuyFromTheShopItselfIsClosed`, `PartnerOnlyModeIntegrationTest#partnerProductsCanStillBeKeptOnTheWishlist`, `AccessControlMatrixTest#matrix`, `playwright/tests/partner-site.spec.ts` | U I A UI | Pass |
 
 ## Cart
 
@@ -257,7 +258,7 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Area | Requirements | Covered | Gaps |
 |---|---|---|---|
 | Identity and access | 17 | 17 | - |
-| Catalog | 19 | 19 | - |
+| Catalog | 20 | 20 | - |
 | Cart | 3 | 3 | - |
 | Orders and inventory | 16 | 16 | - |
 | Pricing, coupons, payments | 18 | 18 | - |
@@ -272,4 +273,4 @@ Inspired by 21 CFR Part 11 and ALCOA+ (attributable, contemporaneous, original, 
 | Customer service | 4 | 4 | - |
 | Search engines | 3 | 3 | - |
 | Non-functional | 20 | 20 | - |
-| **Total** | **162** | **162 (100 %)** | **0** |
+| **Total** | **163** | **163 (100 %)** | **0** |

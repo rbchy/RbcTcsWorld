@@ -5,6 +5,7 @@ import Stars from './Stars';
 import { PartnerButton, PartnerDisclosure } from '../Partner';
 import ProductImage from '../ProductImage';
 import { useI18n } from '../i18n';
+import { useSales } from '../storeMode';
 import { Icon } from '../icons';
 import { swatch } from '../variants';
 import { Price, Countdown, isLive } from '../Deal';
@@ -16,6 +17,7 @@ const PAGE_SIZE = 20;
 
 export default function Home() {
   const { t } = useI18n();
+  const sales = useSales();                          // a partner site has no welcome coupon or deals (ADR-0026)
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -96,13 +98,13 @@ export default function Home() {
         <h1>RbcTcsWorld Shop</h1>
         <input data-testid="search-input" type="search" aria-label={t('searchProducts')} placeholder={t('searchProducts')} value={q} onChange={e => setQ(e.target.value)} />
       </header>
-      {!q && !isFiltered(filters) && <Banner t={t} />}
+      {sales && !q && !isFiltered(filters) && <Banner t={t} />}
       {facets?.categories?.length > 0 && <CategoryRow t={t} categories={facets.categories} filters={filters} onChange={setFilters} />}
       {error && <p data-testid="error-banner" className="error">{error}</p>}
       {flash && <p data-testid="flash" className="ok">{flash}</p>}
       <p className="muted small" id="catalog" data-testid="catalog-total">{t('showing', { n: products.length, total })}</p>
       {!error && total === 0 && (q || isFiltered(filters)) && <p className="card muted" data-testid="no-results">{t('noProducts')}</p>}
-      {deals.length > 0 && !q && !isFiltered(filters) && (
+      {sales && deals.length > 0 && !q && !isFiltered(filters) && (
         <section className="deals-shelf" data-testid="deals-shelf" aria-labelledby="deals-title">
           <h2 id="deals-title">{t('flashDeals')}</h2>
           <div className="deals-row">

@@ -73,4 +73,19 @@ class SeoServiceTest {
         String xml = shop(new SeoService.Item(1, "x", null, "https://cdn.example.com/a.jpg?x=1&y=2")).sitemap();
         assertThat(xml).contains("a.jpg?x=1&amp;y=2").doesNotContain("&y=");
     }
+
+    /** REQ-AFF-04 (ADR-0026): a partner site lists only partner products and no shipping or return policy. */
+    @Test
+    @SuppressWarnings("unchecked")
+    void aPartnerSiteMapsOnlyPartnerProductsAndNoShopPolicies() {
+        org.mockito.ArgumentCaptor<String> sql = org.mockito.ArgumentCaptor.forClass(String.class);
+        when(jdbc.query(sql.capture(), any(RowMapper.class))).thenReturn(List.of(new SeoService.Item(3, "Trail shoe", null, null)));
+        String xml = new SeoService(jdbc, "https://shop.example", true, true).sitemap();
+        assertThat(sql.getValue()).contains("AND affiliate_url IS NOT NULL");
+        assertThat(xml).contains("https://shop.example/products/3/trail-shoe", "https://shop.example/terms")
+                .doesNotContain("/returns-policy", "/shipping-policy");
+
+        new SeoService(jdbc, "https://shop.example", true, false).sitemap();
+        assertThat(sql.getValue()).doesNotContain("affiliate_url");
+    }
 }

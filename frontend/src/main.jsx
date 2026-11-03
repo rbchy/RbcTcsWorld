@@ -21,6 +21,7 @@ import Wishlist from './pages/Wishlist';
 import Addresses from './pages/Addresses';
 import PaymentMethods from './pages/PaymentMethods';
 import Security from './pages/Security';
+import { useSales, SHOP_ROUTES } from './storeMode';
 import Help from './pages/Help';
 import Contact from './pages/Contact';
 import Goodbye from './pages/Goodbye';
@@ -46,6 +47,17 @@ const ADMIN = {
   '/admin/customers': AdminCustomers, '/admin/payments': AdminPayments, '/admin/reports': AdminReports, '/admin/warehouses': AdminWarehouses,
   '/admin/messages': AdminMessages,
 };
+
+/** A partner site (STORE_SALES=off, ADR-0026) does not sell its own products: shop pages say so. */
+function NotSelling({ t }) {
+  return (
+    <section className="card narrow" data-testid="not-selling">
+      <h1>{t('notSellingTitle')}</h1>
+      <p>{t('notSellingText')}</p>
+      <a className="button-link" href="#/">{t('navCatalog')}</a>
+    </section>
+  );
+}
 
 /** Public demo only (built with VITE_DEMO=true, see deploy/): says plainly that nothing here is real. */
 const DEMO = import.meta.env.VITE_DEMO === 'true';
@@ -77,6 +89,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useI18n();
   useHead(routeHead(route, t));
+  const sales = useSales();
   const needsLogin = ['/cart', '/checkout', '/orders', '/wishlist', '/addresses', '/payment-methods', '/security', '/admin'].some(p => route.startsWith(p));
 
   useEffect(() => {
@@ -86,7 +99,8 @@ function App() {
   }, []);
 
   let page;
-  if (needsLogin && !session) page = <Login redirect={route} />;
+  if (!sales && SHOP_ROUTES.some(p => route === p || route.startsWith(p + '/'))) page = <NotSelling t={t} />;
+  else if (needsLogin && !session) page = <Login redirect={route} />;
   else if (route === '/login') page = <Login redirect="/" />;
   else if (route === '/register') page = <Login redirect="/" initialMode="register" />;
   else if (route === '/forgot-password') page = <ForgotPassword />;

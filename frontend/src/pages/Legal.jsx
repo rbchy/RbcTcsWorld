@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api, { money } from '../api';
 import { useI18n } from '../i18n';
+import { useSales } from '../storeMode';
 
 /**
  * The store's policies: privacy, terms, returns, shipping (REQ-LEG-01..03).
@@ -82,13 +83,21 @@ function Privacy({ d }) {
           number on the shipping label.</li>
         <li><b>Amazon Web Services (Amazon SES)</b> delivers our e-mails to you.</li>
         <li><b>Our hosting provider</b> runs the servers the shop and its database live on.</li>
+        <li><b>Amazon and other partner shops:</b> when you follow a "Buy at" link, you leave our site; the partner shop
+          learns that you came from us (that is how we earn a commission) and handles everything you do there under its
+          own privacy policy. We receive only reports of qualifying purchases, never who bought what.</li>
       </ul>
       <p>We also disclose information when the law requires it, for example a court order.</p>
 
       <h2>Cookies and storage in your browser</h2>
       <p>The shop stores only what it needs to work in your browser's local storage: your sign-in (so you stay signed in)
-        and the language you chose. We use no advertising or analytics cookies. When you pay with the secure card form,
-        Stripe may set its own cookies to prevent fraud; see Stripe's privacy policy.</p>
+        and the language you chose. We set no advertising or analytics cookies ourselves. When you pay with the secure
+        card form, Stripe may set its own cookies to prevent fraud; see Stripe's privacy policy.</p>
+      <p data-testid="legal-third-party">
+        <b>Third parties, including Amazon,</b> may provide content and advertising on this site, collect information
+        directly from visitors, and place or recognize cookies on visitors' browsers. As an Amazon Associate we earn from
+        qualifying purchases. When you follow a link to Amazon or another partner shop, that shop's privacy and cookie
+        policies apply there.</p>
 
       <h2>How long we keep it</h2>
       <p>Orders, payments and refunds: for as long as tax and accounting law requires. Your account, address book,
@@ -237,6 +246,7 @@ const BODY = { privacy: Privacy, terms: Terms, 'returns-policy': Returns, 'shipp
 
 export default function Legal({ page }) {
   const { t, lang } = useI18n();
+  const sales = useSales();
   const [info, setInfo] = useState(null);
   const [error, setError] = useState(false);
   useEffect(() => { api.get('/store/legal').then(r => setInfo(r.data)).catch(() => setError(true)); }, []);
@@ -257,11 +267,19 @@ export default function Legal({ page }) {
               {!info.complete && ', and the business details are not filled in yet'}.
             </p>
           )}
+          {!sales && (
+            <p className="notice" role="note" data-testid="legal-partner-site">
+              <b>This site does not sell its own products yet.</b> It shows products of partner shops such as Amazon,
+              which you buy there, under their prices, terms, shipping and returns. The parts below about orders,
+              payments, shipping and returns apply once the shop sells its own products.
+            </p>
+          )}
           <Body d={details(info)} />
         </>
       )}
       <nav className="legal-links" aria-label={t('secLegal')}>
-        {Object.entries(POLICIES).filter(([k]) => k !== page).map(([k, p]) => (
+        {Object.entries(POLICIES).filter(([k]) => k !== page)
+          .filter(([k]) => sales || (k !== 'returns-policy' && k !== 'shipping-policy')).map(([k, p]) => (
           <a key={k} href={`#/${k}`}>{t(p.nav)}</a>
         ))}
       </nav>

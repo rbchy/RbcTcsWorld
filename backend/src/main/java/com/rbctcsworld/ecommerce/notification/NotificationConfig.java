@@ -34,9 +34,13 @@ class NotificationConfig {
                             @Value("${app.notifications.ses.session-token:}") String sessionToken,
                             @Value("${app.notifications.ses.configuration-set:}") String configurationSet,
                             @Value("${app.notifications.ses.endpoint:}") String endpoint,
+                            @Value("${app.store.name:RbcTcsWorld Shop}") String storeName,
                             Clock clock) {
-        return create(channel, host, port, from,
+        MailChannel c = create(channel, host, port, from,
                 new Ses(region, accessKeyId, secretAccessKey, sessionToken, configurationSet, endpoint), clock);
+        if (c instanceof SmtpMailChannel smtp) smtp.storeName(storeName);      // the HTML header (ADR-0025)
+        if (c instanceof SesMailChannel ses) ses.storeName(storeName);
+        return c;
     }
 
     static MailChannel create(String channel, String host, int port, String from) {

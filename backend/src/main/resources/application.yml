@@ -99,7 +99,7 @@ app:
   returns:
     window-days: 30                   # a return may be requested up to 30 days after delivery
   store:                              # who runs the store: shown on the privacy policy, terms and return policy
-    name: RbcTcsWorld Shop
+    name: ${STORE_NAME:RbcTcsWorld Shop}            # shown on the policy pages and in the header of every HTML e-mail
     legal-name: ${STORE_LEGAL_NAME:}               # e.g. "RbcTcsWorld LLC" once registered (empty: placeholder)
     street: ${STORE_STREET:}
     city: ${STORE_CITY:}

@@ -85,6 +85,9 @@ class SesMailChannelTest {
         assertThat(simple.path("Subject").path("Charset").asString()).isEqualTo("UTF-8");
         assertThat(simple.path("Body").path("Text").path("Data").asString()).isEqualTo("Thank you for your order.");
         assertThat(simple.path("Body").path("Text").path("Charset").asString()).isEqualTo("UTF-8");
+        assertThat(simple.path("Body").path("Html").path("Data").asString())                 // ADR-0025: and its HTML twin
+                .startsWith("<!doctype html>").contains("Thank you for your order.", ">RbcTcsWorld Shop<");
+        assertThat(simple.path("Body").path("Html").path("Charset").asString()).isEqualTo("UTF-8");
         assertThat(sent.path("ConfigurationSetName").asString()).isEqualTo("rbctcsworld-events");
 
         // the signature covers exactly the body and host that went out

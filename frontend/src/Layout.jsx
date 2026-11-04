@@ -4,6 +4,8 @@ import api, { logout } from './api';
 import { LANGUAGES, useI18n } from './i18n';
 import { Icon } from './icons';
 
+import { useSales } from './storeMode';
+
 export { Icon };
 
 /** Install button for the desktop version (PWA): Chrome/Edge fire beforeinstallprompt when the app can be installed. */
@@ -26,9 +28,9 @@ function useInstallPrompt() {
  * Items in the cart, for the badge on the cart icon. Read once when a customer signs in, then kept up to date by
  * the 'cart-count' event that api.js sends whenever any cart answer comes back (add, change, remove, order).
  */
-function useCartCount(session) {
+function useCartCount(session, sales = true) {
   const [count, setCount] = useState(null);
-  const customer = session?.role === 'CUSTOMER';
+  const customer = session?.role === 'CUSTOMER' && sales;     // a partner site has no cart (ADR-0026)
   useEffect(() => {
     if (!customer) { setCount(null); return undefined; }
     let live = true;
@@ -86,6 +88,14 @@ export function BrandMark({ size = 42 }) {
 /** The thin bar above the header: the three promises every page makes (same words as the footer). */
 export function AnnounceBar() {
   const { t } = useI18n();
+  const sales = useSales();
+  if (!sales) {
+    return (
+      <div className="announce" data-testid="announce-bar">
+        <ul><li data-testid="announce-partner"><Icon name="heart" size={16} />{t('partnerAnnounce')}</li></ul>
+      </div>
+    );
+  }
   return (
     <div className="announce" data-testid="announce-bar">
       <ul>
@@ -100,7 +110,8 @@ export function AnnounceBar() {
 export function Topbar({ session, onMenu, menuOpen }) {
   const { t, lang, setLanguage } = useI18n();
   const install = useInstallPrompt();
-  const cartCount = useCartCount(session);
+  const sales = useSales();
+  const cartCount = useCartCount(session, sales);
   const cartName = cartCount ? t('cartWithCount', { n: cartCount }) : t('navCart');
   return (
     <header className="topbar">
@@ -128,10 +139,12 @@ export function Topbar({ session, onMenu, menuOpen }) {
             <a href="#/wishlist" className="top-icon hide-phone" data-testid="top-wishlist">
               <Icon name="heart" /><span className="btn-label">{t('navWishlist')}</span>
             </a>
-            <a href="#/cart" className="top-icon cart-link" data-testid="top-cart" aria-label={cartName}>
-              <Icon name="cart" /><span className="btn-label" aria-hidden="true">{t('navCart')}</span>
-              {cartCount > 0 && <span className="cart-badge" data-testid="top-cart-count" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
-            </a>
+            {sales && (
+              <a href="#/cart" className="top-icon cart-link" data-testid="top-cart" aria-label={cartName}>
+                <Icon name="cart" /><span className="btn-label" aria-hidden="true">{t('navCart')}</span>
+                {cartCount > 0 && <span className="cart-badge" data-testid="top-cart-count" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
+              </a>
+            )}
           </>
         )}
         {session ? (
@@ -195,6 +208,7 @@ export const ADMIN_MENU = [
 
 export function Sidebar({ route, session, open, onNavigate }) {
   const { t } = useI18n();
+  const sales = useSales();
   const isAdmin = session?.role === 'ADMIN';
   return (
     <nav id="sidebar" className={`sidebar${open ? ' open' : ''}`} aria-label={t('menu')}>
@@ -204,10 +218,14 @@ export function Sidebar({ route, session, open, onNavigate }) {
         <ul aria-labelledby="sec-shop">
           <Item route={route} href="#/" testId="nav-catalog" icon="bag" onNavigate={onNavigate}>{t('navCatalog')}</Item>
           <Item route={route} href="#/wishlist" testId="nav-wishlist" icon="heart" onNavigate={onNavigate}>{t('navWishlist')}</Item>
-          <Item route={route} href="#/cart" testId="nav-cart" icon="cart" onNavigate={onNavigate}>{t('navCart')}</Item>
-          <Item route={route} href="#/orders" testId="nav-orders" icon="box" onNavigate={onNavigate}>{t('navOrders')}</Item>
-          <Item route={route} href="#/addresses" testId="nav-addresses" icon="pin" onNavigate={onNavigate}>{t('navAddresses')}</Item>
-          <Item route={route} href="#/payment-methods" testId="nav-wallet" icon="card" onNavigate={onNavigate}>{t('navWallet')}</Item>
+          {sales && (
+            <>
+              <Item route={route} href="#/cart" testId="nav-cart" icon="cart" onNavigate={onNavigate}>{t('navCart')}</Item>
+              <Item route={route} href="#/orders" testId="nav-orders" icon="box" onNavigate={onNavigate}>{t('navOrders')}</Item>
+              <Item route={route} href="#/addresses" testId="nav-addresses" icon="pin" onNavigate={onNavigate}>{t('navAddresses')}</Item>
+              <Item route={route} href="#/payment-methods" testId="nav-wallet" icon="card" onNavigate={onNavigate}>{t('navWallet')}</Item>
+            </>
+          )}
           <Item route={route} href="#/security" testId="nav-security" icon="shield" onNavigate={onNavigate}>{t('navSecurity')}</Item>
         </ul>
       </div>
@@ -282,6 +300,7 @@ export function CookieNotice() {
 /** The bottom of every page: where to go next, how the shop works, and a way back to the top. */
 export function Footer({ session }) {
   const { t } = useI18n();
+  const sales = useSales();
   const year = new Date().getFullYear();
   const toTop = () => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -295,25 +314,29 @@ export function Footer({ session }) {
         <section className="foot-brand" aria-labelledby="foot-brand">
           <p className="brand foot-logo" id="foot-brand"><BrandMark size={32} />RbcTcsWorld Shop</p>
           <p>{t('tagline')}</p>
-          <ul className="foot-promises">
-            <li><Icon name="truck" />{t('footFreeShipping')}</li>
-            <li><Icon name="returnArrow" />{t('footReturns')}</li>
-            <li><Icon name="lock" />{t('footSecure')}</li>
-          </ul>
+          {sales ? (
+            <ul className="foot-promises">
+              <li><Icon name="truck" />{t('footFreeShipping')}</li>
+              <li><Icon name="returnArrow" />{t('footReturns')}</li>
+              <li><Icon name="lock" />{t('footSecure')}</li>
+            </ul>
+          ) : (
+            <p className="foot-partner" data-testid="foot-partner">{t('partnerFooter')}</p>
+          )}
         </section>
         <nav aria-labelledby="foot-shop">
           <h2 id="foot-shop">{t('secShop')}</h2>
           <ul>
             <li><a href="#/" data-testid="foot-catalog">{t('navCatalog')}</a></li>
             <li><a href="#/wishlist">{t('navWishlist')}</a></li>
-            <li><a href="#/cart">{t('navCart')}</a></li>
-            <li><a href="#/orders">{t('navOrders')}</a></li>
+            {sales && <li><a href="#/cart">{t('navCart')}</a></li>}
+            {sales && <li><a href="#/orders">{t('navOrders')}</a></li>}
           </ul>
         </nav>
         <nav aria-labelledby="foot-account">
           <h2 id="foot-account">{t('secAccount')}</h2>
           <ul>
-            {session ? <li><a href="#/orders">{t('footMyOrders')}</a></li> : (
+            {session ? (sales && <li><a href="#/orders">{t('footMyOrders')}</a></li>) : (
               <>
                 <li><a href="#/login">{t('navLogin')}</a></li>
                 <li><a href="#/register">{t('navRegister')}</a></li>
@@ -327,8 +350,8 @@ export function Footer({ session }) {
           <h2 id="foot-help">{t('secSupport')}</h2>
           <ul>
             <li><a href="#/help" data-testid="foot-help">{t('navHelp')}</a></li>
-            <li><a href="#/help">{t('footShippingHelp')}</a></li>
-            <li><a href="#/help">{t('footReturnsHelp')}</a></li>
+            {sales && <li><a href="#/help">{t('footShippingHelp')}</a></li>}
+            {sales && <li><a href="#/help">{t('footReturnsHelp')}</a></li>}
             <li><a href="#/contact" data-testid="foot-contact">{t('navContact')}</a></li>
           </ul>
         </nav>
@@ -337,8 +360,8 @@ export function Footer({ session }) {
           <ul>
             <li><a href="#/privacy" data-testid="foot-privacy">{t('navPrivacy')}</a></li>
             <li><a href="#/terms" data-testid="foot-terms">{t('navTerms')}</a></li>
-            <li><a href="#/returns-policy" data-testid="foot-returns-policy">{t('navReturnPolicy')}</a></li>
-            <li><a href="#/shipping-policy" data-testid="foot-shipping-policy">{t('navShippingPolicy')}</a></li>
+            {sales && <li><a href="#/returns-policy" data-testid="foot-returns-policy">{t('navReturnPolicy')}</a></li>}
+            {sales && <li><a href="#/shipping-policy" data-testid="foot-shipping-policy">{t('navShippingPolicy')}</a></li>}
           </ul>
         </nav>
       </div>

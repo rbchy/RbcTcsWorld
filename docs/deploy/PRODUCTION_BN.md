@@ -50,7 +50,8 @@ Oracle-এর Always Free-এ একাধিক VM বানানো যায
    - `STORE_DOMAIN`, `ADMIN_EMAIL` বসান।
    - **`BACKUP_PASSPHRASE` আর `ADMIN_PASSWORD` এখনই password manager-এ কপি করুন।**
      passphrase হারালে কোনো backup আর কখনো খোলা যাবে না।
-   - Stripe, Tax, Shippo আর SES চালু করবেন একটা একটা করে, আগে test mode-এ। প্রতিটার গাইড `docs/modules/`-এ।
+   - **`STORE_SALES`:** `off` (শুরুতে এটাই) মানে শুধু Amazon affiliate সাইট, এখানে কিছু কেনা যায় না; তখন Stripe, Shippo, SES লাগে না ([AFFILIATE_PRODUCTS_BN](../modules/AFFILIATE_PRODUCTS_BN.md))। নিজের দোকান খোলার দিন `on`।
+   - Stripe, Tax, Shippo আর SES চালু করবেন একটা একটা করে, আগে test mode-এ। প্রতিটার গাইড `docs/modules/`-এ। (`STORE_SALES=on` হওয়ার পরে)
 4. **Backup রাখার bucket (সার্ভারের বাইরে):**
    - **Oracle Object Storage** (Always Free-এ ২০ GB পর্যন্ত):
      1. Object Storage → *Create bucket*, যেমন `rbctcsworld-backups`।

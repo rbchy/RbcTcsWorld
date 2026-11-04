@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/v3/api-docs", "/v3/api-docs/**").permitAll()   // OpenAPI spec (used by OWASP ZAP)
                 .requestMatchers(HttpMethod.GET, "/api/tracking/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/store/legal").permitAll()   // who runs the store, for the policy pages
+                .requestMatchers(HttpMethod.GET, "/api/store/mode").permitAll()    // shop or partner site (ADR-0026)
                 .requestMatchers("/api/contact").permitAll()   // the contact form: visitors too (ADR-0018)
                 .requestMatchers(HttpMethod.GET, "/api/seo/robots.txt", "/api/seo/sitemap.xml").permitAll()   // search engines (ADR-0019)
                 .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()   // Stripe proves itself by signature

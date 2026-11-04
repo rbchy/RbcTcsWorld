@@ -45,6 +45,9 @@ x-backend-env: &backend-env
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
   SES_CONFIGURATION_SET: ${SES_CONFIGURATION_SET:-}
   SES_SNS_TOPIC_ARN: ${SES_SNS_TOPIC_ARN:-}
+  # on: the full shop; off: a partner (Amazon affiliate) site only, nothing can be bought here (ADR-0026)
+  STORE_SALES: ${STORE_SALES:-on}
+  STORE_NAME: ${STORE_NAME:-RbcTcsWorld Shop}
   STORE_LEGAL_NAME: ${STORE_LEGAL_NAME:-}
   STORE_STREET: ${STORE_STREET:-}
   STORE_CITY: ${STORE_CITY:-}

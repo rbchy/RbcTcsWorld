@@ -41,10 +41,33 @@ public class ProductController {
 
     private final ProductService service;
     private final ProductImagePolicy images;
+    private final com.rbctcsworld.ecommerce.store.StoreSales sales;
 
-    public ProductController(ProductService service, ProductImagePolicy images) {
+    public ProductController(ProductService service, ProductImagePolicy images,
+                             com.rbctcsworld.ecommerce.store.StoreSales sales) {
         this.service = service;
         this.images = images;
+        this.sales = sales;
+    }
+
+    /**
+     * STORE_SALES=off (ADR-0026): visitors and customers see only partner products; the admin still sees and edits
+     * everything (the admin pages use the same endpoints).
+     */
+    private boolean partnerOnly(org.springframework.security.core.Authentication auth) {
+        return !sales.on() && (auth == null || auth.getAuthorities().stream()
+                .noneMatch(a -> "ROLE_ADMIN".equals(a.getAuthority())));
+    }
+
+    private List<Product> visible(List<Product> products, org.springframework.security.core.Authentication auth) {
+        return partnerOnly(auth) ? products.stream().filter(Product::soldByPartner).toList() : products;
+    }
+
+    private Product visible(Product p, org.springframework.security.core.Authentication auth) {
+        if (partnerOnly(auth) && !p.soldByPartner()) {
+            throw new com.rbctcsworld.ecommerce.common.exception.NotFoundException("Product not found: " + p.getId());
+        }
+        return p;
     }
 
     @GetMapping
@@ -59,9 +82,10 @@ public class ProductController {
                                              @RequestParam(required = false) Boolean grouped,
                                              @RequestParam(required = false) java.math.BigDecimal minRating,
                                              @RequestParam(required = false) List<String> colors,
-                                             @RequestParam(required = false) List<String> sizes) {
+                                             @RequestParam(required = false) List<String> sizes,
+                                             org.springframework.security.core.Authentication auth) {
         Page<Product> result = service.page(q, page, size, sort,
-                new ProductFilter(category, minPrice, maxPrice, inStock, grouped, minRating, colors, sizes));
+                new ProductFilter(category, minPrice, maxPrice, inStock, grouped, minRating, colors, sizes), partnerOnly(auth));
         ResponseEntity.BodyBuilder response = ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.getTotalElements()))
                 .header("X-Total-Pages", String.valueOf(result.getTotalPages()))
@@ -87,25 +111,29 @@ public class ProductController {
 
     /** The categories of the products on sale (for the category filter). */
     @GetMapping("/categories")
-    public List<String> categories() {
-        return service.categories();
+    public List<String> categories(org.springframework.security.core.Authentication auth) {
+        return service.categories(partnerOnly(auth));
     }
 
     /** "Customers who bought this also bought": products from the same orders, most frequent first. */
     @GetMapping("/{id}/bought-together")
-    public List<Product> boughtTogether(@PathVariable long id, @RequestParam(required = false) Integer limit) {
-        return service.boughtTogether(id, limit);
+    public List<Product> boughtTogether(@PathVariable long id, @RequestParam(required = false) Integer limit,
+                                        org.springframework.security.core.Authentication auth) {
+        visible(service.get(id), auth);
+        return visible(service.boughtTogether(id, limit), auth);
     }
 
     @GetMapping("/deals")
-    public List<Product> deals() {
-        return service.liveDeals();
+    public List<Product> deals(org.springframework.security.core.Authentication auth) {
+        return visible(service.liveDeals(), auth);
     }
 
     /** "Similar products" for the product page: same category, in stock first, closest price. */
     @GetMapping("/{id}/similar")
-    public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit) {
-        return service.similar(id, limit);
+    public List<Product> similar(@PathVariable long id, @RequestParam(required = false) Integer limit,
+                                 org.springframework.security.core.Authentication auth) {
+        visible(service.get(id), auth);
+        return visible(service.similar(id, limit), auth);
     }
 
     /** Counts for the catalog's filter panel (disjunctive facets, items not variants). */
@@ -117,14 +145,17 @@ public class ProductController {
                          @RequestParam(required = false) Boolean inStock,
                          @RequestParam(required = false) java.math.BigDecimal minRating,
                          @RequestParam(required = false) List<String> colors,
-                         @RequestParam(required = false) List<String> sizes) {
-        return service.facets(q, new ProductFilter(category, minPrice, maxPrice, inStock, true, minRating, colors, sizes));
+                         @RequestParam(required = false) List<String> sizes,
+                         org.springframework.security.core.Authentication auth) {
+        return service.facets(q, new ProductFilter(category, minPrice, maxPrice, inStock, true, minRating, colors, sizes),
+                partnerOnly(auth));
     }
 
     /** Every size and colour of the item this product belongs to (itself included), for the product page. */
     @GetMapping("/{id}/variants")
-    public List<Product> variants(@PathVariable long id) {
-        return service.variants(id);
+    public List<Product> variants(@PathVariable long id, org.springframework.security.core.Authentication auth) {
+        visible(service.get(id), auth);
+        return visible(service.variants(id), auth);
     }
 
     /** Option summaries for catalog cards, one request for a whole page of cards. */
@@ -134,8 +165,8 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Product get(@PathVariable long id) {
-        return service.get(id);
+    public Product get(@PathVariable long id, org.springframework.security.core.Authentication auth) {
+        return visible(service.get(id), auth);
     }
 
     @PostMapping

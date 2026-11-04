@@ -34,16 +34,34 @@ public class SeoService {
     private final JdbcTemplate jdbc;
     private final String base;
     private final boolean indexable;
+    /** STORE_SALES=off (ADR-0026): only partner products, and no shipping or return policy pages. */
+    private final boolean partnerOnly;
 
     @Autowired
-    public SeoService(JdbcTemplate jdbc, Environment env, @Value("${app.public-url:http://localhost:5173}") String publicUrl) {
+    public SeoService(JdbcTemplate jdbc, Environment env, @Value("${app.public-url:http://localhost:5173}") String publicUrl,
+                      com.rbctcsworld.ecommerce.store.StoreSales sales) {
+        this(jdbc, publicUrl, !SharedEnvironment.isDemo(env) && publicUrl.trim().startsWith("https://"), !sales.on());
+    }
+
+    public SeoService(JdbcTemplate jdbc, Environment env, String publicUrl) {
         this(jdbc, publicUrl, !SharedEnvironment.isDemo(env) && publicUrl.trim().startsWith("https://"));
     }
 
     SeoService(JdbcTemplate jdbc, String publicUrl, boolean indexable) {
+        this(jdbc, publicUrl, indexable, false);
+    }
+
+    SeoService(JdbcTemplate jdbc, String publicUrl, boolean indexable, boolean partnerOnly) {
         this.jdbc = jdbc;
         this.base = publicUrl.trim().replaceAll("/+$", "");
         this.indexable = indexable;
+        this.partnerOnly = partnerOnly;
+    }
+
+    /** The fixed pages; a partner site sells nothing itself, so it has no shipping or return policy. */
+    List<String> pages() {
+        return partnerOnly ? PAGES.stream().filter(p -> !p.equals("/returns-policy") && !p.equals("/shipping-policy")).toList()
+                : PAGES;
     }
 
     public String robots() {
@@ -62,7 +80,7 @@ public class SeoService {
         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" "
                 + "xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n");
-        for (String page : PAGES) xml.append("  <url><loc>").append(escape(base + page)).append("</loc></url>\n");
+        for (String page : pages()) xml.append("  <url><loc>").append(escape(base + page)).append("</loc></url>\n");
         for (Item item : items()) {
             xml.append("  <url><loc>").append(escape(base + productPath(item.id(), item.name()))).append("</loc>");
             String image = imageAddress(item.imageUrl());
@@ -74,7 +92,8 @@ public class SeoService {
 
     /** Products on sale, one per variant group (the first one, as on the storefront's cards). */
     List<Item> items() {
-        List<Item> all = jdbc.query("SELECT id, name, variant_group, image_url FROM products WHERE active = true ORDER BY id",
+        List<Item> all = jdbc.query("SELECT id, name, variant_group, image_url FROM products WHERE active = true"
+                        + (partnerOnly ? " AND affiliate_url IS NOT NULL" : "") + " ORDER BY id",
                 (rs, n) -> new Item(rs.getLong("id"), rs.getString("name"), rs.getString("variant_group"), rs.getString("image_url")));
         Set<String> groups = new HashSet<>();
         int limit = MAX_URLS - PAGES.size();

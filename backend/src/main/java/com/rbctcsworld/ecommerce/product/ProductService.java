@@ -69,13 +69,19 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> page(String q, int page, int size, String sort, ProductFilter filter) {
+        return page(q, page, size, sort, filter, false);
+    }
+
+    /** partnerOnly (STORE_SALES=off, ADR-0026): only products with a partner link, as visitors see the catalog then. */
+    @Transactional(readOnly = true)
+    public Page<Product> page(String q, int page, int size, String sort, ProductFilter filter, boolean partnerOnly) {
         if (page < 0) throw new BusinessRuleException("page must be 0 or greater");
         if (size < 1 || size > MAX_PAGE_SIZE) throw new BusinessRuleException("size must be between 1 and " + MAX_PAGE_SIZE);
         String s = sort == null || sort.isBlank() ? "id" : sort.trim().toLowerCase();
         if (!SORTS.contains(s)) throw new BusinessRuleException("sort must be one of " + SORTS);
         PageRequest request = PageRequest.of(page, size, sortOf(s));
         ProductFilter f = checked(filter == null ? ProductFilter.NONE : filter);
-        if (!f.isEmpty()) return repo.findAll(spec(q, f), request);
+        if (partnerOnly || !f.isEmpty()) return repo.findAll(spec(q, f, partnerOnly), request);
         return (q == null || q.isBlank())
                 ? repo.findByActiveTrue(request)
                 : repo.findByNameContainingIgnoreCaseAndActiveTrue(q.trim(), request);
@@ -86,9 +92,14 @@ public class ProductService {
      * item - a single product, or the first variant (lowest id) of its group that passes the same filters.
      */
     static Specification<Product> spec(String q, ProductFilter f) {
+        return spec(q, f, false);
+    }
+
+    static Specification<Product> spec(String q, ProductFilter f, boolean partnerOnly) {
         return (root, query, cb) -> {
             List<Predicate> where = new ArrayList<>();
             where.add(cb.isTrue(root.<Boolean>get("active")));
+            if (partnerOnly) where.add(cb.isNotNull(root.get("affiliateUrl")));
             if (q != null && !q.isBlank()) {
                 where.add(cb.like(cb.lower(root.<String>get("name")), "%" + q.trim().toLowerCase(Locale.ROOT) + "%"));
             }
@@ -131,8 +142,13 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Facets facets(String q, ProductFilter filter) {
+        return facets(q, filter, false);
+    }
+
+    @Transactional(readOnly = true)
+    public Facets facets(String q, ProductFilter filter, boolean partnerOnly) {
         ProductFilter f = checked(filter == null ? ProductFilter.NONE : filter);
-        List<Product> candidates = repo.findAll(spec(q, ProductFilter.NONE), PageRequest.of(0, MAX_FACET_PRODUCTS, Sort.by("id"))).getContent();
+        List<Product> candidates = repo.findAll(spec(q, ProductFilter.NONE, partnerOnly), PageRequest.of(0, MAX_FACET_PRODUCTS, Sort.by("id"))).getContent();
         return Facets.count(candidates, f);
     }
 
@@ -266,6 +282,18 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<String> categories() {
         return repo.activeCategories();
+    }
+
+    /** partnerOnly: only the categories that hold a partner product (ADR-0026). */
+    @Transactional(readOnly = true)
+    public List<String> categories(boolean partnerOnly) {
+        if (!partnerOnly) return categories();
+        java.util.Set<String> partner = new java.util.HashSet<>();
+        repo.findAll(spec(null, ProductFilter.NONE, true), PageRequest.of(0, MAX_FACET_PRODUCTS)).forEach(p -> {
+            if (p.getCategory() != null) partner.add(p.getCategory().trim().toLowerCase(Locale.ROOT));
+        });
+        return repo.activeCategories().stream()
+                .filter(c -> c != null && partner.contains(c.trim().toLowerCase(Locale.ROOT))).toList();
     }
 
     static Sort sortOf(String sort) {

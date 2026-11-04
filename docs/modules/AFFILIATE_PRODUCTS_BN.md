@@ -14,8 +14,9 @@ Amazon আবেদনের পরে একজন মানুষ দিয়
 
 1. দোকান নিজের domain-এ চালু করুন (Phase 5: সার্ভার, domain, `deploy/production`)। [PRODUCTION_BN](../deploy/PRODUCTION_BN.md)
 2. domain-এর নামে **"amazon" শব্দ রাখবেন না**, এটা Amazon-এর নিয়মে নিষেধ।
-3. `.env`-এ দোকানের তথ্য দিন (`STORE_LEGAL_NAME`, ঠিকানা, `STORE_CONTACT_EMAIL`), যাতে privacy policy আর terms-এ আসল নাম-ঠিকানা দেখায়।
-4. নমুনা পণ্যগুলো (আঁকা ছবির mouse, mug, QA বই ইত্যাদি) Admin → Products → **Delete** দিয়ে সরান। Delete করলে পণ্য গ্রাহকের কাছ থেকে লুকায়, পুরোনো অর্ডারে থেকে যায়। নকল পণ্য দেখলে reviewer সাইটকে আসল দোকান মনে করবে না।
+3. `.env`-এ **`STORE_SALES=off`** রাখুন (`.env.example`-এ এটাই আছে)। তখন সাইট শুধু affiliate সাইট: cart, checkout, অর্ডার, কার্ড, coupon banner, shipping আর return policy লুকানো; backend-ও কোনো অর্ডার নেয় না। তাই Stripe, Shippo, SES, LLC বা sales tax license ছাড়াই চালু করা যায়: `PAYMENT_PROVIDER=mock`, `NOTIFICATIONS_CHANNEL=log` রাখলেই হবে। নিজের দোকান খোলার দিন `STORE_SALES=on` ([ADR-0026](../adr/0026-partner-only-site.md))।
+4. `.env`-এ দোকানের তথ্য দিন (`STORE_LEGAL_NAME`, ঠিকানা, `STORE_CONTACT_EMAIL`), যাতে privacy policy আর terms-এ আসল নাম-ঠিকানা দেখায়। LLC না থাকলে নিজের নাম দিন। Privacy policy-তে Amazon-এর চাওয়া বাক্য ("Third parties, including Amazon, may … place or recognize cookies …") আগে থেকেই আছে।
+5. নমুনা পণ্যগুলো (আঁকা ছবির mouse, mug, QA বই ইত্যাদি) Admin → Products → **Delete** দিয়ে সরান। `STORE_SALES=off`-এ এগুলো দর্শকের কাছে এমনিতেই দেখায় না, তবু মুছে ফেলাই পরিষ্কার। Delete করলে পণ্য গ্রাহকের কাছ থেকে লুকায়, পুরোনো অর্ডারে থেকে যায়। নকল পণ্য দেখলে reviewer সাইটকে আসল দোকান মনে করবে না।
 
 ### ধাপ ২: ১০-১৫টা partner পণ্য, নিজের লেখা আর ছবি দিয়ে
 
@@ -92,10 +93,12 @@ Amazon আবেদনের পরে একজন মানুষ দিয়
 
 Amazon-এর Creators API (আগের PA-API) পেতে আগে বিক্রি লাগে। পেয়ে গেলে API থেকে আসল দাম, স্টক আর ছবি এনে দেখানো যাবে, দিনে অন্তত একবার নতুন করে আনা হবে। সেটা আলাদা PR হবে।
 
-## টেস্ট (REQ-AFF-01..03)
+## টেস্ট (REQ-AFF-01..04)
 
 | স্তর | টেস্ট |
 |---|---|
 | Unit | `CartServiceTest`, `OrderServiceTest`: cart আর অর্ডারে partner পণ্য আটকায়; `ProductImagePolicyTest`: ডেমো |
 | Integration | `AffiliateIntegrationTest`: লিংক রাখা আর মোছা, cart 400, অর্ডার 400, শুধু https; ডেমো test |
 | UI | `playwright/tests/affiliate.spec.ts`: বোতাম, `rel=sponsored`, ঘোষণা, দাম আর cart নেই, admin form |
+| Integration | `PartnerOnlyModeIntegrationTest`: `STORE_SALES=off`-এ শুধু partner পণ্য দেখায়, কেনার সব পথ 409, admin সব দেখে |
+| UI | `playwright/tests/partner-site.spec.ts`: affiliate সাইটে cart, coupon, shop policy লুকানো; privacy-তে Amazon-এর cookie বাক্য |

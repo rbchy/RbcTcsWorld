@@ -78,6 +78,20 @@ Phase 2 does exactly that (ADR-0011).
    on every order (ADR-0024), HTML e-mail (ADR-0025) and the partner-only mode (ADR-0026). Nothing left for engineering
    before phase 6.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
+8. **Phase 7 - phone app (engineering about 1 week, owner; after the site is live):** the same path already proven on the
+   [portfolio site](https://github.com/rbchy/rbchy/pull/8):
+   - *Installable website (PWA):* web app manifest, icons, an offline page, and a service worker that caches only the
+     catalogue's pictures and styles, never the cart, checkout, account pages or the API. Works on Android, iPhone
+     (Safari -> Add to Home Screen) and desktop without any store.
+   - *Android app (Trusted Web Activity):* Bubblewrap wraps the live site; GitHub Actions builds and signs the APK and the
+     Play Store bundle; full screen needs `/.well-known/assetlinks.json` on the store's domain. Owner: Play Console ($25
+     once), the signing key in GitHub secrets.
+   - *Amazon links inside an app* need Amazon's separate mobile-app approval
+     ([Associates help](https://associates.amazon.ca/help/node/topic/GQZMCDD9PB7CXV7N)), so while the site is
+     affiliate-only (`STORE_SALES=off`) the phone app stays the installable website; the Play Store app follows with the
+     own shop or that approval.
+   - *iPhone App Store:* not planned; Apple rejects apps that only wrap a website (guideline 4.2). Reconsidered when the
+     app has its own features (order notifications, a saved offline catalogue).
 
 ## 3. Running costs (estimates)
 

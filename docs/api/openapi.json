@@ -1038,6 +1038,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "policies": {
+            "$ref": "#/components/schemas/PolicyRef"
+          },
           "shippedAt": {
             "format": "date-time",
             "type": "string"
@@ -1233,6 +1236,18 @@
           },
           "type": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyRef": {
+        "properties": {
+          "effective": {
+            "format": "date",
+            "type": "string"
+          },
+          "reviewed": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -1848,6 +1863,14 @@
           "warehouseId": {
             "format": "int64",
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "StoreMode": {
+        "properties": {
+          "sales": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -5931,6 +5954,26 @@
         },
         "tags": [
           "legal-info-controller"
+        ]
+      }
+    },
+    "/api/store/mode": {
+      "get": {
+        "operationId": "mode",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreMode"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "store-mode-controller"
         ]
       }
     },

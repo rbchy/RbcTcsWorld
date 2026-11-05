@@ -1,8 +1,27 @@
 # Roadmap to a live store
 
-Status on 29 Oct 2026: phases 1, 2, 3 and 5 done (engineering), phase 4's engineering part done; product photo uploads, the contact form and search-engine pages done;
-next: the owner's part of phases 0, 4 and 5, then phase 6. The owner decides phase 0; engineering does phases 1-3 and 5; phase 4 needs
-an accountant and a lawyer. Running costs are estimates to check against each provider's own price page.
+Status on 4 Nov 2026: **the plan is affiliate first, own shop later.** The site goes live as an Amazon affiliate site
+(`STORE_SALES=off`, [ADR-0026](../adr/0026-partner-only-site.md)): partner products with the owner's own descriptions,
+nothing to buy on the site itself, so no Stripe, Shippo, SES, LLC or sales tax license is needed yet. Engineering for
+that step is done; what is left is the owner's: server and domain, the products, the Associates application.
+Everything the own shop needs later is built too (phases 1, 2, 3 and 5, and the engineering part of phase 4); when the
+owner is ready it opens with `STORE_SALES=on` and the owner's part of phases 0, 4 and 6. Running costs are estimates
+to check against each provider's own price page.
+
+## 0. First: the Amazon affiliate site (now)
+
+| Step | What | Who | Guide |
+|---|---|---|---|
+| A1 | Server and domain (no "amazon" in the name), production stack with `STORE_SALES=off`, `PAYMENT_PROVIDER=mock`, `NOTIFICATIONS_CHANNEL=log` | Owner | [PRODUCTION_BN](../deploy/PRODUCTION_BN.md) |
+| A2 | Delete the sample products; add 10-15 Amazon products with own words and photos | Owner | [AFFILIATE_PRODUCTS_BN](../modules/AFFILIATE_PRODUCTS_BN.md) |
+| A3 | Submit the sitemap in Google Search Console | Owner | [SEARCH_ENGINES_BN](../modules/SEARCH_ENGINES_BN.md) |
+| A4 | Apply to Amazon Associates; put the tag in every link; 3 qualifying sales within 180 days | Owner | [AFFILIATE_PRODUCTS_BN](../modules/AFFILIATE_PRODUCTS_BN.md) |
+| A5 | After the first sales: Amazon's Creators API for live prices and pictures | Engineering | - |
+
+Built for it: partner products and the "Buy at Amazon" button with the disclosure ([ADR-0020](../adr/0020-affiliate-products.md)),
+the owner's own product descriptions ([ADR-0021](../adr/0021-product-descriptions.md)), search-engine pages
+([ADR-0019](../adr/0019-search-engines.md)), the contact form ([ADR-0018](../adr/0018-contact-form.md)), and the partner-only
+mode with Amazon's third-party cookie statement in the privacy policy ([ADR-0026](../adr/0026-partner-only-site.md)).
 
 ## 1. What exists and what a live store still needs
 
@@ -17,7 +36,7 @@ an accountant and a lawyer. Running costs are estimates to check against each pr
 | Legal | policy pages and cookie notice (drafts, phase 4) | business registration (LLC, EIN), sales tax license, a lawyer's review of the policies | Owner + lawyer |
 | Customer service | contact form with a ticket number and a promised answer time, Admin -> Messages ([ADR-0018](../adr/0018-contact-form.md), done) | answering within the promised time | Owner |
 | Search engines | real product addresses, titles, descriptions, Product data, robots.txt and sitemap ([ADR-0019](../adr/0019-search-engines.md), done) | Search Console and Bing Webmaster Tools once the domain is live | Owner |
-| Already strong | orders, no overselling, returns and refunds, coupons, accounts with two-factor sign-in, audit trail, six languages, 1,800+ tests, 19 CI gates | the same test rules for every new feature | - |
+| Already strong | orders, no overselling, returns and prepaid return labels, refunds with tax reversal, coupons, accounts with two-factor sign-in and self-service deletion, audit trail, HTML e-mail, six languages, 2,000+ tests, 19 CI gates | the same test rules for every new feature | - |
 
 The most urgent change is card handling. Today the card number reaches the backend, which is acceptable for test cards
 only; with real cards it would put the server under the full PCI DSS card-data rules. Stripe Elements removes that.
@@ -53,7 +72,11 @@ Phase 2 does exactly that (ADR-0011).
    [guide (Bangla)](../modules/CONTACT_FORM_BN.md)). Page titles, product data and a sitemap for search engines
    ([ADR-0019](../adr/0019-search-engines.md), [guide (Bangla)](../modules/SEARCH_ENGINES_BN.md)). Partner (affiliate) products, e.g. Amazon
    links, to earn before the shop sells its own ([ADR-0020](../adr/0020-affiliate-products.md),
-   [guide (Bangla)](../modules/AFFILIATE_PRODUCTS_BN.md)). Nothing left for engineering before phase 6.
+   [guide (Bangla)](../modules/AFFILIATE_PRODUCTS_BN.md)). Since then, also built: product descriptions (ADR-0021), blocked
+   e-mail addresses in the admin, tax reversal on refunds and product tax codes (ADR-0012), product weight and box size
+   for labels (ADR-0013), self-service account deletion (ADR-0022), prepaid return labels (ADR-0023), the policy version
+   on every order (ADR-0024), HTML e-mail (ADR-0025) and the partner-only mode (ADR-0026). Nothing left for engineering
+   before phase 6.
 7. **Phase 6 - UAT and a quiet start (owner and engineering, 2 weeks):** the existing [UAT plan](../qa/UAT_PLAN.md) with family and friends paying small real orders that are then refunded; GO opens the store.
 
 ## 3. Running costs (estimates)

@@ -1,25 +1,27 @@
 # RbcTcsWorld Shop
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
-![Stage](https://img.shields.io/badge/stage-pre--launch%20%C2%B7%20phase%202%20next-f59e0b)
+![Stage](https://img.shields.io/badge/stage-affiliate%20site%20first%20%C2%B7%20own%20shop%20built-f59e0b)
 ![Java 21](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-green)
-![Tests](https://img.shields.io/badge/automated%20tests-1911-brightgreen)
-[![Coverage](https://img.shields.io/badge/line%20coverage-97.2%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
-[![Mutation](https://img.shields.io/badge/mutation%20score-87.6%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
+![Tests](https://img.shields.io/badge/automated%20tests-2033-brightgreen)
+[![Coverage](https://img.shields.io/badge/line%20coverage-97.5%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/coverage/)
+[![Mutation](https://img.shields.io/badge/mutation%20score-86.9%25-brightgreen)](https://rbchy.github.io/RbcTcsWorld/mutation/)
 [![Allure](https://img.shields.io/badge/Allure-live%20report-orange)](https://rbchy.github.io/RbcTcsWorld/)
 
 **RbcTcsWorld Shop is an online store on its way to selling for real.** Everyday goods, delivered to your door:
 catalog, cart, checkout with a delivery address, guest checkout and an address book, size and colour variants, a
 faceted filter panel with "Shop by category" tiles, flash deals with a countdown, "customers also bought", reviews,
-wishlist, returns, order e-mails, invoice PDFs, two-factor sign-in, a saved-card wallet, a store back office with
-coupons, multi-warehouse stock, reports and an append-only audit trail, in six languages.
+wishlist, returns with prepaid return labels, HTML order e-mails, invoice PDFs, two-factor sign-in, self-service account
+deletion, a saved-card wallet, a store back office with coupons, multi-warehouse stock, reports and an append-only audit
+trail, and Amazon partner products, in six languages.
 
 The code was built test-first in the [E-Commerce Suite](https://github.com/rbchy/RbcTcsWorld_ECommerceSuite) and keeps
 its full history and its quality bar: every change goes through 19 CI gates. This repository takes it through the
 steps a live store needs: safe card payments, real tax, real shipping, e-mail from its own domain, backups, legal pages
-and a business behind it. **Nothing here takes real orders yet**; until launch the store runs in demo mode with test
-cards only.
+and a business behind it. **The plan: affiliate first, own shop later.** The site goes live first as an Amazon
+affiliate site (`STORE_SALES=off`): hand-picked partner products with the owner's own short reviews, bought at Amazon,
+nothing sold here. Everything the own shop needs is built and tested, and opens with `STORE_SALES=on`.
 
 Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github.com/rbchy) · [LinkedIn](https://www.linkedin.com/in/rbchy/) · [Website](https://rbchy.github.io/rbchy/)
 
@@ -29,24 +31,24 @@ Owner: **RB Chowdhury**, QA Automation Engineer / SDET - [GitHub](https://github
 
 ## 🚦 Project Status Board
 
-<img src="docs/images/project-status.svg" alt="Project status board: 1,911 automated tests (1,908 passed, 3 skipped by design), 19 of 19 CI gates passed, 97.2 % line coverage, 87.6 % mutation score, 163 of 163 requirements traced; road to launch: phases 1, 2 and 3 done, phases 0, 4 and 5 in progress" width="100%">
+<img src="docs/images/project-status.svg" alt="Project status board: 2,033 automated tests (2,030 passed, 3 skipped by design), 19 of 19 CI gates passed, 97.5 % line coverage, 86.9 % mutation score, 163 of 163 requirements traced; road to launch: first the Amazon affiliate site (in progress), phases 1, 2, 3 and 5 done, phases 0, 4 and 6 planned for the own shop" width="100%">
 
 [![CI](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/rbchy/RbcTcsWorld/actions/workflows/ci.yml)
 ![Last commit](https://img.shields.io/github/last-commit/rbchy/RbcTcsWorld?label=last%20commit)
 ![Open issues](https://img.shields.io/github/issues/rbchy/RbcTcsWorld?label=open%20issues)
 ![Open PRs](https://img.shields.io/github/issues-pr/rbchy/RbcTcsWorld?label=open%20PRs)
 
-The board shows the GitHub Actions run of `main` on 26 Oct 2026 (commit `ddcd72c`). The CI badge above is live;
+The board shows the GitHub Actions run of `main` on 4 Nov 2026 (commit `6f836ab`). The CI badge above is live;
 the board is redrawn after a release with [`docs/images/make_readme_cards.py`](docs/images/make_readme_cards.py).
 
 ## 🥧 Breakdown
 
 ```mermaid
 pie showData
-    title 1,911 automated tests by level
-    "Backend unit + integration" : 1072
-    "API, DB, BDD, Selenium UI" : 459
-    "Playwright (5 browsers/devices)" : 372
+    title 2,033 automated tests by level
+    "Backend unit + integration" : 1164
+    "API, DB, BDD, Selenium UI" : 464
+    "Playwright (5 browsers/devices)" : 397
     "Appium (Android + iOS)" : 8
 ```
 
@@ -75,7 +77,7 @@ Every requirement links to its tests in the [traceability matrix](docs/qa/TRACEA
 
 ## 📈 GitHub Stats
 
-<img src="docs/images/github-stats.svg" alt="GitHub stats: 239 commits on 21 active days from 4 to 26 October 2026 (history kept from the E-Commerce Suite), 6 merged pull requests in this repository, 0 open, 29 CI runs, about 51k lines of code; Java 73.9 %, JavaScript 16.0 %, TypeScript 4.0 %, CSS 2.7 %, other 3.4 %" width="100%">
+<img src="docs/images/github-stats.svg" alt="GitHub stats: 320 commits on 29 active days from 4 October to 3 November 2026 (history kept from the E-Commerce Suite), 34 merged pull requests in this repository, 0 open, 183 CI runs, about 57k lines of code; Java 75.5 %, JavaScript 14.5 %, TypeScript 4.6 %, CSS 2.1 %, other 3.3 %" width="100%">
 
 ![Commits](https://img.shields.io/github/commit-activity/t/rbchy/RbcTcsWorld?label=commits)
 ![Commit activity](https://img.shields.io/github/commit-activity/m/rbchy/RbcTcsWorld?label=commits%20this%20month)
@@ -94,14 +96,16 @@ The badges update live from GitHub; the card above is a snapshot of the same day
 |---|---|
 | Independent since | 25 Oct 2026 (`c5c5091`); the full git history of the code is kept |
 | Done in this repository | Phase 1: own project names and links, roadmap, [ADR-0010](docs/adr/0010-from-portfolio-to-live-store.md); a store look (indigo frame, bag logo, Plus Jakarta Sans), the welcome banner with the delivery picture, "Shop by category" tiles |
-| Quality bar | 1,911 automated tests, 19 CI quality gates, 97.2 % line coverage, 87.6 % mutation score, 163 traced requirements |
+| Plan | **Affiliate first, own shop later:** the site goes live as an Amazon affiliate site with `STORE_SALES=off` (nothing can be bought here, Amazon's cookie statement in the privacy policy, [ADR-0026](docs/adr/0026-partner-only-site.md)); the own shop opens later with `STORE_SALES=on` |
+| Quality bar | 2,033 automated tests, 19 CI quality gates, 97.5 % line coverage, 86.9 % mutation score, 163 traced requirements |
 | Phase 2 (done) | Stripe Elements and signed webhooks: card numbers never reach our server, an order is paid only on Stripe's word, exactly once ([ADR-0011](docs/adr/0011-stripe-elements-and-webhooks.md)) |
 | Phase 3 (done) | Stripe Tax: the right sales tax for every delivery address, recorded with Stripe after payment ([ADR-0012](docs/adr/0012-stripe-tax.md)); Shippo labels with real tracking numbers, delivered when the carrier says so ([ADR-0013](docs/adr/0013-shippo-labels-and-tracking.md)); order e-mail from the store's own domain through Amazon SES, bounced addresses never e-mailed again ([ADR-0014](docs/adr/0014-amazon-ses-mail.md)) |
 | Product photos (done) | The owner uploads a photo from the admin form (phone or computer); the backend turns it upright, scales it to 1600 px and saves a new file without EXIF or GPS data, in the database so the backups cover it ([ADR-0017](docs/adr/0017-product-photo-uploads.md)) |
 | Customer service (done) | A contact form on every page (ticket number, promised answer time, spam-proof without a CAPTCHA) and Admin -> Messages to answer by e-mail ([ADR-0018](docs/adr/0018-contact-form.md)) |
 | Search engines (done) | Every product at a real address (`/products/12/travel-mug`) with title, description, price and stock data for Google; robots.txt and a sitemap; private pages and the demo never indexed ([ADR-0019](docs/adr/0019-search-engines.md)) |
 | Partner products (done) | Amazon and other affiliate links next to the shop's own products: "Buy at Amazon" instead of price and cart, the required disclosure, never in our cart or orders ([ADR-0020](docs/adr/0020-affiliate-products.md)); `STORE_SALES=off` runs the whole site as an affiliate site first, with nothing to buy here ([ADR-0026](docs/adr/0026-partner-only-site.md)) |
-| Not decided yet | what the store sells, where the products come from (phase 0, owner) |
+| Since then (done) | Owner's own product descriptions (ADR-0021); blocked e-mail addresses in the admin; tax reversal on refunds and product tax codes (ADR-0012); product weight and box size for labels (ADR-0013); self-service account deletion (ADR-0022); prepaid return labels (ADR-0023); the policy version on every order (ADR-0024); HTML e-mail (ADR-0025) |
+| Not decided yet | what the own shop will sell, where the products come from (phase 0, owner, after the affiliate start) |
 
 ## Roadmap to launch
 
@@ -109,13 +113,14 @@ The details, owners and running costs are in [docs/store/ROADMAP.md](docs/store/
 
 | Phase | What | Who | Status |
 |---|---|---|---|
-| 0 | Decide the products, suppliers and brand | Owner | in progress |
+| First | Amazon affiliate site: server and domain, `STORE_SALES=off`, 10-15 partner products with own reviews, Associates application | Owner (engineering done) | **in progress** |
+| 0 | Decide the own shop's products, suppliers and brand | Owner | after the affiliate start |
 | 1 | This repository: history, links, project names, README, roadmap, decision record, store look | Engineering | **done** |
 | 2 | Card payments through Stripe Elements and webhooks (card numbers never reach our server) | Engineering | **done** |
 | 3 | Real sales tax, shipping rates and labels, e-mail from the store's domain | Engineering | **done** (accounts and domain: owner) |
-| 4 | Business registration, sales tax license, privacy policy, terms, return policy | Owner + professionals | in progress (policy pages built; LLC, EIN, license: owner) |
+| 4 | Business registration, sales tax license, privacy policy, terms, return policy | Owner + professionals | policy pages built; LLC, EIN, license: owner, for the own shop |
 | 5 | Production server: demo mode off, daily backups, monitoring, restore drill | Engineering | **built** (server, domain, bucket: owner) |
-| 6 | User acceptance test with real cards and refunds, then launch | Owner + Engineering | planned |
+| 6 | User acceptance test with real cards and refunds, then the own shop opens (`STORE_SALES=on`) | Owner + Engineering | planned |
 
 Every phase keeps the inherited rule: a change reaches `main` only through a pull request with all CI gates green, and
 new behaviour arrives with its tests and a traced requirement.
@@ -146,10 +151,10 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 
 | # | Gate | Threshold | Current | Tool |
 |---|---|---|---|---|
-| 1 | Backend unit + integration | 100 % pass | 1,004 / 1,004 | JUnit 5, Mockito, H2 + Flyway |
-| 2 | API, database, BDD, UI | 100 % pass | 451 / 451 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
-| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.2 % / 93.1 % | JaCoCo |
-| 4 | Mutation score | >= 84 % | 87.6 % (test strength 93.7 %) | PIT |
+| 1 | Backend unit + integration | 100 % pass | 1,164 / 1,164 | JUnit 5, Mockito, H2 + Flyway |
+| 2 | API, database, BDD, UI | 100 % pass | 464 / 464 | REST Assured, JDBC, Cucumber 7, Selenium 4, Mailpit |
+| 3 | Line / branch coverage | >= 97 % / >= 88 % | 97.5 % / 92.6 % | JaCoCo |
+| 4 | Mutation score | >= 84 % | 86.9 % (test strength 93.8 %) | PIT |
 | 5 | API contract, consumer side | every response matches its schema | 12 strict JSON Schemas | json-schema-validator |
 | 6 | API contract, provider side | no breaking change vs. approved baseline | 0 (gate has its own self-test) | openapi-diff |
 | 7 | Accessibility | 0 serious / critical | 0 on 23 pages | axe-core, WCAG 2.1 A + AA |
@@ -161,7 +166,7 @@ A gate fails the build. Nothing is "reported only" unless the table says so.
 | 13 | Traceability | every requirement has a test | 163 / 163 | `docs/qa/check_rtm.py` |
 | 14 | Pipeline definition | Jenkinsfile valid | validated by a real Jenkins | declarative linter |
 | 15 | Public demo stack | HTTPS, only 80/443 open, demo safeguards, nightly reset | all smoke checks pass | Docker Compose, Caddy, `deploy/smoke.sh` |
-| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 326 / 326 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
+| 16 | Playwright (TypeScript) | 100 % pass, visual baselines match | 394 / 394 + 3 skipped by design (Chromium, Firefox, WebKit, Pixel 7, iPhone 14) | Playwright, axe-core |
 | 17 | Phone: Android | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Chrome on Android 14 | Appium 3 + UiAutomator2, Android emulator |
 | 18 | Phone: iOS | 100 % pass (one rerun, reported as flaky) | 4 / 4 in Safari on the newest iPhone simulator | Appium 3 + XCUITest, macOS runner |
 | 19 | Production stack | live settings, only 80/443 open, encrypted off-site backup, restore drill, restore, health alerts | all steps pass | Docker Compose, moto (S3 API), shell + cron |
@@ -176,6 +181,9 @@ tests that exist only to move a number. How the test layers fit together and wha
 
 These are the gaps between the demo and a live store, in the order the roadmap closes them. Stating them is part of
 the plan, not a footnote.
+
+- **For the affiliate site (first):** only the owner's part is left: a server and domain, 10-15 Amazon products with
+  his own words and photos, the Associates application. `STORE_SALES=off` needs none of the services below.
 
 - **The live services are built but not switched on.** Stripe Elements (phase 2), Stripe Tax, Shippo and Amazon SES
   (phase 3) work in test mode; each needs the owner's account, keys and, for e-mail, the store's own domain. Until
@@ -264,12 +272,12 @@ make down                                                              # stop th
 [ADR-0018: contact form](docs/adr/0018-contact-form.md) · [Contact form guide (Bangla)](docs/modules/CONTACT_FORM_BN.md) ·
 [ADR-0019: search engines](docs/adr/0019-search-engines.md) · [Search engine guide (Bangla)](docs/modules/SEARCH_ENGINES_BN.md) ·
 [ADR-0020: partner products](docs/adr/0020-affiliate-products.md) · [Amazon affiliate guide (Bangla)](docs/modules/AFFILIATE_PRODUCTS_BN.md) ·
-[ADR-0021: product descriptions](docs/adr/0021-product-descriptions.md) · [ADR-0022: account deletion](docs/adr/0022-self-service-account-deletion.md) · [ADR-0023: return labels](docs/adr/0023-prepaid-return-labels.md) · [ADR-0024: policy version per order](docs/adr/0024-policy-version-per-order.md) · [ADR-0025: HTML e-mail](docs/adr/0025-html-email-twin.md) · [ADR-0026: affiliate-only site](docs/adr/0026-partner-only-site.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
+[ADR-0021: product descriptions](docs/adr/0021-product-descriptions.md) · [ADR-0022: account deletion](docs/adr/0022-self-service-account-deletion.md) · [ADR-0023: return labels](docs/adr/0023-prepaid-return-labels.md) · [ADR-0024: policy version per order](docs/adr/0024-policy-version-per-order.md) · [ADR-0025: HTML e-mail](docs/adr/0025-html-email-twin.md) · [ADR-0026: affiliate-only site](docs/adr/0026-partner-only-site.md) · [Affiliate guide, step by step (Bangla)](docs/modules/AFFILIATE_PRODUCTS_BN.md) · [Phase 4: business and legal (Bangla)](docs/modules/PHASE4_BUSINESS_LEGAL_BN.md) ·
 [The inherited foundation](docs/FOUNDATION.md)
 
 **QA documents (English):** [Strategy](docs/qa/TEST_STRATEGY.md) · [Plan](docs/qa/TEST_PLAN.md) ·
 [Risks](docs/qa/RISK_REGISTER.md) · [Traceability (163 requirements)](docs/qa/TRACEABILITY_MATRIX.md) ·
-[Defects (29)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
+[Defects (30)](docs/qa/DEFECT_REPORTS.md) · [Test Summary Report](docs/qa/TEST_SUMMARY_REPORT.md) ·
 [UAT Plan](docs/qa/UAT_PLAN.md) · [UAT Summary](docs/qa/UAT_SUMMARY.md)
 
 **Guides (Bangla):** [HELP_BN](docs/HELP_BN.md) to start, and one guide per feature or test layer in

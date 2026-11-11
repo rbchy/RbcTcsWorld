@@ -821,7 +821,8 @@ tries; any other answer is shown at once, and the busy message only appears when
 last try. The backend limit is unchanged.
 **Regression tests:** `playwright/tests/product-photos.spec.ts` "a busy server (429 + Retry-After) is waited for, and
 the photo is uploaded (DEF-031)" (fails on the old form: it showed the busy message) and "a server that stays busy gets
-a clear message after a few tries, and the picture field is kept (DEF-031)".
+a clear message after a few tries, and the picture field is kept (DEF-031)", in Chromium and Firefox (WebKit sends
+file uploads past `page.route`, so the 429 cannot be staged there; the retry code is the same in every engine).
 
 **Lesson:** "1 flaky" in a green run is still a defect report. Here it was not test noise but a real answer (429)
 that the product did not handle; a retry in the test runner hid it for a week.

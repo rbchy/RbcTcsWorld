@@ -91,10 +91,14 @@ test('a file that is not a photo gets a clear message and the picture field stay
  * (ADR-0017). The form used to show that "busy" answer as the result; with parallel test workers it replaced the real
  * answer of "a file that is not a photo..." in 10 of 11 CI runs. The form now waits as long as the server asks.
  */
+// WebKit does not hand multipart file uploads to page.route (the request goes straight to the server), so the busy
+// answer cannot be staged there; the retry logic is plain JavaScript and the same in every engine.
+const NO_UPLOAD_ROUTING = 'WebKit sends file uploads past page.route, so a 429 cannot be staged';
 const BUSY = { status: 429, headers: { 'Retry-After': '1', 'Content-Type': 'application/json' },
   body: JSON.stringify({ status: 429, message: 'Another photo is being processed; please try again in a moment' }) };
 
-test('a busy server (429 + Retry-After) is waited for, and the photo is uploaded (DEF-031)', async ({ page, api }) => {
+test('a busy server (429 + Retry-After) is waited for, and the photo is uploaded (DEF-031)', async ({ page, api, browserName }) => {
+  test.skip(browserName === 'webkit', NO_UPLOAD_ROUTING);
   await signIn(page, await api.admin());
   await openNewProductForm(page, `Busy then ok ${Date.now().toString(36)}`);
   let posts = 0;
@@ -111,7 +115,8 @@ test('a busy server (429 + Retry-After) is waited for, and the photo is uploaded
   expect(posts).toBe(2);
 });
 
-test('a server that stays busy gets a clear message after a few tries, and the picture field is kept (DEF-031)', async ({ page, api }) => {
+test('a server that stays busy gets a clear message after a few tries, and the picture field is kept (DEF-031)', async ({ page, api, browserName }) => {
+  test.skip(browserName === 'webkit', NO_UPLOAD_ROUTING);
   await signIn(page, await api.admin());
   await openNewProductForm(page, `Always busy ${Date.now().toString(36)}`);
   await page.getByTestId('pf-image').fill('/products/home-mug-002.svg');

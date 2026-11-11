@@ -38,6 +38,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | [DEF-028](#def-028) | Mail test helper crashed instead of skipping when no mail server runs | Test code | Low | P3 | CI, Firefox job (PR #31) | Closed |
 | [DEF-029](#def-029) | Admin coupons: a late, unfiltered list replaced the search results | Product - store back office | Medium | P2 | CI, Playwright on `main` (first run of rbchy/RbcTcsWorld) | Closed |
 | [DEF-030](#def-030) | Audit trail check reported tampering when a change was saved during the check | Product - audit trail | Medium | P2 | Owner's local run, Playwright (second full round on one database) | Closed |
+| [DEF-031](#def-031) | Admin photo upload showed the server's "busy, try again" answer (429) as the result instead of waiting | Product - store back office | Low | P3 | CI, Playwright "1 flaky" on `main` in 10 of 11 runs | Closed |
 
 **Where defects were found** - one reason each test layer exists:
 
@@ -60,6 +61,7 @@ only after a regression test was added; the test is named in the report. Test-co
 | UI test that re-checks every step through the API | DEF-023 |
 | A fourth browser (Safari on the Jenkins Mac) | DEF-024 |
 | A third browser engine on every push (Playwright WebKit) | DEF-026 |
+| Treating "1 flaky" in a green run as a defect (Playwright report) | DEF-031 |
 
 ---
 
@@ -789,6 +791,40 @@ was also run on PostgreSQL itself (PGlite) for an empty trail, a filled trail an
 **Lesson:** a consistency check that reads two things must read them at the same moment; on PostgreSQL that means one
 statement or a REPEATABLE READ transaction. A test suite that runs in parallel against one database finds such races
 that a single-threaded CI run does not.
+
+---
+
+## DEF-031
+**Admin photo upload: the server's "busy, try again in a moment" (429) was shown as the result instead of being waited for**
+
+| Field | Value |
+|---|---|
+| Severity / Priority | Low / P3 - nothing is lost, but an owner uploading from a phone while another upload runs is told to try again by hand; in CI it hid the real answer of another test |
+| Component | `frontend/src/pages/admin/AdminProducts.jsx` (`uploadPhoto`), `frontend/src/photo.js` |
+| Environment | GitHub Actions, Playwright on `main`: "1 flaky" in 10 of the last 11 runs since 3 Nov 2026, always the same Chromium test; found while upgrading Playwright 1.56.1 -> 1.65.0 for the runner canary (10 Nov 2026) |
+
+**Steps to reproduce:** start three photo uploads at the same moment (three admins, or the Chromium, Firefox and
+WebKit projects of the Playwright suite running the photo tests in parallel). Made reliable in a test by answering the
+first upload with 429 and `Retry-After: 1`.
+
+**Expected result:** the form waits as long as the server asks and then shows the real answer ("Photo uploaded", or
+"Please upload a JPEG or PNG photo..." for a file that is not a photo).
+**Actual result:** "Another photo is being processed; please try again in a moment". `product-photos.spec.ts` "a file
+that is not a photo gets a clear message..." failed on its first try and passed on the retry, so CI stayed green but
+reported it as flaky.
+
+**Root cause:** by design the backend decodes at most two photos at a time and answers a third upload with 429 and
+`Retry-After: 2` (ADR-0017, memory). The form treated that answer like any other error and showed it.
+
+**Fix:** `retryWhenBusy` in `photo.js` sends the upload again after the `Retry-After` time (at most 5 s), up to 4
+tries; any other answer is shown at once, and the busy message only appears when the server is still busy after the
+last try. The backend limit is unchanged.
+**Regression tests:** `playwright/tests/product-photos.spec.ts` "a busy server (429 + Retry-After) is waited for, and
+the photo is uploaded (DEF-031)" (fails on the old form: it showed the busy message) and "a server that stays busy gets
+a clear message after a few tries, and the picture field is kept (DEF-031)".
+
+**Lesson:** "1 flaky" in a green run is still a defect report. Here it was not test noise but a real answer (429)
+that the product did not handle; a retry in the test runner hid it for a week.
 
 ---
 

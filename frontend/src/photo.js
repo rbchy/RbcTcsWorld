@@ -65,3 +65,24 @@ export function uploadName(blob, original) {
   const base = (original?.name || 'photo').replace(/\.[^.]*$/, '').replace(/[^\w-]+/g, '-').slice(0, 40) || 'photo';
   return `${base}.${blob.type === 'image/png' ? 'png' : 'jpg'}`;
 }
+
+/**
+ * Sends the upload again when the server says it is busy (DEF-031). The backend decodes at most two photos at a time
+ * and answers a third with 429 and Retry-After (ADR-0017); that is a "wait a moment", not a failure, so the admin only
+ * sees the busy message when the server is still busy after a few tries. Any other answer is returned or thrown at once.
+ */
+export const BUSY_TRIES = 4;
+export const BUSY_MAX_WAIT_MS = 5000;
+
+export async function retryWhenBusy(send, { tries = BUSY_TRIES, sleep = ms => new Promise(r => setTimeout(r, ms)) } = {}) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await send();
+    } catch (err) {
+      if (err.response?.status !== 429 || attempt >= tries) throw err;
+      const seconds = Number(err.response.headers?.['retry-after']);
+      const wait = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 1000 * attempt;
+      await sleep(Math.min(wait, BUSY_MAX_WAIT_MS));
+    }
+  }
+}

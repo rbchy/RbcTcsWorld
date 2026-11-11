@@ -3,7 +3,7 @@ import api, { errorText, money } from '../../api';
 import { useI18n } from '../../i18n';
 import { Field, Notice, when } from './common';
 import ProductImage, { IMAGE_URL } from '../../ProductImage';
-import { ACCEPT, PhotoError, preparePhoto, uploadName } from '../../photo';
+import { ACCEPT, PhotoError, preparePhoto, uploadName, retryWhenBusy } from '../../photo';
 import { partnerName } from '../../Partner';
 
 /** The public demo build (VITE_DEMO=true): photo uploads are off there (the backend refuses them too, ADR-0017). */
@@ -151,7 +151,7 @@ export default function AdminProducts() {
       const blob = await preparePhoto(file);
       const data = new FormData();
       data.append('file', blob, uploadName(blob, file));
-      const r = await api.post('/products/pictures', data);
+      const r = await retryWhenBusy(() => api.post('/products/pictures', data));   // 429 = wait (DEF-031)
       setForm(f => ({ ...f, imageUrl: r.data.url }));
       setErrors(({ imageUrl, ...rest }) => rest);
       setPhoto({ ok: t('photoUploaded') });

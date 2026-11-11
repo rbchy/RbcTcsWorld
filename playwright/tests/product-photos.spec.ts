@@ -85,3 +85,51 @@ test('a file that is not a photo gets a clear message and the picture field stay
   await expect(page.getByTestId('pf-photo-error')).toContainText('JPEG or PNG', { timeout: 20_000 });
   await expect(page.getByTestId('pf-image')).toHaveValue('/products/home-mug-002.svg');
 });
+
+/*
+ * DEF-031: the backend decodes at most two photos at a time and answers a third upload with 429 + Retry-After
+ * (ADR-0017). The form used to show that "busy" answer as the result; with parallel test workers it replaced the real
+ * answer of "a file that is not a photo..." in 10 of 11 CI runs. The form now waits as long as the server asks.
+ */
+// WebKit does not hand multipart file uploads to page.route (the request goes straight to the server), so the busy
+// answer cannot be staged there; the retry logic is plain JavaScript and the same in every engine.
+const NO_UPLOAD_ROUTING = 'WebKit sends file uploads past page.route, so a 429 cannot be staged';
+const BUSY = { status: 429, headers: { 'Retry-After': '1', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ status: 429, message: 'Another photo is being processed; please try again in a moment' }) };
+
+test('a busy server (429 + Retry-After) is waited for, and the photo is uploaded (DEF-031)', async ({ page, api, browserName }) => {
+  test.skip(browserName === 'webkit', NO_UPLOAD_ROUTING);
+  await signIn(page, await api.admin());
+  await openNewProductForm(page, `Busy then ok ${Date.now().toString(36)}`);
+  let posts = 0;
+  await page.route('**/api/products/pictures', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    posts += 1;
+    return posts === 1 ? route.fulfill(BUSY) : route.continue();   // busy once, then the real server answers
+  });
+  const photo = await drawnPhoto(page, 'image/png', 400, 300);
+  await page.getByTestId('pf-photo').setInputFiles({ name: 'cup.png', mimeType: 'image/png', buffer: photo });
+  await expect(page.getByTestId('pf-photo-ok')).toHaveText('Photo uploaded. Save the product to use it.');
+  await expect(page.getByTestId('pf-image')).toHaveValue(PICTURE);
+  await expect(page.getByTestId('pf-photo-error')).toHaveCount(0);
+  expect(posts).toBe(2);
+});
+
+test('a server that stays busy gets a clear message after a few tries, and the picture field is kept (DEF-031)', async ({ page, api, browserName }) => {
+  test.skip(browserName === 'webkit', NO_UPLOAD_ROUTING);
+  await signIn(page, await api.admin());
+  await openNewProductForm(page, `Always busy ${Date.now().toString(36)}`);
+  await page.getByTestId('pf-image').fill('/products/home-mug-002.svg');
+  let posts = 0;
+  await page.route('**/api/products/pictures', route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    posts += 1;
+    return route.fulfill(BUSY);
+  });
+  const photo = await drawnPhoto(page, 'image/png', 400, 300);
+  await page.getByTestId('pf-photo').setInputFiles({ name: 'cup.png', mimeType: 'image/png', buffer: photo });
+  await expect(page.getByTestId('pf-photo-error')).toHaveText('Another photo is being processed; please try again in a moment',
+    { timeout: 20_000 });
+  expect(posts).toBe(4);                                             // BUSY_TRIES in frontend/src/photo.js
+  await expect(page.getByTestId('pf-image')).toHaveValue('/products/home-mug-002.svg');
+});

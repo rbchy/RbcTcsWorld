@@ -9,15 +9,15 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
 
-# ---- from the GitHub Actions run of main (commit 6f836ab, 4 Nov 2026, after PR #33) ----
-AS_OF = "main @ 6f836ab · 4 Nov 2026"
+# ---- from the GitHub Actions run of PR #36 (commit 08577e1, 10 Nov 2026: Playwright 1.65, DEF-031) ----
+AS_OF = "PR #36 @ 08577e1 · 10 Nov 2026"
 LEVELS = [  # (label, tests, colour)
     ("Backend unit + integration", 1164, "#4fb3a9"),
     ("API · DB · BDD · Selenium UI", 464, "#f4b04a"),
-    ("Playwright (5 browsers/devices)", 397, "#8fb8de"),
+    ("Playwright (5 browsers/devices)", 403, "#8fb8de"),
     ("Appium phones", 8, "#e58a8a"),
 ]
-SKIPPED = 3
+SKIPPED = 5
 GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.5 %", "Mutation 86.9 %", "Contract: consumer",
          "Contract: provider", "Accessibility", "Firefox + Edge", "Performance (k6)", "OWASP ZAP",
          "Dependencies (OSV)", "Docker smoke", "Traceability", "Jenkinsfile lint", "Public demo stack",
@@ -25,8 +25,8 @@ GATES = ["Backend tests", "API · DB · BDD · UI", "Coverage 97.5 %", "Mutation
 
 # ---- from the GitHub API and git (same day) ----
 # The git history of the code is kept from the E-Commerce Suite (4 to 24 Oct); the store repository starts on 25 Oct.
-COMMITS_PER_DAY = [("4", 31), ("5", 5), ("6", 2), ("7", 23), ("8", 7), ("9", 2), ("10", 5), ("11", 18), ("12", 11), ("13", 10), ("14", 19), ("15", 3), ("16", 27), ("17", 20), ("18", 29), ("19", 1), ("20", 3), ("23", 3), ("24", 1), ("25", 16), ("26", 9), ("27", 14), ("28", 25), ("29", 9), ("30", 11), ("31", 4), ("1", 8), ("2", 2), ("3", 2)]  # 4 Oct to 3 Nov
-MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 34, 0, 183, "57k"  # 34 with this README refresh
+COMMITS_PER_DAY = [("4", 31), ("5", 5), ("6", 2), ("7", 23), ("8", 7), ("9", 2), ("10", 5), ("11", 18), ("12", 11), ("13", 10), ("14", 19), ("15", 3), ("16", 27), ("17", 20), ("18", 29), ("19", 1), ("20", 3), ("23", 3), ("24", 1), ("25", 16), ("26", 9), ("27", 14), ("28", 25), ("29", 9), ("30", 11), ("31", 4), ("1", 8), ("2", 2), ("3", 2), ("4", 3), ("5", 2), ("10", 4)]  # 4 Oct to 10 Nov
+MERGED_PRS, OPEN_PRS, CI_RUNS, LOC = 36, 0, 206, "57k"  # 36 with this README refresh (PR #36)
 LANGUAGES = [("Java", 75.5, "#b07219"), ("JavaScript", 14.5, "#f1e05a"), ("TypeScript", 4.6, "#3178c6"),
              ("CSS", 2.1, "#663399"), ("Other", 3.3, "#b4add8")]  # Gherkin, Shell, Python, Makefile, HTML, Docker
 # the road to launch (docs/store/ROADMAP.md): (phase, short name, state) - state: done | now | next | later
@@ -112,11 +112,11 @@ def github_stats():
     w, h = 1000, 380
     commits = sum(n for _, n in COMMITS_PER_DAY)
     p = [f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" '
-         f'aria-label="GitHub stats: {commits} commits on {len(COMMITS_PER_DAY)} active days from 4 October to 3 November 2026, {MERGED_PRS} merged pull requests, '
+         f'aria-label="GitHub stats: {commits} commits on {len(COMMITS_PER_DAY)} active days from 4 October to 10 November 2026, {MERGED_PRS} merged pull requests, '
          f'{OPEN_PRS} open, {CI_RUNS} CI workflow runs in this repository, about {LOC} lines of code; Java 76 percent, JavaScript 14 percent, TypeScript 5 percent.">',
          f'<rect width="{w}" height="{h}" rx="14" fill="{BG}"/>',
          text(32, 48, "GitHub Stats", 24, TITLE, 700),
-         text(32, 72, f"rbchy/RbcTcsWorld · 4 Oct to 3 Nov 2026 · git history kept from the E-Commerce Suite; this repository since 25 Oct", 13, MUTED)]
+         text(32, 72, f"rbchy/RbcTcsWorld · 4 Oct to 10 Nov 2026 · git history kept from the E-Commerce Suite; this repository since 25 Oct", 13, MUTED)]
     nums = [(f"{commits}", "commits"), (f"{MERGED_PRS}", "merged pull requests"), (f"{OPEN_PRS}", "open pull requests"),
             (f"{CI_RUNS}", "CI runs (this repo)"), (f"{len(COMMITS_PER_DAY)}", "active days"), (f"~{LOC}", "lines of code")]
     for i, (big, label) in enumerate(nums):
@@ -126,7 +126,7 @@ def github_stats():
 
     # commits per day
     cx0, cy0, cw, ch = 360, 122, 608, 158
-    p.append(text(cx0, 96, "Commits per day (4 Oct to 3 Nov 2026)", 15, INK, 700))
+    p.append(text(cx0, 96, "Commits per day (4 Oct to 10 Nov 2026)", 15, INK, 700))
     top = max(n for _, n in COMMITS_PER_DAY)
     step = cw / len(COMMITS_PER_DAY)
     p.append(f'<line x1="{cx0}" y1="{cy0 + ch}" x2="{cx0 + cw}" y2="{cy0 + ch}" stroke="{MUTED}" stroke-opacity=".4"/>')
